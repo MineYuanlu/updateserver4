@@ -1,0 +1,10 @@
+{
+	"$schema": "https://inlang.com/schema/inlang-message-format",
+	"messages": "中文(简体)",
+	"name": "Update Server 4",
+	"copyright": "版权所有 © 2024 Update Server 4. 保留所有权利. ",
+	"menu_project": "项目",
+	"page_index__title": "管理您的应用更新，轻松高效",
+	"page_index__description": "我们为开发者提供简洁的更新支持功能和信息采集服务，帮助您专注于程序开发，提升用户体验。",
+	"page_index__btn_start": "立即开始"
+}
