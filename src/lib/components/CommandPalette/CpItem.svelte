@@ -12,7 +12,9 @@
 		hover = $bindable(false),
 		onmouseleave,
 		onmouseenter,
-		onclick
+		onclick,
+		href,
+		hreflang
 	}: {
 		/**显示标题, 字符串/代码片段 */
 		title?: string | Snippet<[]>;
@@ -29,11 +31,14 @@
 		/** 是否悬浮状态 (可绑定) */
 		hover?: boolean;
 		/** 鼠标离开事件 */
-		onmouseleave?: MouseEventHandler<HTMLButtonElement> | undefined | null;
+		onmouseleave?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement> | undefined | null;
 		/** 鼠标进入事件 */
-		onmouseenter?: MouseEventHandler<HTMLButtonElement> | undefined | null;
+		onmouseenter?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement> | undefined | null;
 		/** 点击事件 */
-		onclick?: MouseEventHandler<HTMLButtonElement> | undefined | null;
+		onclick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement> | undefined | null;
+		/** 命令项链接, 指定此值后命令项将从button变为a标签 */
+		href?: string;
+		hreflang?: string;
 	} = $props();
 </script>
 
@@ -42,19 +47,7 @@
 命令面板结果项, 附属于 `<CommandPalette />` 组件
   -->
 
-<button
-	class="flex w-full items-center justify-between rounded-xl p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
-	style:cursor
-	onmouseenter={(e) => {
-		hover = true;
-		if (onmouseenter) onmouseenter(e);
-	}}
-	onmouseleave={(e) => {
-		hover = false;
-		if (onmouseleave) onmouseleave(e);
-	}}
-	{onclick}
->
+{#snippet content()}
 	<!-- 左侧内容 -->
 	<div class="flex items-center">
 		{#if Icon}
@@ -88,4 +81,40 @@
 			{/if}
 		</div>
 	{/if}
-</button>
+{/snippet}
+
+{#if href}
+	<a
+		{href}
+		{hreflang}
+		class="flex w-full items-center justify-between rounded-xl p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+		style:cursor
+		onmouseenter={(e) => {
+			hover = true;
+			if (onmouseenter) onmouseenter(e);
+		}}
+		onmouseleave={(e) => {
+			hover = false;
+			if (onmouseleave) onmouseleave(e);
+		}}
+		{onclick}
+	>
+		{@render content()}
+	</a>
+{:else}
+	<button
+		class="flex w-full items-center justify-between rounded-xl p-3 text-left hover:bg-gray-100 dark:hover:bg-gray-700"
+		style:cursor
+		onmouseenter={(e) => {
+			hover = true;
+			if (onmouseenter) onmouseenter(e);
+		}}
+		onmouseleave={(e) => {
+			hover = false;
+			if (onmouseleave) onmouseleave(e);
+		}}
+		{onclick}
+	>
+		{@render content()}
+	</button>
+{/if}
