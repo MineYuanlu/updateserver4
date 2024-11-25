@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { writable } from 'svelte/store';
+	import { get, writable } from 'svelte/store';
 	import {
 		Trash as TrashIcon,
 		Pencil1 as PencilIcon,
@@ -8,6 +8,11 @@
 		CrossCircled
 	} from 'radix-icons-svelte';
 	import Modal from '$lib/components/Modal/Modal.svelte';
+	import Button from '$lib/components/Form/Button.svelte';
+	import { colorPacks } from '$lib/components/color';
+	import Input from '$lib/components/Form/Input.svelte';
+	import { getOauthProviderTypes } from '$lib/api/user';
+	import Create from './Create.svelte';
 
 	// 定义 OAuth 供应商类型
 	const providerTypes = writable<string[]>([]);
@@ -147,10 +152,22 @@
 	content="Are you sure you want to deactivate your account? All of your data will be permanently removed. This action cannot be undone."
 	icon={CrossCircled}
 	iconColor="blue"
+	btns={[
+		{
+			label: 'Deactivate',
+			color: 'red'
+		},
+		{
+			label: 'Cancel',
+			color: 'secondary'
+		}
+	]}
 ></Modal>
 
 <div class="container mx-auto p-6">
 	<h1 class="mb-6 text-3xl font-bold text-gray-800 dark:text-gray-100">OAuth 管理</h1>
+
+	<Create />
 
 	<!-- 新增按钮 -->
 	<button

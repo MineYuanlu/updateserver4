@@ -5,14 +5,28 @@ import {
 	primaryKey,
 	unique
 } from 'drizzle-orm/sqlite-core';
+import type { UserId, UserRole } from '$lib/common/user';
+
+/** 将更精确的类型限制附加到原始类型 */
+type LintMerge<Raw, Ext extends { [K in keyof Raw]?: Raw[K] }> = {
+	[K in keyof Raw]: K extends keyof Ext ? Ext[K] : Raw[K];
+};
 
 /** 用户基本信息 */
 export const user = createTable('user', {
 	id: text('id').primaryKey(), // 用户ID
 	username: text('username').notNull().unique(), // 用户名
+	role: integer('role').notNull().default(0), // 用户角色
 	passwordHash: text('password_hash').notNull() // 密码哈希
 });
-export type User = typeof user.$inferSelect;
+export type _User_Raw = typeof user.$inferSelect;
+export type User = LintMerge<
+	_User_Raw,
+	{
+		id: UserId;
+		role: UserRole;
+	}
+>;
 
 /** 第三方平台信息 */
 export const oauthProvider = createTable('oauth_provider', {

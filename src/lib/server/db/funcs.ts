@@ -1,15 +1,38 @@
 import { eq } from 'drizzle-orm';
 import { db } from './index';
-import * as table from './schema';
+import * as _t from './schema';
+import type { US4ID } from '../common';
 
-/** 通过完整用户名获取用户全部信息 */
+function _lintType(t: _t._User_Raw | undefined): _t.User | undefined;
+/// 内部函数, 仅用于类型检查
+function _lintType(t: any): any {
+	return t;
+}
+
+/**
+ * 通过完整用户名获取用户全部信息
+ * @note **包含密码等敏感信息**
+ */
 export async function getUserAllByName(username: string) {
-	const results = await db
-		.select()
-		.from(table.user)
-		.where(eq(table.user.username, username))
-		.execute();
-	return results.at(0);
+	const results = await db.select().from(_t.user).where(eq(_t.user.username, username)).execute();
+	return _lintType(results.at(0));
+}
+
+/**
+ * 创建用户
+ * @param id 用户ID
+ * @param username 用户名
+ * @param password 密码
+ * @param role 角色
+ * @returns 用户ID
+ */
+export function createUser(
+	id: _t.User['id'],
+	username: string,
+	password: string,
+	role: _t.User['role'] = 0
+) {
+	return db.insert(_t.user).values({ id, username, passwordHash: password, role }).execute();
 }
 
 /** 创建OAuth提供商 */
@@ -22,7 +45,7 @@ export async function createOAuthProvider(
 	redirect_uri: string
 ) {
 	return await db
-		.insert(table.oauthProvider)
+		.insert(_t.oauthProvider)
 		.values({
 			name: name,
 			desc: desc,
@@ -38,11 +61,11 @@ export async function createOAuthProvider(
 export async function listOAuthProviders() {
 	return await db
 		.select({
-			name: table.oauthProvider.name,
-			type: table.oauthProvider.type,
-			desc: table.oauthProvider.desc
+			name: _t.oauthProvider.name,
+			type: _t.oauthProvider.type,
+			desc: _t.oauthProvider.desc
 		})
-		.from(table.oauthProvider)
+		.from(_t.oauthProvider)
 		.execute();
 }
 
@@ -50,8 +73,8 @@ export async function listOAuthProviders() {
 export async function getOAuthProvider(name: string) {
 	const ret = await db
 		.select()
-		.from(table.oauthProvider)
-		.where(eq(table.oauthProvider.name, name))
+		.from(_t.oauthProvider)
+		.where(eq(_t.oauthProvider.name, name))
 		.execute();
 	return ret.at(0);
 }
@@ -59,9 +82,9 @@ export async function getOAuthProvider(name: string) {
 /** 获取设置值(如果不存在则插入设置值并返回默认值) */
 export async function getSettingValue(key: string, defaultValue: string | (() => string)) {
 	const results = await db
-		.select({ value: table.setting.value })
-		.from(table.setting)
-		.where(eq(table.setting.key, key))
+		.select({ value: _t.setting.value })
+		.from(_t.setting)
+		.where(eq(_t.setting.key, key))
 		.execute();
 	const result = results.at(0);
 	if (result) return result.value;
@@ -70,14 +93,14 @@ export async function getSettingValue(key: string, defaultValue: string | (() =>
 
 	return await db.transaction(async (trx) => {
 		const results = await trx
-			.select({ value: table.setting.value })
-			.from(table.setting)
-			.where(eq(table.setting.key, key))
+			.select({ value: _t.setting.value })
+			.from(_t.setting)
+			.where(eq(_t.setting.key, key))
 			.execute();
 		const result = results.at(0);
 		if (result) return result.value;
 
-		await trx.insert(table.setting).values({ key, value: defaultValue }).execute();
+		await trx.insert(_t.setting).values({ key, value: defaultValue }).execute();
 		return defaultValue;
 	});
 }

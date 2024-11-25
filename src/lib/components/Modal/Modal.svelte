@@ -1,14 +1,27 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
-	import type { Color } from '../color';
+	import {
+		color2Class,
+		type BackgroundColor,
+		type Color,
+		type ColorLightable,
+		type PreableColorPacks,
+		type TextColor
+	} from '../color';
+	import Button from '../Form/Button.svelte';
+	import { fade, fly } from 'svelte/transition';
+	import KeyListener from '../Global/KeyListener.svelte';
 
 	type BtnProp = {
 		label?: string;
 		onClick?: () => void;
-		bgColor?: Color;
-		color?: Color;
+		color?: PreableColorPacks;
 	};
+	type Toggle = (open?: boolean) => void;
 	let {
+		open: outerOpen = $bindable(false),
+		controls,
+		class: className,
 		icon: Icon,
 		iconColor = 'blue',
 		iconSnippet,
@@ -17,29 +30,65 @@
 		body,
 		btns: _btns = [],
 		footer,
+		onPreOpen,
+		onOpen,
+		onPreClose,
 		onClose,
-		onCancel,
-		onConfirm
+		onCancel = () => toggleModal(false),
+		onConfirm = () => toggleModal(false),
+		closeOnOutsideClick = true,
+		closeOnEscape = true
 	}: {
+		/** 弹窗状态 (可绑定) */
+		open?: boolean;
+		/**控制组件, 传入null不显示, 不指定或传入undefined显示默认按钮 */
+		controls?: Snippet<[Toggle]> | undefined | null;
+		/** 弹窗类名 */
+		class?: string;
+		/** 图标组件 */
 		icon?: Component | any;
-		iconColor?: Color;
-		iconSnippet?: Snippet;
-		title?: Snippet | string;
-		content?: Snippet | string;
-		body?: Snippet;
+		/** 图标颜色 / [文字颜色/背景颜色]*/
+		iconColor?: ColorLightable | [TextColor | Color, BackgroundColor | Color];
+		iconSnippet?: Snippet<[Toggle]>;
+		title?: Snippet<[Toggle]> | string;
+		content?: Snippet<[Toggle]> | string;
+		body?: Snippet<[Toggle]>;
+		/**
+		 * 按钮组, 将从右向左依次渲染, 支持以下类型数据:
+		 * - 按钮文本: `string` / `[string]` / `[string, string]` 按钮文本, 使用内置 `blue`,`secondary` 颜色
+		 * - 按钮配置: `{ label; onClick?; color? }` 按钮配置, 自定义颜色和事件
+		 *
+		 * 如果前2个按钮未设置onClick, 将使用默认的onConfirm和onCancel事件
+		 *
+		 * `onClick`: 按钮点击事件, 返回 `false` 可阻止关闭弹窗
+		 */
 		btns?:
-			| { label: string; onClick?: () => void; bgColor?: Color; color?: Color }[]
+			| { label: string; onClick?: () => boolean | void; color?: PreableColorPacks }[]
+			| string
 			| [string]
 			| [string, string];
 		footer?: Snippet;
+		/** 打开弹窗前事件, 返回`false`可阻止打开弹窗 */
+		onPreOpen?: () => boolean | void;
+		/** 打开弹窗事件 */
+		onOpen?: () => void;
+		/** 关闭弹窗前事件, 返回`false`可阻止关闭弹窗 */
+		onPreClose?: () => boolean | void;
+		/** 关闭弹窗事件 */
 		onClose?: () => void;
-		onCancel?: () => void;
-		onConfirm?: () => void;
+		/** 取消按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
+		onCancel?: () => boolean | void;
+		/** 确认按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
+		onConfirm?: () => boolean | void;
+		/**是否允许点击外面关闭面板 (默认true) */
+		closeOnOutsideClick?: boolean;
+		/**是否允许按Esc关闭面板 (默认true) */
+		closeOnEscape?: boolean;
 	} = $props();
 
 	const _fallbackBtns: BtnProp[] = $derived([
-		{ onClick: onCancel, bgColor: 'gray', color: 'gray' },
-		{ onClick: onConfirm, bgColor: 'blue', color: 'gray' }
+		{ onClick: onConfirm, color: 'blue' },
+		{ onClick: onCancel, color: 'secondary' }
 	]);
 
 	const _getBtns = (() => {
@@ -48,22 +97,65 @@
 			return {
 				label: btn.label,
 				onClick: btn?.onClick || fb.onClick,
-				color: btn?.color || fb.color,
-				bgColor: btn?.bgColor || fb.bgColor
+				color: btn?.color || fb.color
 			};
 		}
 		return (btns: typeof _btns, fbs: typeof _fallbackBtns): BtnProp[] => {
-			if (btns.length === 1) return [merge(btns[0], fbs[1])];
-			else if (btns.length === 2) return [merge(btns[0], fbs[0]), merge(btns[1], fbs[1])];
-			else return btns as BtnProp[];
+			if (typeof btns === 'string') btns = [btns];
+			return btns.map((btn, i) => (i < fbs.length ? merge(btn, fbs[i]) : btn)) as BtnProp[];
+			// if (btns.length === 1) return [merge(btns[0], fbs[0])];
+			// else if (btns.length === 2) return [merge(btns[0], fbs[0]), merge(btns[1], fbs[1])];
+			// else return btns as BtnProp[];
 		};
 	})();
 
 	const btns = $derived(_getBtns(_btns, _fallbackBtns));
+
+	/** 内部实际弹窗状态, **不可直接修改** */
+	let open = $state(false);
+	/**
+	 * 切换弹窗状态
+	 * @param o 弹窗状态, 传入`true`打开弹窗, 传入`false`关闭弹窗, 不传入则切换弹窗状态
+	 */
+	function toggleModal(o?: boolean) {
+		if (o !== undefined && o === open) {
+			outerOpen = open;
+			return;
+		}
+		const val = o ?? !open;
+		if (val) {
+			if (onPreOpen && onPreOpen() === false) {
+				outerOpen = open;
+				return;
+			}
+		} else {
+			if (onPreClose && onPreClose() === false) {
+				outerOpen = open;
+				return;
+			}
+		}
+		outerOpen = open = val;
+		if (open) {
+			if (onOpen) onOpen();
+		} else {
+			if (onClose) onClose();
+		}
+	}
+	$effect(() => {
+		// 同步外部
+		if (outerOpen !== open) toggleModal(outerOpen);
+	});
 </script>
 
-<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-	<!--
+{#if controls}
+	{@render controls(toggleModal)}
+{:else if controls !== null}
+	<Button onclick={() => toggleModal()}>Menu</Button>
+{/if}
+
+{#if open}
+	<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+		<!--
       Background backdrop, show/hide based on modal state.
   
       Entering: "ease-out duration-300"
@@ -73,11 +165,24 @@
         From: "opacity-100"
         To: "opacity-0"
     -->
-	<div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true"></div>
+		<div
+			class="backdrop-blur-xs fixed inset-0 bg-gray-500/75 transition-opacity"
+			aria-hidden="true"
+			transition:fade={{ duration: 100 }}
+		>
+			{#if closeOnEscape}
+				<KeyListener handler={() => toggleModal(false)} key="Escape" />
+			{/if}
 
-	<div class="fixed inset-0 z-10 w-screen overflow-y-auto">
-		<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-			<!--
+			<div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+				<div
+					class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0"
+					aria-hidden="true"
+					onclick={(e) => {
+						if (closeOnOutsideClick && e.target === e.currentTarget) toggleModal(false);
+					}}
+				>
+					<!--
           Modal panel, show/hide based on modal state.
   
           Entering: "ease-out duration-300"
@@ -87,72 +192,76 @@
             From: "opacity-100 translate-y-0 sm:scale-100"
             To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         -->
-			<div
-				class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg"
-			>
-				{#if body}
-					{@render body()}
-				{:else}
-					<div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-						<div class="sm:flex sm:items-start">
-							{#if iconSnippet}
-								{@render iconSnippet()}
-							{:else if Icon}
-								<div
-									class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full bg-{iconColor}-100 sm:mx-0 sm:size-10"
-								>
-									<Icon class="size-6 text-{iconColor}-600" />
-								</div>
-							{/if}
-							<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-								{#if typeof title === 'string'}
-									<h3 class="text-base font-semibold text-gray-900" id="modal-title">
-										{title}
-									</h3>
-								{:else if title}
-									{@render title()}
-								{/if}
+					<div
+						class="relative w-full transform overflow-scroll rounded-lg bg-white text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:max-w-xl {className}"
+						in:fly={{ y: 50, opacity: 0.5, duration: 100 }}
+						out:fly={{ y: -50, opacity: 0, duration: 100 }}
+					>
+						{#if body}
+							{@render body(toggleModal)}
+						{:else}
+							<div class="bg-white px-4 pb-4 pt-5 dark:bg-gray-800 sm:p-6 sm:pb-4">
+								<div class="sm:flex sm:items-start">
+									{#if iconSnippet}
+										{@render iconSnippet(toggleModal)}
+									{:else if Icon}
+										{@const txtColor = color2Class(
+											'text',
+											typeof iconColor === 'string' ? iconColor : iconColor[0],
+											'600'
+										)}
+										{@const bgColor = color2Class(
+											'bg',
+											typeof iconColor === 'string' ? iconColor : iconColor[1],
+											'100'
+										)}
+										<div
+											class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full {bgColor} sm:mx-0 sm:size-10"
+										>
+											<Icon class="size-6 {txtColor}" />
+										</div>
+									{/if}
+									<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:flex-1 sm:text-left">
+										{#if typeof title === 'string'}
+											<h3
+												class="text-base font-semibold text-gray-900 dark:text-gray-100"
+												id="modal-title"
+											>
+												{title}
+											</h3>
+										{:else if title}
+											{@render title(toggleModal)}
+										{/if}
 
-								{#if typeof content === 'string'}
-									<div class="mt-2">
-										<p class="text-sm text-gray-500">
-											{content}
-										</p>
+										{#if typeof content === 'string'}
+											<div class="mt-2">
+												<p class="text-sm text-gray-500 dark:text-gray-400">
+													{content}
+												</p>
+											</div>
+										{:else if content}
+											{@render content(toggleModal)}
+										{/if}
 									</div>
-								{:else if content}
-									{@render content()}
-								{/if}
+								</div>
 							</div>
-						</div>
-					</div>
-				{/if}
-				{#if footer}
-					{@render footer()}
-				{:else}
-					<div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-						{#each btns as { label, onClick, color = 'blue', bgColor = color }, i}
-							<button
-								type="button"
-								class="{i
-									? 'mt-3'
-									: ''}inline-flex w-full justify-center rounded-md bg-{bgColor}-600 px-3 py-2 text-sm font-semibold text-{color}-100 shadow-sm hover:bg-{bgColor}-500 sm:ml-3 sm:w-auto"
+						{/if}
+						{#if footer}
+							{@render footer()}
+						{:else}
+							<div
+								class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6"
 							>
-								{label}
-							</button>
-						{/each}
-						<button
-							type="button"
-							class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
-							>Deactivate</button
-						>
-						<button
-							type="button"
-							class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
-							>Cancel</button
-						>
+								{#each btns as { label, onClick, color = 'blue' }, i}
+									<Button class="ml-3 justify-center" {color} onclick={onClick}>
+										{label}
+									</Button>
+								{/each}
+							</div>
+						{/if}
 					</div>
-				{/if}
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
+{/if}

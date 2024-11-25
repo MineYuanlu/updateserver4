@@ -1,15 +1,8 @@
 import type { RequestEvent } from '@sveltejs/kit';
 import { SignJWT, jwtVerify } from 'jose';
-import { getSetting } from './common';
+import { getSetting, type US4ID } from './common';
 import { COOKIES } from '../common/cookies';
-
-export type UserInfo = {
-	id: string;
-	name: string;
-};
-export type UserSession = {
-	typ: 'USER';
-} & UserInfo;
+import type { UserInfo, UserSession } from '$lib/common/user';
 
 export async function createSession(user: UserInfo, expiresAt?: Date) {
 	if (expiresAt === undefined) {

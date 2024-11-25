@@ -28,12 +28,16 @@
 		return tag === sourceLanguageTag ? '' : `/${tag}`;
 	}
 	const rel_path = $derived.by(() => {
-		const path = $page.url.pathname;
+		let path = $page.url.pathname;
 		for (const lang of availableLanguageTags) {
 			if (lang === sourceLanguageTag) continue;
 			const prefix = languagePath(lang);
-			if (path.startsWith(prefix)) return path.substring(prefix.length);
+			if (path.startsWith(prefix)) {
+				path = path.substring(prefix.length);
+				break;
+			}
 		}
+		if (!path.startsWith('/')) path = `/${path}`;
 		return path;
 	});
 </script>

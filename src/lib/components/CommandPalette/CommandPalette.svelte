@@ -4,13 +4,15 @@
 	import Input from '../Form/Input.svelte';
 	import { MagnifyingGlass } from 'radix-icons-svelte';
 	import { fly, fade } from 'svelte/transition';
+	import KeyListener from '../Global/KeyListener.svelte';
 	type TogglePalette = (open?: boolean) => void;
 	let {
 		open = $bindable(false),
 		input = $bindable(''),
 		controls,
 		item,
-		closeOnOutsideClick = true
+		closeOnOutsideClick = true,
+		closeOnEscape = true
 	}: {
 		/**面板打开状态(可绑定) */
 		open?: boolean;
@@ -22,6 +24,8 @@
 		item: Snippet<[string, TogglePalette]>;
 		/**是否允许点击外面关闭面板 (默认true) */
 		closeOnOutsideClick?: boolean;
+		/**是否允许按Esc关闭面板 (默认true) */
+		closeOnEscape?: boolean;
 	} = $props();
 
 	const togglePalette = (o?: boolean) => {
@@ -31,7 +35,7 @@
 
 <!--
 @component
-命令面板组件, 展示一个顶层组件，包括输入框和结果列表
+命令面板组件, 展示一个类Modal的顶层组件，包括输入框和结果列表
   -->
 
 {#if controls}
@@ -67,4 +71,7 @@
 			</div>
 		</div>
 	</div>
+	{#if closeOnEscape}
+		<KeyListener key="Escape" handler={() => (open = false)} />
+	{/if}
 {/if}

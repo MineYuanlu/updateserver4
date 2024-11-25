@@ -7,6 +7,7 @@
 		KeyboardEventHandler,
 		MouseEventHandler
 	} from 'svelte/elements';
+	import { colorPack2Class, type ColorPack, type PreSetColorPacks } from '../color';
 
 	const {
 		children,
@@ -24,7 +25,8 @@
 		onreset,
 		disabled,
 		class: className,
-		style
+		style,
+		color = 'blue'
 	}: {
 		children: Snippet<[]>;
 		onclick?: MouseEventHandler<HTMLButtonElement> | null | undefined;
@@ -42,7 +44,9 @@
 		disabled?: boolean | undefined;
 		class?: string | undefined;
 		style?: string | undefined;
+		color?: ColorPack | PreSetColorPacks;
 	} = $props();
+	const { t, dt, bg, hbg, dbg, dhbg, b, db } = $derived(colorPack2Class(color));
 </script>
 
 <button
@@ -59,7 +63,9 @@
 	{onsubmit}
 	{onreset}
 	{disabled}
-	class="{className} rounded-lg bg-blue-500 px-4 py-2 text-white hover:bg-blue-700 focus:outline-none dark:bg-blue-600 dark:text-gray-100"
+	class:border-2={!!b}
+	class:dark:border-2={!!db}
+	class="rounded-lg px-4 py-2 focus:outline-none {t} {dt} {bg} {hbg} {dbg} {dhbg} {b} {db} {className}"
 	{style}
 >
 	{@render children()}

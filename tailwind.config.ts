@@ -8,7 +8,7 @@ export default {
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	safelist: [
 		{
-			pattern: /^(bg|text|border|placeholder|ring|shadow)-\w+-\d+$/
+			pattern: /(bg|text|border|placeholder|ring|shadow)-\w+(-\d+)$/
 		}
 	],
 

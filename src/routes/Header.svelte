@@ -14,31 +14,33 @@
 	import Menu from '$lib/components/Menu/Menu.svelte';
 	import MenuPlain from '$lib/components/Menu/MenuPlain.svelte';
 	import MenuItem from '$lib/components/Menu/MenuItem.svelte';
-	import type { UserSession } from '$lib/server/auth';
 	import { menus } from './menu';
 	import LanguageSelect from './LanguageSelect.svelte';
+	import type { UserSession } from '$lib/common/user';
+	import { COOKIES } from '$lib/common/cookies';
 
-	const {
-		user
+	let {
+		user,
+		theme = $bindable()
 	}: {
 		user?: UserSession | null;
+		theme?: string | null;
 	} = $props();
 
-	let isDarkMode = $state(false);
+	let isDarkMode = $state(theme === 'dark');
 
 	const toggleTheme = () => {
 		isDarkMode = !isDarkMode;
 	};
-	let html_element: HTMLBodyElement;
 	$effect(() => {
-		html_element.classList.toggle('dark', isDarkMode);
+		theme = isDarkMode ? 'dark' : 'light';
+		document.cookie = `${COOKIES.Theme}=${theme}; path=/; max-age=31536000`;
 	});
 
 	let settingMenuOpen = $state(false);
 	let languageSelectOpen = $state(false);
 </script>
 
-<svelte:body bind:this={html_element} />
 <header
 	class="flex items-center justify-between border-b bg-gray-100 p-4 dark:border-gray-700 dark:bg-gray-900"
 >

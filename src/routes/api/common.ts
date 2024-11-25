@@ -40,3 +40,14 @@ export function success(data?: any, headers?: Record<string, string>) {
 export function failure(msg: string, code = 1, headers?: Record<string, string>) {
 	return apiResp(undefined, code, msg, 400, headers);
 }
+
+/**
+ * 设置响应缓存
+ * @param resp 响应对象
+ * @param seconds 缓存时间(秒), 默认为 3600(=1小时)
+ * @returns Response对象
+ */
+export function cache(resp: Response, seconds: number = 3600) {
+	resp.headers.set('Cache-Control', `max-age=${seconds}, public`);
+	return resp;
+}

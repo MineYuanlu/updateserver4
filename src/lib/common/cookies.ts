@@ -1,6 +1,7 @@
 export const COOKIES = {
 	Session: 'Session',
-	Robot: 'Robot'
+	Robot: 'Robot',
+	Theme: 'Theme'
 };
 export const COOKIE_PREFIX = 'US4-';
 

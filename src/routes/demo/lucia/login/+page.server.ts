@@ -6,6 +6,9 @@ import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
+import { createUser, getUserAllByName } from '$lib/server/db/funcs';
+import { generateId } from '$lib/server/common';
+import { validatePassword, validateUserName } from '$lib/common/user';
 
 export const load: PageServerLoad = async (event) => {
 	if ((await auth.getSessionTokenCookie(event))?.typ === 'USER') {
@@ -20,16 +23,14 @@ export const actions: Actions = {
 		const username = formData.get('username');
 		const password = formData.get('password');
 
-		if (!validateUsername(username)) {
+		if (!validateUserName(username)) {
 			return fail(400, { message: 'Invalid username' });
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' });
 		}
 
-		const results = await db.select().from(table.user).where(eq(table.user.username, username));
-
-		const existingUser = results.at(0);
+		const existingUser = await getUserAllByName(username);
 		if (!existingUser) {
 			return fail(400, { message: 'Incorrect username or password' });
 		}
@@ -46,7 +47,8 @@ export const actions: Actions = {
 
 		await auth.createSessionTokenCookie(event, {
 			id: existingUser.id,
-			name: existingUser.username
+			name: existingUser.username,
+			role: existingUser.role
 		});
 
 		return redirect(302, '/demo/lucia');
@@ -56,14 +58,14 @@ export const actions: Actions = {
 		const username = formData.get('username');
 		const password = formData.get('password');
 
-		if (!validateUsername(username)) {
+		if (!validateUserName(username)) {
 			return fail(400, { message: 'Invalid username' });
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password' });
 		}
 
-		const userId = generateUserId();
+		const userId = generateId('u');
 		const passwordHash = await hash(password, {
 			// recommended minimum parameters
 			memoryCost: 19456,
@@ -73,32 +75,12 @@ export const actions: Actions = {
 		});
 
 		try {
-			await db.insert(table.user).values({ id: userId, username, passwordHash });
+			await createUser(userId, username, passwordHash, 0);
 
-			await auth.createSessionTokenCookie(event, { id: userId, name: username });
+			await auth.createSessionTokenCookie(event, { id: userId, name: username, role: 0 });
 		} catch (e) {
 			return fail(500, { message: 'An error has occurred' });
 		}
 		return redirect(302, '/demo/lucia');
 	}
 };
-
-function generateUserId() {
-	// ID with 120 bits of entropy, or about the same as UUID v4.
-	const bytes = crypto.getRandomValues(new Uint8Array(15));
-	const id = encodeBase32LowerCase(bytes);
-	return id;
-}
-
-function validateUsername(username: unknown): username is string {
-	return (
-		typeof username === 'string' &&
-		username.length >= 3 &&
-		username.length <= 31 &&
-		/^[a-z0-9_-]+$/.test(username)
-	);
-}
-
-function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
-}
