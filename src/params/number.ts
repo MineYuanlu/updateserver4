@@ -1,5 +1,5 @@
 import type { ParamMatcher } from '@sveltejs/kit';
 
-export const match = function checkProjectName(v: string) {
+export const match: ParamMatcher = (v: string) => {
 	return !isNaN(parseInt(v));
-} satisfies ParamMatcher;
+};

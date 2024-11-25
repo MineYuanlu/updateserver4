@@ -1,7 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
-import type { US4ID } from '../common';
 
 function _lintType(t: _t._User_Raw | undefined): _t.User | undefined;
 /// 内部函数, 仅用于类型检查
@@ -80,7 +79,10 @@ export async function getOAuthProvider(name: string) {
 }
 
 /** 获取设置值(如果不存在则插入设置值并返回默认值) */
-export async function getSettingValue(key: string, defaultValue: string | (() => string)) {
+export async function getSettingValue(
+	key: string,
+	defaultValue: string | Buffer | (() => string | Buffer)
+) {
 	const results = await db
 		.select({ value: _t.setting.value })
 		.from(_t.setting)
@@ -90,6 +92,7 @@ export async function getSettingValue(key: string, defaultValue: string | (() =>
 	if (result) return result.value;
 
 	if (typeof defaultValue === 'function') defaultValue = defaultValue();
+	if (typeof defaultValue === 'string') defaultValue = Buffer.from(defaultValue);
 
 	return await db.transaction(async (trx) => {
 		const results = await trx

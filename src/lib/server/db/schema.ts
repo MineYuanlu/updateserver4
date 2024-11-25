@@ -3,7 +3,8 @@ import {
 	text,
 	integer,
 	primaryKey,
-	unique
+	unique,
+	blob
 } from 'drizzle-orm/sqlite-core';
 import type { UserId, UserRole } from '$lib/common/user';
 
@@ -66,7 +67,7 @@ export type OAuth = typeof oauth.$inferSelect;
 /** 系统设置 */
 export const setting = createTable('setting', {
 	key: text('key').primaryKey(),
-	value: text('value').notNull()
+	value: blob('data', { mode: 'buffer' }).notNull()
 });
 export type Setting = typeof setting.$inferSelect;
 

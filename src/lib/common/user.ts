@@ -1,4 +1,4 @@
-import type { US4ID } from '$lib/server/common';
+import type { US4ID } from './id';
 
 export const userNameReservedWords = ['login', 'logout', 'register', 'oauth'] as const;
 
