@@ -12,9 +12,11 @@
 	import { fade, fly } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
 
+	type OnClick = (e: MouseEvent) => boolean | void;
+
 	type BtnProp = {
 		label?: string;
-		onClick?: () => void;
+		onClick?: OnClick;
 		color?: PreableColorPacks;
 	};
 	type Toggle = (open?: boolean) => void;
@@ -63,7 +65,7 @@
 		 * `onClick`: 按钮点击事件, 返回 `false` 可阻止关闭弹窗
 		 */
 		btns?:
-			| { label: string; onClick?: () => boolean | void; color?: PreableColorPacks }[]
+			| { label: string; onClick?: OnClick; color?: PreableColorPacks }[]
 			| string
 			| [string]
 			| [string, string];
@@ -77,9 +79,9 @@
 		/** 关闭弹窗事件 */
 		onClose?: () => void;
 		/** 取消按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
-		onCancel?: () => boolean | void;
+		onCancel?: OnClick;
 		/** 确认按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
-		onConfirm?: () => boolean | void;
+		onConfirm?: OnClick;
 		/**是否允许点击外面关闭面板 (默认true) */
 		closeOnOutsideClick?: boolean;
 		/**是否允许按Esc关闭面板 (默认true) */
@@ -193,14 +195,14 @@
             To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
         -->
 					<div
-						class="relative w-full transform overflow-scroll rounded-lg bg-white text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:max-w-xl {className}"
+						class="relative w-full transform overflow-visible rounded-lg bg-white text-left shadow-xl transition-all dark:bg-gray-800 sm:my-8 sm:max-w-xl lg:max-w-5xl {className}"
 						in:fly={{ y: 50, opacity: 0.5, duration: 100 }}
 						out:fly={{ y: -50, opacity: 0, duration: 100 }}
 					>
 						{#if body}
 							{@render body(toggleModal)}
 						{:else}
-							<div class="bg-white px-4 pb-4 pt-5 dark:bg-gray-800 sm:p-6 sm:pb-4">
+							<div class="w-full bg-white px-4 pb-4 pt-5 dark:bg-gray-800 sm:p-6 sm:pb-4">
 								<div class="sm:flex sm:items-start">
 									{#if iconSnippet}
 										{@render iconSnippet(toggleModal)}
@@ -221,7 +223,7 @@
 											<Icon class="size-6 {txtColor}" />
 										</div>
 									{/if}
-									<div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:flex-1 sm:text-left">
+									<div class="mt-3 text-center sm:mt-0 sm:flex-1 sm:text-left">
 										{#if typeof title === 'string'}
 											<h3
 												class="text-base font-semibold text-gray-900 dark:text-gray-100"
@@ -253,7 +255,14 @@
 								class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6"
 							>
 								{#each btns as { label, onClick, color = 'blue' }, i}
-									<Button class="ml-3 justify-center" {color} onclick={onClick}>
+									<Button
+										class="ml-3 justify-center"
+										{color}
+										onclick={(e) => {
+											if (onClick && onClick(e) === false) return;
+											toggleModal(false);
+										}}
+									>
 										{label}
 									</Button>
 								{/each}

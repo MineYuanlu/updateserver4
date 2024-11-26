@@ -11,7 +11,7 @@
 	import Button from '$lib/components/Form/Button.svelte';
 	import { colorPacks } from '$lib/components/color';
 	import Input from '$lib/components/Form/Input.svelte';
-	import { getOauthProviderTypes } from '$lib/api/user';
+	import { getOauthProviderList, getOauthProviderTypes } from '$lib/api/user';
 	import Create from './Create.svelte';
 
 	// 定义 OAuth 供应商类型
@@ -168,146 +168,13 @@
 	<h1 class="mb-6 text-3xl font-bold text-gray-800 dark:text-gray-100">OAuth 管理</h1>
 
 	<Create />
-
-	<!-- 新增按钮 -->
-	<button
-		class="mb-4 flex items-center rounded-lg bg-green-500 px-4 py-2 text-white shadow hover:bg-green-600"
-		on:click={() => {
-			showAddForm = true;
-		}}
-	>
-		<PlusIcon class="mr-2 h-5 w-5" /> 新增 OAuth 供应商
-	</button>
-
-	<!-- 新增表单 -->
-	{#if showAddForm}
-		<div class="mb-6 rounded-lg bg-gray-50 p-4 shadow dark:bg-gray-700">
-			<h2 class="mb-4 text-2xl font-semibold text-gray-700 dark:text-gray-200">
-				新增 OAuth 供应商
-			</h2>
-			<div class="space-y-4">
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">名称</label>
-					<input
-						type="text"
-						bind:value={newProvider.name}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商名称"
-					/>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">描述</label>
-					<input
-						type="text"
-						bind:value={newProvider.desc}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商描述"
-					/>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">类型</label>
-					<select
-						bind:value={newProvider.type}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-					>
-						<option value="" disabled>选择供应商类型</option>
-						{#each $providerTypes as type}
-							<option value={type}>{type}</option>
-						{/each}
-					</select>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">Logo URL</label>
-					<input
-						type="text"
-						bind:value={newProvider.logo}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商 Logo URL"
-					/>
-				</div>
-				<div class="flex space-x-4">
-					<button
-						class="rounded-lg bg-blue-500 px-4 py-2 text-white shadow hover:bg-blue-600"
-						on:click={addOAuthProvider}
-					>
-						保存
-					</button>
-					<button
-						class="rounded-lg bg-gray-300 px-4 py-2 text-gray-800 shadow hover:bg-gray-400"
-						on:click={() => {
-							showAddForm = false;
-						}}
-					>
-						取消
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
-
-	<!-- 编辑表单 -->
-	{#if editProvider}
-		<div class="mb-6 rounded-lg bg-gray-50 p-4 shadow dark:bg-gray-700">
-			<h2 class="mb-4 text-2xl font-semibold text-gray-700 dark:text-gray-200">
-				编辑 OAuth 供应商
-			</h2>
-			<div class="space-y-4">
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">名称</label>
-					<input
-						type="text"
-						bind:value={editProvider.name}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商名称"
-					/>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">描述</label>
-					<input
-						type="text"
-						bind:value={editProvider.desc}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商描述"
-					/>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">类型</label>
-					<select
-						bind:value={editProvider.type}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-					>
-						<option value="" disabled>选择供应商类型</option>
-						{#each $providerTypes as type}
-							<option value={type}>{type}</option>
-						{/each}
-					</select>
-				</div>
-				<div>
-					<label class="block text-gray-600 dark:text-gray-300">Logo URL</label>
-					<input
-						type="text"
-						bind:value={editProvider.logo}
-						class="mt-1 w-full rounded-lg border bg-white px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-600"
-						placeholder="供应商 Logo URL"
-					/>
-				</div>
-				<div class="flex space-x-4">
-					<button
-						class="rounded-lg bg-blue-500 px-4 py-2 text-white shadow hover:bg-blue-600"
-						on:click={updateOAuthProvider}
-					>
-						更新
-					</button>
-					<button
-						class="rounded-lg bg-gray-300 px-4 py-2 text-gray-800 shadow hover:bg-gray-400"
-						on:click={cancelEdit}
-					>
-						取消
-					</button>
-				</div>
-			</div>
-		</div>
-	{/if}
+	{#await getOauthProviderList()}
+		<div class="flex items-center justify-center">loading...</div>
+	{:then list}
+		{#each list as { name, desc, type, logo }, idx (name)}
+			1
+		{/each}
+	{/await}
 
 	<!-- OAuth 供应商列表 -->
 	<div class="overflow-x-auto">

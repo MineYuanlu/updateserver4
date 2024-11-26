@@ -154,7 +154,7 @@
 			{placeholder}
 			bind:value
 			{disabled}
-			class="flex-1 border-0 px-2 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-0 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-blue-500 {inputClass}"
+			class="flex-1 rounded-md border-0 px-2 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-0 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-blue-500 {inputClass}"
 		/>
 
 		<!-- 后缀 -->
