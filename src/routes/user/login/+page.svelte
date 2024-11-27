@@ -1,7 +1,12 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+	import { getOauthProviderList } from '$lib/api/user';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
+	import SimpleIcon from '$lib/components/Icons/SimpleIcon.svelte';
+	import { GithubLogo } from 'radix-icons-svelte';
+	import { siGithub } from 'simple-icons';
 
 	let username = '';
 	let password = '';
@@ -53,26 +58,24 @@
 			<Button class="w-full py-3 font-semibold">注册</Button>
 		</div>
 
-		<!-- 登录按钮 -->
-		<button
-			on:click={handleLogin}
-			class="mb-4 w-full rounded-lg bg-blue-500 py-3 font-semibold text-white shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-		>
-			登录
-		</button>
-
-		<!-- 注册按钮 -->
-		<button
-			on:click={handleRegister}
-			class="mb-6 w-full rounded-lg bg-gray-200 py-3 font-semibold text-gray-800 shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
-		>
-			注册
-		</button>
-
 		<!-- 第三方登录 -->
 		<Divider text="第三方登录" />
 		<div class="flex justify-center space-x-4">
-			{#each thirdPartyProviders as provider}
+			{#if browser}
+				{#await getOauthProviderList() then providers}
+					{#each providers as { name, logo, desc }}
+						<Button
+							class="flex w-full items-center  justify-center rounded-lg px-4  py-3 text-center font-semibold "
+							color="white"
+						>
+							<SimpleIcon icon={siGithub} class="mr-2 h-5 w-5 filter dark:invert" />
+							<!-- <img src={logo} alt={name} class="mr-2 h-5 w-5 filter dark:invert" /> -->
+							<span>{name}</span>
+						</Button>
+					{/each}
+				{/await}
+			{/if}
+			<!-- {#each thirdPartyProviders as provider}
 				<button
 					on:click={provider.action}
 					class="flex items-center rounded-lg bg-gray-100 px-4 py-2 text-gray-700 shadow hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
@@ -80,7 +83,7 @@
 					<img src={provider.logo} alt={provider.name} class="mr-2 h-5 w-5" />
 					{provider.name}
 				</button>
-			{/each}
+			{/each} -->
 		</div>
 	</div>
 </section>

@@ -60,7 +60,7 @@ export type OAuthProviderType = {
 
 const Github: OAuthProviderType = {
 	name: 'GitHub',
-	logo: 'https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png',
+	logo: '/github.svg',
 	authorize: {
 		origin: 'https://github.com',
 		path: '/login/oauth/authorize',
