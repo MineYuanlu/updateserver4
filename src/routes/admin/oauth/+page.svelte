@@ -13,6 +13,7 @@
 	import Input from '$lib/components/Form/Input.svelte';
 	import { getOauthProviderList, getOauthProviderTypes } from '$lib/api/user';
 	import Create from './Create.svelte';
+	import Table from '$lib/components/Table/Table.svelte';
 
 	// 定义 OAuth 供应商类型
 	const providerTypes = writable<string[]>([]);
@@ -168,93 +169,50 @@
 	<h1 class="mb-6 text-3xl font-bold text-gray-800 dark:text-gray-100">OAuth 管理</h1>
 
 	<Create />
+	<Table
+		headers={['名称', '描述', '类型', '操作']}
+		data={async () => {
+			const data = await getOauthProviderList();
+			return {
+				data: data.map((it) => [it.name, it.desc, [it.logo, it.type], undefined]),
+				total: data.length
+			};
+		}}
+	>
+		{#snippet cell(data, row, col, tmp)}
+			<td class="px-4 py-2 text-center">
+				{#if data === null && tmp}
+					&nbsp;
+				{:else if col === 2}
+					<span class="flex items-center justify-center">
+						<img src={data[0]} alt={data[1]} class="mr-1 h-8 w-8" />
+						<span> {data[1]}</span>
+					</span>
+				{:else if col === 3}
+					<Button>编辑</Button>
+				{:else}
+					{data}
+				{/if}
+				<!--
+				{:else if typeof data === 'string'}
+					{data}
+				{:else if typeof data === 'undefined'}
+					{data}
+				{:else if Array.isArray(data)}
+					{@const [name, logo] = data}
+					<span class="flex items-center justify-center">
+						<img src={logo} alt={name} class="mr-5 h-8 w-8" />
+						<span> {name}</span>
+					</span>
+				{/if} -->
+			</td>
+		{/snippet}
+	</Table>
 	{#await getOauthProviderList()}
 		<div class="flex items-center justify-center">loading...</div>
 	{:then list}
-		{#each list as { name, desc, type, logo }, idx (name)}
+		<!-- {#each list as { name, desc, type, logo }, idx (name)}
 			1
-		{/each}
+		{/each} -->
 	{/await}
-
-	<!-- OAuth 供应商列表 -->
-	<div class="overflow-x-auto">
-		<table class="min-w-full rounded-lg bg-white shadow dark:bg-gray-800">
-			<thead>
-				<tr>
-					<th
-						class="bg-gray-200 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-						>名称</th
-					>
-					<th
-						class="bg-gray-200 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-						>描述</th
-					>
-					<th
-						class="bg-gray-200 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-						>类型</th
-					>
-					<th
-						class="bg-gray-200 px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-						>Logo</th
-					>
-					<th
-						class="bg-gray-200 px-6 py-3 text-center text-xs font-medium uppercase tracking-wider text-gray-600 dark:bg-gray-700 dark:text-gray-300"
-						>操作</th
-					>
-				</tr>
-			</thead>
-			<tbody>
-				{#each $oauthProviders as provider}
-					<tr class="border-b dark:border-gray-700">
-						<td class="px-6 py-4 text-gray-700 dark:text-gray-200">{provider.name}</td>
-						<td class="px-6 py-4 text-gray-700 dark:text-gray-200">{provider.desc}</td>
-						<td class="px-6 py-4 text-gray-700 dark:text-gray-200">{provider.type}</td>
-						<td class="px-6 py-4">
-							<img
-								src={provider.logo}
-								alt={`${provider.name} Logo`}
-								class="h-8 w-8 object-contain"
-							/>
-						</td>
-						<td class="space-x-2 px-6 py-4 text-center">
-							<button
-								class="flex items-center justify-center rounded-lg bg-yellow-500 px-3 py-1 text-white shadow hover:bg-yellow-600"
-								on:click={() => startEditOAuthProvider(provider)}
-								title="编辑"
-							>
-								<PencilIcon class="h-4 w-4" />
-							</button>
-							<button
-								class="flex items-center justify-center rounded-lg bg-red-500 px-3 py-1 text-white shadow hover:bg-red-600"
-								on:click={() => deleteOAuthProvider(provider.id)}
-								title="删除"
-							>
-								<TrashIcon class="h-4 w-4" />
-							</button>
-						</td>
-					</tr>
-				{/each}
-			</tbody>
-		</table>
-	</div>
 </div>
-
-<style>
-	/* 自定义滚动条样式（可选） */
-	::-webkit-scrollbar {
-		width: 8px;
-	}
-
-	::-webkit-scrollbar-track {
-		background: #f1f1f1;
-	}
-
-	::-webkit-scrollbar-thumb {
-		background: #888;
-		border-radius: 4px;
-	}
-
-	::-webkit-scrollbar-thumb:hover {
-		background: #555;
-	}
-</style>

@@ -13,7 +13,11 @@ export default {
 	],
 
 	theme: {
-		extend: {}
+		extend: {
+			backdropBlur: {
+				xs: '0.8px'
+			}
+		}
 	},
 
 	plugins: [typography, forms, containerQueries]

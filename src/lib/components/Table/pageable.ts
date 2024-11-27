@@ -1,8 +1,17 @@
 type DataType = string | number;
+type MaybePromise<T> = T | Promise<T>;
+/**
+ * 数据获取器
+ * @param offset 请求数据的起始位置(从0开始)
+ * @param length 请求数据的长度
+ * @returns `T[]`: 请求段数据, 尾页允许返回少于length条数据, 超出最大页数允许返回空数组
+ * @returns `total`: 返回总条数, 仅在可以明确获取总条数时设置. 负数视为undefined.
+ * @returns `guessTotal`: 猜测总条数, 不能小于最终的实际条数. 负数视为undefined.
+ */
 export type Fetcher<T> = (
 	offset: number,
 	length: number
-) => Promise<T[] | { total: number; data: T[] }> | T[] | { total: number; data: T[] };
+) => MaybePromise<T[] | { total?: number; data: T[]; guessTotal?: number }>;
 
 export interface Pageable<T> {
 	getTotal(): number;
@@ -84,12 +93,19 @@ export class PageableFetcher<T> implements Pageable<T> {
 		}
 
 		const resp = await this.fetcher(offset, length);
-		const { data, total } = Array.isArray(resp) ? { data: resp, total: -1 } : resp;
+		const { data, total, guessTotal } = Array.isArray(resp) ? { data: resp } : resp;
 
 		if (this.cacheData) for (let i = 0; i < data.length; i++) this.cache[offset + i] = data[i];
 		for (let i = 0; i < data.length; i++) this.loadedRow[offset + i] = true;
 
-		if (total >= 0) {
+		if (
+			typeof guessTotal === 'number' &&
+			guessTotal >= 0 &&
+			(this.totalUpperBound < 0 || guessTotal < this.totalUpperBound)
+		)
+			this.totalUpperBound = guessTotal;
+
+		if (typeof total === 'number' && total >= 0) {
 			this.total = this.totalUpperBound = total;
 		} else if (0 < data.length && data.length < length) {
 			this.total = this.totalUpperBound = offset + data.length;

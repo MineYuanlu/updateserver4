@@ -1,5 +1,5 @@
 <script lang="ts">
-	import BindValue from '$lib/components/BindValue.svelte';
+	import BindValue from '$lib/components/BindValue/BindValue.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
 
 	let value = '';

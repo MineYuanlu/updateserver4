@@ -3,7 +3,8 @@ import { i18n } from '$lib/i18n';
 import type { Handle } from '@sveltejs/kit';
 import { COOKIES } from '$lib/common/cookies';
 import { decodeJwt } from 'jose/jwt/decode';
-import { deleteSessionTokenCookie, type UserSession } from '$lib/server/auth';
+import { deleteSessionTokenCookie } from '$lib/server/auth';
+import type { UserSession } from '$lib/common/user';
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const jwt = event.cookies.get(COOKIES.Session);

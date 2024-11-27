@@ -32,7 +32,7 @@
 />
 
 <h3>Table</h3>
-<!-- <h6>Immediate</h6>
+<h6>Immediate</h6>
 <Table
 	hover
 	striped
@@ -43,7 +43,7 @@
 		['Jane', i, 'Female'],
 		['Bob', i, 'Male']
 	])}
-/> -->
+/>
 <h6>Fetcher</h6>
 
 <Table
@@ -56,6 +56,9 @@
 		await new Promise((resolve) => setTimeout(resolve, 1000));
 		const max = 45;
 		len = Math.min(len, max - off);
-		return Array.from({ length: len }).map(() => ['John', 25, 'Male']);
+		return {
+			data: Array.from({ length: len }).map((_, i) => ['John', off + i, 'Male']),
+			total: max
+		};
 	}}
 />

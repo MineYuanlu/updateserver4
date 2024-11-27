@@ -1,10 +1,13 @@
 <script lang="ts">
-	import { page } from '$app/stores';
+	import { pushState, replaceState } from '$app/navigation';
+	import { onMount } from 'svelte';
+	import { update } from './updater';
+	import { browser } from '$app/environment';
 
 	let {
 		bind,
 		value = $bindable(),
-		replace: replaceState = false,
+		replace = false,
 		handler = (newVal: any) => (value = newVal)
 	}: {
 		/**需要绑定的查询参数的名称*/
@@ -19,26 +22,34 @@
 
 	function updateURL() {
 		if (!bind) return;
-		const old = $page.url.searchParams.get(bind);
-		if (old === value) return;
+		const old = new URLSearchParams(window.location.search).get(bind);
 		console.log('update bind', old, value);
+		if (old === value) return;
 		const url = new URL(window.location.href);
 		url.searchParams.set(bind, value);
-		if (replaceState) window.history.replaceState({}, '', url.toString());
-		else window.history.pushState({}, '', url.toString());
+
+		if (replace) replaceState(url.toString(), {});
+		else pushState(url.toString(), {});
+		$update++;
 	}
 
 	let oldValue = value;
 
 	$effect(() => {
+		console.log('bind value', value, oldValue);
 		if (oldValue !== value) {
 			updateURL();
 			oldValue = value;
 		}
 	});
-	$effect(() => {
-		const newValue = $page.url.searchParams.get(bind);
+	function f(..._: any) {
+		console.log('popstate bind value', value, oldValue);
+		const newValue = new URLSearchParams(window.location.search).get(bind);
 		if (oldValue !== newValue) handler(newValue);
+	}
+	if (browser) f();
+	onMount(() => {
+		return update.subscribe(() => f());
 	});
 </script>
 
