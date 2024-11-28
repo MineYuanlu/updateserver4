@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
+	import { goto } from '$app/navigation';
 	import { getOauthProviderList } from '$lib/api/user';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
@@ -67,6 +68,9 @@
 						<Button
 							class="flex w-full items-center  justify-center rounded-lg px-4  py-3 text-center font-semibold "
 							color="white"
+							onclick={() => {
+								goto(`./oauth/${name}`);
+							}}
 						>
 							<SimpleIcon icon={siGithub} class="mr-2 h-5 w-5 filter dark:invert" />
 							<!-- <img src={logo} alt={name} class="mr-2 h-5 w-5 filter dark:invert" /> -->

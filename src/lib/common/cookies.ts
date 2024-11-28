@@ -1,7 +1,8 @@
 export const COOKIES = {
 	Session: 'Session',
 	Robot: 'Robot',
-	Theme: 'Theme'
+	Theme: 'Theme',
+	OAuthState: 'OAuthState'
 };
 export const COOKIE_PREFIX = 'US4-';
 

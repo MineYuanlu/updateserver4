@@ -1,7 +1,9 @@
 type ServerCfg = {
 	client_id: string;
-	client_secret: string;
 	redirect_uri: string;
+};
+type ServerSecretCfg = {
+	client_secret: string;
 };
 type PreUserCfg = {
 	state: string;
@@ -13,8 +15,6 @@ type LoginedUserCfg = {
 	access_token: string;
 	token_type: string;
 	scope: string;
-	id: string;
-	name: string;
 };
 
 export type OAuthReqDef<Callback extends string, Param extends Record<string, any>> = {
@@ -50,11 +50,11 @@ export type OAuthProviderType = {
 	authorize: OAuthReqDef<'code' | 'state', ServerCfg & PreUserCfg>;
 	access_token: OAuthReqDef<
 		'access_token' | 'token_type' | 'scope',
-		ServerCfg & PreUserCfg & AuthedUserCfg
+		ServerCfg & ServerSecretCfg & PreUserCfg & AuthedUserCfg
 	>;
 	get_user: OAuthReqDef<
 		'id' | 'name' | 'info',
-		ServerCfg & PreUserCfg & AuthedUserCfg & LoginedUserCfg
+		ServerCfg & ServerSecretCfg & PreUserCfg & AuthedUserCfg & LoginedUserCfg
 	>;
 };
 
@@ -113,13 +113,47 @@ export const OAuthProviderTypes: readonly OAuthProviderType[] = [Github] as cons
 export const OAuthProviderTypeNames = OAuthProviderTypes.map((p) => p.name);
 
 /**
+ * 构建OAuth请求URL, 仅支持纯GET请求, 且不支持headers
+ *
+ * 用于返回给前端跳转
+ * @param define OAuth请求定义
+ * @param param oauth请求参数
+ * @returns 请求URL
+ */
+export function buildURL<Param extends Record<string, any>>(
+	define: OAuthReqDef<any, Param>,
+	param: Param
+): string {
+	if (define.method !== 'GET') throw new Error('Only GET method is supported');
+	if (define.headers) throw new Error('Headers is not supported in buildURL');
+
+	const query = typeof define.query === 'function' ? define.query(param) : define.query;
+	const url = _url(define.origin, define.path, query);
+
+	return url.toString();
+}
+
+export async function parseResp<Callback extends string>(
+	define: OAuthReqDef<Callback, any>,
+	data: any
+): Promise<Record<Callback, string>> {
+	const result: Record<Callback, string> = {} as any;
+	for (const name in define.callback) {
+		const cb = define.callback[name];
+		if (typeof cb === 'function') result[name] = cb(data);
+		else if (name in data) result[name] = data[cb];
+		else throw new Error(`Failed to get callback value for '${name}'`);
+	}
+	return result;
+}
+/**
  * 执行OAuth请求
  * @param define OAuth请求定义
  * @param param oauth请求参数
  * @param fetchParam fetch请求选项(可选)
  * @returns 请求结果
  */
-async function execute<Callback extends string, Param extends Record<string, any>>(
+export async function execute<Callback extends string, Param extends Record<string, any>>(
 	define: OAuthReqDef<Callback, Param>,
 	param: Param,
 	fetchParam?: RequestInit
@@ -138,16 +172,10 @@ async function execute<Callback extends string, Param extends Record<string, any
 		const url = _url(define.origin, define.path);
 		resp = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body), ...fetchParam });
 	}
+
 	if (!resp.ok) throw new Error(`Failed to fetch ${resp.url}: ${resp.status} ${resp.statusText}`);
 	const data = await resp.json();
-	const result: Record<Callback, string> = {} as any;
-	for (const name in define.callback) {
-		const cb = define.callback[name];
-		if (typeof cb === 'function') result[name] = cb(data);
-		else if (name in data) result[name] = data[cb];
-		else throw new Error(`Failed to get callback value for '${name}' from '${resp.url}'`);
-	}
-	return result;
+	return parseResp(define, data);
 }
 
 /** 构造URL */

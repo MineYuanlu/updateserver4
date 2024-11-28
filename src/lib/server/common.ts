@@ -68,3 +68,30 @@ export function generateId<T extends US4IDType>(type: T): US4ID<T> {
 	const id = encodeBase32LowerCase(bytes);
 	return (type + id) as any;
 }
+
+const baseNumberChars = '0123456789'; //10
+const baseLowerChars = 'abcdefghijklmnopqrstuvwxyz'; //26
+const baseUpperChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'; //26
+export const base10Chars = baseNumberChars;
+export const base26Chars = baseLowerChars;
+export const base36Chars = baseNumberChars + baseLowerChars;
+export const base62Chars = baseNumberChars + baseLowerChars + baseUpperChars;
+export const baseChars = {
+	10: base10Chars,
+	26: base26Chars,
+	36: base36Chars,
+	62: base62Chars
+} as const;
+export function generateRandomString(
+	length: number = 16,
+	chars: string | keyof typeof baseChars = base36Chars
+) {
+	if (typeof chars === 'number') chars = baseChars[chars];
+	const bytes = crypto.randomBytes(length);
+	let result = '';
+
+	for (let i = 0; i < bytes.length; i++) {
+		result += chars[bytes[i] % chars.length];
+	}
+	return result.slice(0, length);
+}

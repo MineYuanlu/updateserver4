@@ -13,6 +13,8 @@
 	"copyright": "Copyright © 2024 Update Server 4. All rights reserved.",
 	"menu_project": "project",
 	"menu_admin": "admin",
+	"api_user_oauth_login_provider__err_not_found": "Can't find login provider named {name}",
+	"api_user_oauth_login_provider__err_invalid_provider": "Internal error: invalid provider {type}",
 	"page_index__title": "Manage your app updates with ease and efficiency.",
 	"page_index__description": "We provide developers with streamlined update support and information collection services, helping you focus on software development and enhancing the user experience.",
 	"page_index__btn_start": "Get Started Now."
