@@ -1,6 +1,7 @@
 import { and, eq } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
+import { defaultUserRole } from '$lib/common/user';
 
 function _lintType(t: _t._User_Raw | undefined): _t.User | undefined;
 function _lintType(t: _t._User_Info_Raw | undefined): _t._User_Info | undefined;
@@ -29,8 +30,8 @@ export async function getUserAllByName(name: string) {
 export function createUser(
 	id: _t.User['id'],
 	name: string,
-	password: string,
-	role: _t.User['role'] = 0
+	password: string | null = null,
+	role: _t.User['role'] = defaultUserRole
 ) {
 	return db.insert(_t.user).values({ id, name, passwordHash: password, role }).execute();
 }
@@ -91,8 +92,75 @@ export async function getUserInfoByOAuth(provider: string, provider_id: string) 
 	return _lintType(ret.at(0));
 }
 
-export async function loginByOAuth() {
-	db.insert(_t.oauth);
+/**
+ * 注册OAuth用户
+ *
+ * 此方法仅注册OAuth侧信息, 将uid置空, 需要链接到实际用户时再更新uid
+ * @param id OAuthID
+ * @param provider OAuth提供商名称
+ * @param info OAuth用户信息
+ */
+export async function createOAuthUser(id: string, provider: string, info: string) {
+	return await db
+		.insert(_t.oauth)
+		.values({ id, provider, info })
+		.onConflictDoUpdate({
+			target: [_t.oauth.id, _t.oauth.provider],
+			set: { info }
+		})
+		.execute();
+}
+
+/**
+ * 链接OAuth用户到实际用户
+ * @param uid 实际用户ID
+ * @param provider OAuth提供商名称
+ * @param provider_id OAuth用户ID
+ */
+export async function linkOAuthUser(uid: _t.User['id'], provider: string, provider_id: string) {
+	return await db
+		.update(_t.oauth)
+		.set({ uid })
+		.where(and(eq(_t.oauth.provider, provider), eq(_t.oauth.id, provider_id)))
+		.execute();
+}
+
+/**
+ * 创建新的用户并与OAuth用户关联, 如果OAuth用户已经关联则不创建新用户
+ * @param uid 实际用户ID
+ * @param provider OAuth提供商名称
+ * @param provider_id OAuth用户ID
+ * @return 已关联的用户ID / null
+ */
+export async function linkOAuthToNewUser(
+	uid: _t.User['id'],
+	provider: string,
+	provider_id: string,
+	username: string,
+	role: _t.User['role'] = defaultUserRole
+) {
+	return await db.transaction(
+		async (trx) => {
+			const ret = await trx
+				.select({ uid: _t.oauth.uid })
+				.from(_t.oauth)
+				.where(and(eq(_t.oauth.provider, provider), eq(_t.oauth.id, provider_id)))
+				.execute();
+			const oldUid = ret.at(0)?.uid;
+			if (oldUid) return oldUid;
+
+			await trx.insert(_t.user).values({ id: uid, name: username, role }).execute();
+
+			await trx
+				.update(_t.oauth)
+				.set({ uid })
+				.where(and(eq(_t.oauth.provider, provider), eq(_t.oauth.id, provider_id)))
+				.execute();
+
+			return null;
+		},
+		{ behavior: 'exclusive' }
+	);
 }
 
 /** 获取设置值(如果不存在则插入设置值并返回默认值) */

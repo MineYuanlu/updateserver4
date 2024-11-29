@@ -142,7 +142,7 @@ export async function parseResp<Callback extends string>(
 		const cb = define.callback[name];
 		if (typeof cb === 'function') result[name] = cb(data);
 		else if (name in data) result[name] = data[cb];
-		else throw new Error(`Failed to get callback value for '${name}'`);
+		else throw new Error(`Failed to get callback value for '${name}': ${JSON.stringify(data)}`);
 	}
 	return result;
 }
@@ -161,7 +161,9 @@ export async function execute<Callback extends string, Param extends Record<stri
 	let resp: Response;
 	if (define.method === 'GET') {
 		const query = typeof define.query === 'function' ? define.query(param) : define.query;
-		const headers = typeof define.headers === 'function' ? define.headers(param) : define.headers;
+		let headers = typeof define.headers === 'function' ? define.headers(param) : define.headers;
+		if (!headers) headers = {};
+		headers['Accept'] = headers['Accept'] || 'application/json';
 		const url = _url(define.origin, define.path, query);
 		resp = await fetch(url, { headers, method: 'GET', ...fetchParam });
 	} else {
@@ -169,12 +171,19 @@ export async function execute<Callback extends string, Param extends Record<stri
 		let headers = typeof define.headers === 'function' ? define.headers(param) : define.headers;
 		if (!headers) headers = {};
 		headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+		headers['Accept'] = headers['Accept'] || 'application/json';
 		const url = _url(define.origin, define.path);
 		resp = await fetch(url, { headers, method: 'POST', body: JSON.stringify(body), ...fetchParam });
 	}
 
 	if (!resp.ok) throw new Error(`Failed to fetch ${resp.url}: ${resp.status} ${resp.statusText}`);
-	const data = await resp.json();
+	let data;
+	try {
+		data = await resp.text();
+		data = JSON.parse(data);
+	} catch (e) {
+		throw new Error(`Failed to parse response data: ${data}`);
+	}
 	return parseResp(define, data);
 }
 

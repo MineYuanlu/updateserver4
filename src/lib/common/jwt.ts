@@ -1,19 +1,13 @@
-export type UserInfo = {
-	id: UserId;
-	name: string;
-	role: UserRole;
-};
-export type UserSession = {
-	typ: 'USER';
-} & UserInfo;
-
-export const types = {
+export const jwtTypes = {
+	/**用户信息 */
 	U: 'User',
+	/**机器人信息 */
 	R: 'Robot',
-	OAUTH: 'OAuth'
+	/**OAuth注册信息: 在用户Oauth登录后, 在本平台注册时的临时token */
+	OAUTH_R: 'OAuthR'
 };
-export type Types = keyof typeof types;
+export type JwtTypes = keyof typeof jwtTypes;
 
-export type TokenInfo<Data extends Record<string, unknown>, Type extends Types> = {
+export type JwtInfo<Data extends Record<string, unknown>, Type extends JwtTypes> = {
 	typ: Type;
 } & Data;

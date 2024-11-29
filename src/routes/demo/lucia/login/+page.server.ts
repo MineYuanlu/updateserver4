@@ -32,6 +32,12 @@ export const actions: Actions = {
 
 		const existingUser = await getUserAllByName(username);
 		if (!existingUser) {
+			// 用户不存在
+			return fail(400, { message: 'Incorrect username or password' });
+		}
+
+		if (!existingUser.passwordHash) {
+			//未开启密码验证
 			return fail(400, { message: 'Incorrect username or password' });
 		}
 
@@ -42,12 +48,13 @@ export const actions: Actions = {
 			parallelism: 1
 		});
 		if (!validPassword) {
+			// 密码错误
 			return fail(400, { message: 'Incorrect username or password' });
 		}
 
 		await auth.createSessionTokenCookie(event, {
 			id: existingUser.id,
-			name: existingUser.username,
+			name: existingUser.name,
 			role: existingUser.role
 		});
 

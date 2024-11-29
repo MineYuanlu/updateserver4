@@ -1,4 +1,5 @@
 import type { US4ID } from './id';
+import type { JwtInfo } from './jwt';
 
 export const userNameReservedWords = ['login', 'logout', 'register', 'oauth'] as const;
 
@@ -30,12 +31,11 @@ export const USER_ROLES = {
 } as const;
 export type UserRole = keyof typeof USER_ROLES;
 export type UserId = US4ID<'u'>;
+export const defaultUserRole: UserRole = 0;
 
 export type UserInfo = {
 	id: UserId;
 	name: string;
 	role: UserRole;
 };
-export type UserSession = {
-	typ: 'USER';
-} & UserInfo;
+export type UserSession = JwtInfo<UserInfo, 'U'>;

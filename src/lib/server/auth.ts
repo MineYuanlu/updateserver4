@@ -10,9 +10,9 @@ export async function createSession(user: UserInfo, expiresAt?: Date) {
 		expiresAt = new Date(Date.now() + expInS * 1000);
 	}
 	const token = await new SignJWT({
-		typ: 'USER',
+		typ: 'U',
 		...user
-	})
+	} satisfies UserSession)
 		.setProtectedHeader({ alg: await getSetting('JWT_ALGORITHM') })
 		.setIssuedAt()
 		.setExpirationTime(expiresAt)
@@ -22,7 +22,7 @@ export async function createSession(user: UserInfo, expiresAt?: Date) {
 
 export async function parseSession(token: string) {
 	const { payload } = await jwtVerify<UserSession>(token, await getSetting('JWT_SECRET'));
-	if (payload.typ !== 'USER') throw new Error('Invalid token type');
+	if (payload.typ !== 'U') throw new Error('Invalid token type');
 	return payload;
 }
 

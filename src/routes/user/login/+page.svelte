@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { browser, dev } from '$app/environment';
 	import { goto } from '$app/navigation';
-	import { getOauthProviderList } from '$lib/api/user';
+	import { getOauthProviderList, loginOauth } from '$lib/api/user';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
@@ -68,11 +68,14 @@
 						<Button
 							class="flex w-full items-center  justify-center rounded-lg px-4  py-3 text-center font-semibold "
 							color="white"
-							onclick={() => {
-								goto(`./oauth/${name}`);
+							onclick={async () => {
+								const url = await loginOauth(name);
+								if (dev) console.log('Redirecting to', url);
+								if (url) window.location.href = url;
+								// if (url) window.open(url);
 							}}
 						>
-							<Si icon={siGithub} class="mr-2 h-5 w-5 filter dark:invert" />
+							<Si icon={siGithub} class="mr-2 h-5 w-5 dark:text-white" />
 							<!-- <img src={logo} alt={name} class="mr-2 h-5 w-5 filter dark:invert" /> -->
 							<span>{name}</span>
 						</Button>

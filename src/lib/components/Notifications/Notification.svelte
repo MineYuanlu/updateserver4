@@ -46,13 +46,7 @@
 	import AnyIcon, { type AnyIconType } from '../Icons/AnyIcon.svelte';
 	import type { Snippet } from 'svelte';
 	import Button from '../Form/Button.svelte';
-	import {
-		colorPack2Class,
-		type BorderColor,
-		type ColorPack,
-		type DarkBorderColor,
-		type PreSetColorPacks
-	} from '../color';
+	import { type ColorPack, type PreSetColorPacks } from '../color';
 	import Openable, { type OpenableProps } from '../base/Openable.svelte';
 
 	let {

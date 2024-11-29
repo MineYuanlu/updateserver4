@@ -1,8 +1,6 @@
-import type { RequestHandler } from '../$types';
-import { getOAuthProvider, getUserInfoByOAuth } from '$lib/server/db/funcs';
-import { buildURL, execute, OAuthProviderTypes, parseResp } from '$lib/server/oauth';
-import { error, redirect } from '@sveltejs/kit';
-import { generateRandomString } from '$lib/server/common';
+import type { RequestHandler } from './$types';
+import { createOAuthUser, getOAuthProvider, getUserInfoByOAuth } from '$lib/server/db/funcs';
+import { execute, OAuthProviderTypes, parseResp } from '$lib/server/oauth';
 import {
 	api_user_oauth_login_provider__err_not_found as err_not_found,
 	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
@@ -11,9 +9,11 @@ import {
 } from '$lib/paraglide/messages.js';
 import { COOKIES } from '$lib/common/cookies';
 import { failure, success } from '../../../../../common';
-import { createSessionTokenCookie } from '$lib/server/auth';
+import { oauthRegisterJwt, userJwt } from '$lib/server/jwt';
 
-export const GET: RequestHandler = async (req) => {
+export const POST: RequestHandler = async (req) => {
+	const body = await req.request.json();
+
 	const state_info = req.cookies.get(COOKIES.OAuthState);
 	if (!state_info) return failure(err_no_cookie(), 1);
 
@@ -26,10 +26,7 @@ export const GET: RequestHandler = async (req) => {
 	const type = OAuthProviderTypes.find((t) => t.name === provider.type);
 	if (!type) return failure(err_invalid_provider({ type: provider.type }), 2);
 
-	const { code, state } = await parseResp(
-		type.authorize,
-		Object.fromEntries(req.url.searchParams.entries())
-	);
+	const { code, state } = await parseResp(type.authorize, body);
 
 	if (state !== req_state) return failure(err_bad_state(), 1);
 
@@ -54,7 +51,15 @@ export const GET: RequestHandler = async (req) => {
 
 	const user_info = await getUserInfoByOAuth(provider_name, id);
 	if (user_info) {
-		await createSessionTokenCookie(req, user_info);
-		return success();
+		// 已有用户, 登录
+		await userJwt.createJwtCookie(req, user_info);
+		return success(true);
 	}
+	// 新用户, 注册
+	await createOAuthUser(id, provider_name, info);
+	const jwt = await oauthRegisterJwt.createJwt({
+		id,
+		p: provider_name
+	});
+	return success({ jwt, name });
 };

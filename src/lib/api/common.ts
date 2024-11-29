@@ -1,17 +1,18 @@
 import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 
-function error(path: string, msg: string, data: any) {
+function error(path: string, msg: string, data: any, showErr: number) {
 	console.error('API Error:', path, msg, data);
-	addNotification(
-		{
-			title: 'API Error',
-			message: msg,
-			type: 'error',
-			icon: true,
-			showClose: true
-		},
-		10 * 1000
-	);
+	if (showErr > 0)
+		addNotification(
+			{
+				title: 'API Error',
+				message: msg,
+				type: 'error',
+				icon: true,
+				showClose: true
+			},
+			showErr
+		);
 }
 type CommonResp<T = any> = {
 	data?: T;
@@ -29,7 +30,7 @@ function isSuccess(obj: unknown): obj is CommonResp {
  * @param method 请求方法
  * @param defaultVal 错误时的默认返回值
  * @param data 请求参数
- * @param slient 是否静默错误
+ * @param showErr 显示错误时间, ms, 默认10秒
  * @returns 请求结果
  */
 export const apiReq = async <T>(
@@ -37,7 +38,7 @@ export const apiReq = async <T>(
 	method: 'GET' | 'POST',
 	defaultVal: T,
 	data?: string[][] | Record<string, string> | string | null,
-	slient = false
+	showErr = 10 * 1000
 ) => {
 	let response: Response;
 	if (method === 'GET') {
@@ -52,13 +53,25 @@ export const apiReq = async <T>(
 			body: JSON.stringify(data)
 		});
 	}
+	let resp: string = '';
+	let json: any = null;
+	try {
+		resp = await response.text();
+		json = JSON.parse(resp);
+	} catch (e) {}
+
 	if (!response.ok) {
-		if (!slient) error(path, `${response.status} - ${response.statusText}`, response);
+		error(
+			path,
+			json?.msg || `${response.status} - ${response.statusText}`,
+			{ response, body: json ?? resp },
+			showErr
+		);
 		return defaultVal;
 	}
-	const json = await response.json();
+
 	if (!isSuccess(json)) {
-		if (!slient) error(path, json?.msg || 'unknown error', json);
+		error(path, json?.msg || 'unknown error', json, showErr);
 		return defaultVal;
 	}
 	return json.data as T;

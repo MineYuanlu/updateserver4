@@ -60,7 +60,8 @@
 		headers={['Name', 'Age', 'Gender']}
 		data={async (off, len) => {
 			console.log('Fetching data', off, len);
-			await new Promise((resolve) => setTimeout(resolve, 1000));
+			await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
+			console.log('OK');
 			const max = 45;
 			len = Math.min(len, max - off);
 			return {
@@ -83,7 +84,18 @@
 					{type}
 					icon
 					showClose
-					preClose={() => false}
+					preClose={() => {
+						addNotification({
+							title: 'Demo禁止关闭',
+							message: `关闭事件生效了 ${type}`
+						});
+						return false;
+					}}
+					btn1={i === 0 ? 'Btn1' : undefined}
+					action1={() => {
+						console.log('Btn1 clicked');
+					}}
+					btn2={i === 0 ? 'Btn2' : undefined}
 				/>
 				{#each [si1password, si2k, siGithub] as icon}
 					<Notification
@@ -92,7 +104,15 @@
 						{type}
 						{icon}
 						showClose
-						preClose={() => false}
+						preClose={() => {
+							addNotification({
+								title: 'Demo禁止关闭',
+								message: `关闭事件生效了 ${type} ${icon.title}`,
+								type,
+								icon
+							});
+							return false;
+						}}
 					/>
 				{/each}
 			{/each}

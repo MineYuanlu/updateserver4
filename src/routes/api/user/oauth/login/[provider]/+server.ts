@@ -10,7 +10,7 @@ import {
 } from '$lib/paraglide/messages.js';
 import { failure, success } from '../../../../common';
 
-export const GET: RequestHandler = async (req) => {
+export const POST: RequestHandler = async (req) => {
 	const provider_name = req.params.provider;
 	const provider = await getOAuthProvider(provider_name);
 	if (!provider) return failure(err_not_found({ name: provider_name }), 1);
@@ -20,7 +20,7 @@ export const GET: RequestHandler = async (req) => {
 
 	const redirect_uri = (() => {
 		const url = new URL(provider.redirectUri);
-		url.pathname = `/api/user/oauth/login/${provider_name}/callback`;
+		url.pathname = `/user/login/oauth/${provider_name}/callback`;
 		return url.toString();
 	})();
 	const state = generateRandomString(16, 36);

@@ -17,6 +17,9 @@
 	"api_user_oauth_login_provider__err_invalid_provider": "内部错误: 提供方 {type} 无效",
 	"api_user_oauth_login_provider_callback__err_no_cookie": "无效请求: 缺少 cookie",
 	"api_user_oauth_login_provider_callback__err_bad_state": "无效请求: 状态不匹配",
+	"api_user_oauth_register__invalid_token": "无效请求: 令牌无效",
+	"api_user_register__err_invalid_username": "无效用户名: {username}",
+	"api_user_register__err_username_taken": "用户名已被使用: {username}",
 	"page_index__title": "管理您的应用更新，轻松高效",
 	"page_index__description": "我们为开发者提供简洁的更新支持功能和信息采集服务，帮助您专注于程序开发，提升用户体验。",
 	"page_index__btn_start": "立即开始"

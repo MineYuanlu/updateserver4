@@ -18,6 +18,8 @@
 	import LanguageSelect from './LanguageSelect.svelte';
 	import type { UserSession } from '$lib/common/user';
 	import { COOKIES } from '$lib/common/cookies';
+	import { logoutUser } from '$lib/api/user';
+	import { goto } from '$app/navigation';
 
 	let {
 		user,
@@ -71,7 +73,12 @@
 					{#snippet icon()}<PersonIcon />{/snippet}
 					{m.header_user_center()}
 				</MenuItem>
-				<MenuItem href="/user/logout">
+				<MenuItem
+					onclick={async () => {
+						await logoutUser();
+						goto('.', { invalidateAll: true });
+					}}
+				>
 					{#snippet icon()}<ExitIcon />{/snippet}
 					{m.header_user_logout()}
 				</MenuItem>
