@@ -36,6 +36,16 @@ export type ColorUsage =
 	| 'border'
 	| 'dark:border';
 
+export const ColorUsages: readonly ColorUsage[] = [
+	'text',
+	'dark:text',
+	'bg',
+	'hover:bg',
+	'dark:hover:bg',
+	'border',
+	'dark:border'
+];
+
 /**
  * 所有亮度类型, 数字/字符串
  */
@@ -52,31 +62,21 @@ export type AllLight =
  */
 export type ColorPack = {
 	/** 文字颜色 */
-	t?: Color;
+	t?: TextColor;
 	/** 暗色模式下文字颜色 */
-	dt?: Color;
+	dt?: DarkTextColor;
 	/** 背景颜色 */
-	bg?: Color;
+	bg?: BackgroundColor;
 	/** 悬浮背景颜色 */
-	hbg?: Color;
+	hbg?: HoverBackgroundColor;
 	/** 暗色模式下背景颜色 */
-	dbg?: Color;
+	dbg?: DarkBackgroundColor;
 	/** 暗色模式下悬浮背景颜色 */
-	dhbg?: Color;
+	dhbg?: DarkHoverBackgroundColor;
 	/** 边框颜色 */
-	b?: Color;
+	b?: BorderColor;
 	/** 暗色模式下边框颜色 */
-	db?: Color;
-};
-export type ColorPackClass = {
-	t: '' | TextColor;
-	dt: '' | DarkTextColor;
-	bg: '' | BackgroundColor;
-	hbg: '' | HoverBackgroundColor;
-	dbg: '' | DarkBackgroundColor;
-	dhbg: '' | DarkHoverBackgroundColor;
-	b: '' | BorderColor;
-	db: '' | DarkBorderColor;
+	db?: DarkBorderColor;
 };
 
 /** 预设颜色包名 */
@@ -97,123 +97,133 @@ export type PreSetColorPacks =
 export type PreableColorPacks = PreSetColorPacks | ColorPack;
 export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 	blue: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'blue-500',
-		hbg: 'blue-700',
-		dbg: 'blue-600',
-		dhbg: 'blue-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-blue-500',
+		hbg: 'hover:bg-blue-700',
+		dbg: 'dark:bg-blue-600',
+		dhbg: 'dark:hover:bg-blue-800'
 	},
 	red: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'red-500',
-		hbg: 'red-700',
-		dbg: 'red-600',
-		dhbg: 'red-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-red-500',
+		hbg: 'hover:bg-red-700',
+		dbg: 'dark:bg-red-600',
+		dhbg: 'dark:hover:bg-red-800'
 	},
 	yellow: {
-		t: 'gray-900',
-		dt: 'gray-100',
-		bg: 'yellow-500',
-		hbg: 'yellow-600',
-		dbg: 'yellow-700',
-		dhbg: 'yellow-800'
+		t: 'text-gray-900',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-yellow-500',
+		hbg: 'hover:bg-yellow-600',
+		dbg: 'dark:bg-yellow-700',
+		dhbg: 'dark:hover:bg-yellow-800'
 	},
 	orange: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'orange-500',
-		hbg: 'orange-700',
-		dbg: 'orange-600',
-		dhbg: 'orange-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-orange-500',
+		hbg: 'hover:bg-orange-700',
+		dbg: 'dark:bg-orange-600',
+		dhbg: 'dark:hover:bg-orange-800'
 	},
 	white: {
-		t: 'gray-900',
-		dt: 'gray-100',
-		bg: 'white',
-		hbg: 'gray-100',
-		dbg: 'gray-800',
-		dhbg: 'gray-900',
-		b: 'gray-800',
-		db: 'gray-50'
+		t: 'text-gray-900',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-white',
+		hbg: 'hover:bg-gray-100',
+		dbg: 'dark:bg-gray-800',
+		dhbg: 'dark:hover:bg-gray-900',
+		b: 'border-gray-800',
+		db: 'dark:border-gray-50'
 	},
 	warning: {
-		t: 'gray-900',
-		dt: 'gray-100',
-		bg: 'yellow-400',
-		hbg: 'yellow-500',
-		dbg: 'yellow-600',
-		dhbg: 'yellow-700'
+		t: 'text-gray-900',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-yellow-400',
+		hbg: 'hover:bg-yellow-500',
+		dbg: 'dark:bg-yellow-600',
+		dhbg: 'dark:hover:bg-yellow-700'
 	},
 	error: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'red-500',
-		hbg: 'red-600',
-		dbg: 'red-700',
-		dhbg: 'red-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-red-500',
+		hbg: 'hover:bg-red-600',
+		dbg: 'dark:bg-red-700',
+		dhbg: 'dark:hover:bg-red-800'
 	},
 	info: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'blue-500',
-		hbg: 'blue-600',
-		dbg: 'blue-700',
-		dhbg: 'blue-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-blue-500',
+		hbg: 'hover:bg-blue-600',
+		dbg: 'dark:bg-blue-700',
+		dhbg: 'dark:hover:bg-blue-800'
 	},
 	primary: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'blue-600',
-		hbg: 'blue-700',
-		dbg: 'blue-800',
-		dhbg: 'blue-900'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-blue-600',
+		hbg: 'hover:bg-blue-700',
+		dbg: 'dark:bg-blue-800',
+		dhbg: 'dark:hover:bg-blue-900'
 	},
 	secondary: {
-		t: 'gray-100',
-		dt: 'gray-100',
-		bg: 'gray-400',
-		hbg: 'gray-500',
-		dbg: 'gray-600',
-		dhbg: 'gray-700'
+		t: 'text-gray-800',
+		dt: 'dark:text-gray-50',
+		bg: 'bg-gray-200',
+		hbg: 'hover:bg-gray-300',
+		dbg: 'dark:bg-gray-600',
+		dhbg: 'dark:hover:bg-gray-700'
 	},
 	green: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'green-500',
-		hbg: 'green-600',
-		dbg: 'green-700',
-		dhbg: 'green-800'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-green-500',
+		hbg: 'hover:bg-green-600',
+		dbg: 'dark:bg-green-700',
+		dhbg: 'dark:hover:bg-green-800'
 	},
 	success: {
-		t: 'white',
-		dt: 'gray-100',
-		bg: 'green-400',
-		hbg: 'green-500',
-		dbg: 'green-600',
-		dhbg: 'green-700'
+		t: 'text-white',
+		dt: 'dark:text-gray-100',
+		bg: 'bg-green-400',
+		hbg: 'hover:bg-green-500',
+		dbg: 'dark:bg-green-600',
+		dhbg: 'dark:hover:bg-green-700'
 	}
 };
 export const colorPackNames = Object.keys(colorPacks) as PreSetColorPacks[];
+
 /**
  * 将(预设)颜色包转换为颜色类名
  * @param v (预设)颜色包
- * @returns 颜色类名, 不存在的将为空字符串
+ * @param str 以一个字符串形式返回
+ * @returns 颜色类名字符串, 将所有class属性合并为一个字符串, 跳过undefined
  */
-export const colorPack2Class = (v: ColorPack | PreSetColorPacks): ColorPackClass => {
-	const { t, dt, bg, hbg, dbg, dhbg, b, db } = (typeof v === 'string' ? colorPacks[v] : v) ?? {};
-	return {
-		t: t ? `text-${t}` : '',
-		dt: dt ? `dark:text-${dt}` : '',
-		bg: bg ? `bg-${bg}` : '',
-		hbg: hbg ? `hover:bg-${hbg}` : '',
-		dbg: dbg ? `dark:bg-${dbg}` : '',
-		dhbg: dhbg ? `dark:hover:bg-${dhbg}` : '',
-		b: b ? `border-${b}` : '',
-		db: db ? `dark:border-${db}` : ''
-	};
-};
+export function colorPack2Class(v: ColorPack | PreSetColorPacks | undefined, str: true): string;
+/**
+ * 将(预设)颜色包转换为颜色类名
+ * @param v (预设)颜色包
+ * @returns 颜色类名, 不存在的将为undefined
+ */
+export function colorPack2Class(
+	v: ColorPack | PreSetColorPacks | undefined,
+	str?: false
+): ColorPack;
+export function colorPack2Class(
+	v: ColorPack | PreSetColorPacks | undefined,
+	str = false
+): ColorPack | string {
+	v = (typeof v === 'string' ? colorPacks[v] : v) ?? {};
+	return str
+		? Object.values(v)
+				.filter((v) => v)
+				.join(' ')
+		: v;
+}
 
 /**
  * 将颜色转换为颜色类名

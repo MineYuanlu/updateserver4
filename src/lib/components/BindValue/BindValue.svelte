@@ -23,7 +23,6 @@
 	function updateURL() {
 		if (!bind) return;
 		const old = new URLSearchParams(window.location.search).get(bind);
-		console.log('update bind', old, value);
 		if (old === value) return;
 		const url = new URL(window.location.href);
 		url.searchParams.set(bind, value);
@@ -36,14 +35,12 @@
 	let oldValue = value;
 
 	$effect(() => {
-		console.log('bind value', value, oldValue);
 		if (oldValue !== value) {
 			updateURL();
 			oldValue = value;
 		}
 	});
 	function f(..._: any) {
-		console.log('popstate bind value', value, oldValue);
 		const newValue = new URLSearchParams(window.location.search).get(bind);
 		if (oldValue !== newValue) handler(newValue);
 	}
@@ -54,5 +51,5 @@
 </script>
 
 <!-- @component
-URL参数双向绑定
+URL参数双向绑定, 仅脚本
  -->

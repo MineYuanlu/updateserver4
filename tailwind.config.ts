@@ -7,9 +7,9 @@ export default {
 	darkMode: 'class',
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	safelist: [
-		{
-			pattern: /.*(bg|text|border|placeholder|ring|shadow)-\w+(-\d+)?.*/
-		}
+		// {
+		// 	// pattern: /.*(bg|text|border|placeholder|ring|shadow)-\w+(-\d+)?.*/
+		// }
 	],
 
 	theme: {

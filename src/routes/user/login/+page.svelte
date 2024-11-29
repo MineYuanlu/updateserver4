@@ -5,7 +5,7 @@
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
-	import SimpleIcon from '$lib/components/Icons/SimpleIcon.svelte';
+	import Si from '$lib/components/Icons/Si.svelte';
 	import { GithubLogo } from 'radix-icons-svelte';
 	import { siGithub } from 'simple-icons';
 
@@ -72,7 +72,7 @@
 								goto(`./oauth/${name}`);
 							}}
 						>
-							<SimpleIcon icon={siGithub} class="mr-2 h-5 w-5 filter dark:invert" />
+							<Si icon={siGithub} class="mr-2 h-5 w-5 filter dark:invert" />
 							<!-- <img src={logo} alt={name} class="mr-2 h-5 w-5 filter dark:invert" /> -->
 							<span>{name}</span>
 						</Button>

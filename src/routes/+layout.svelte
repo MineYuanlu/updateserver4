@@ -6,6 +6,7 @@
 	import { navbar } from '$lib/stores/common';
 	import Header from './Header.svelte';
 	import Navbar from './Navbar.svelte';
+	import NotificationList from '$lib/components/Notifications/NotificationList.svelte';
 
 	let { children, data } = $props();
 
@@ -37,6 +38,7 @@
 			</footer>
 		</div>
 	</ParaglideJS>
+	<NotificationList />
 </div>
 
 <style>

@@ -2,7 +2,7 @@
 	import type { Component, Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
 	import { isSimpleIcon, type SimpleIcon } from './simple_icon';
-	import SimpleIcons from './SimpleIcon.svelte';
+	import Si from './Si.svelte';
 
 	export let icon: Component<{ class: string }> | SimpleIcon | any;
 	export let iconClass: string = 'w-5 h-5';
@@ -57,7 +57,7 @@
 	{:else if hover && hoverIconSnippet}
 		{@render hoverIconSnippet(`${iconClass} ${hoverIconClass}`)}
 	{:else if isSimpleIcon(icon)}
-		<SimpleIcons {icon} class={iconClass} />
+		<Si {icon} class={iconClass} />
 	{:else}
 		<svelte:component this={icon} class={iconClass} />
 	{/if}
