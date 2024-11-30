@@ -1,11 +1,12 @@
 import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
+import { api__request_failed_title } from '$lib/paraglide/messages';
 
 function error(path: string, msg: string, data: any, showErr: number) {
 	console.error('API Error:', path, msg, data);
 	if (showErr > 0)
 		addNotification(
 			{
-				title: 'API Error',
+				title: api__request_failed_title(),
 				message: msg,
 				type: 'error',
 				icon: true,
@@ -17,7 +18,7 @@ function error(path: string, msg: string, data: any, showErr: number) {
 type CommonResp<T = any> = {
 	data?: T;
 	code: number;
-	msg?: string;
+	message?: string;
 };
 function isSuccess(obj: unknown): obj is CommonResp {
 	if (!obj || typeof obj !== 'object') return false;
@@ -63,7 +64,7 @@ export const apiReq = async <T>(
 	if (!response.ok) {
 		error(
 			path,
-			json?.msg || `${response.status} - ${response.statusText}`,
+			json?.message || `${response.status} - ${response.statusText}`,
 			{ response, body: json ?? resp },
 			showErr,
 		);
@@ -71,7 +72,7 @@ export const apiReq = async <T>(
 	}
 
 	if (!isSuccess(json)) {
-		error(path, json?.msg || 'unknown error', json, showErr);
+		error(path, json?.message || 'unknown error', json, showErr);
 		return defaultVal;
 	}
 	return json.data as T;

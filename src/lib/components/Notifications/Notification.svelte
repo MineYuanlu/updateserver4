@@ -17,7 +17,7 @@
 		showClose?: boolean;
 	};
 
-	const borderColors: Record<NotiType, String> = {
+	const borderColors: Record<NotiType, string> = {
 		info: 'border-blue-500',
 		success: 'border-green-500',
 		warning: 'border-yellow-500',
@@ -25,14 +25,14 @@
 		normal: 'border-gray-200 dark:border-gray-600',
 	};
 
-	const bgColors: Record<NotiType, String> = {
+	const bgColors: Record<NotiType, string> = {
 		info: 'bg-blue-500',
 		success: 'bg-green-500',
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500',
 		normal: 'bg-gray-200 dark:bg-gray-600',
 	};
-	const textColors: Record<NotiType, String> = {
+	const textColors: Record<NotiType, string> = {
 		info: 'text-blue-500',
 		success: 'text-green-500',
 		warning: 'text-yellow-500',

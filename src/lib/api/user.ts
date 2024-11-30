@@ -12,7 +12,7 @@ export const getOauthProviderList = () =>
 
 /** 创建oauth提供商 */
 export const createOauthProvider = (data: OauthProviderCreateReq) =>
-	apiReq<string | null>('/api/user/oauth/providers/create', 'POST', null, data);
+	apiReq<boolean>('/api/user/oauth/providers/create', 'POST', false, data);
 
 /**
  * 登陆oauth提供商

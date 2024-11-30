@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Button from '../Form/Button.svelte';
 	import ClickListener from '../Global/ClickListener.svelte';
 	import KeyListener from '../Global/KeyListener.svelte';
 	import { fly } from 'svelte/transition';

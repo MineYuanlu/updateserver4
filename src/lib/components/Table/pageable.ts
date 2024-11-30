@@ -1,4 +1,3 @@
-type DataType = string | number;
 type MaybePromise<T> = T | Promise<T>;
 /**
  * 数据获取器
@@ -148,5 +147,5 @@ export class PageableArray<T> implements Pageable<T> {
 	public getData(offset: number, length: number): T[] {
 		return this.data.slice(offset, offset + length);
 	}
-	public clearCache(offset: number = 0, length: number = -1) {}
+	public clearCache(_offset: number = 0, _length: number = -1) {}
 }

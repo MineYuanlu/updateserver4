@@ -8,6 +8,10 @@ declare global {
 		interface Locals {
 			user?: UserSession | null;
 		}
+		interface Error {
+			message: string;
+			code: number;
+		}
 	}
 }
 

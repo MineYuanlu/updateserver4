@@ -45,7 +45,7 @@ export type PermInfo = BitSet;
 
 export function hasAnyPerm(perm: PermInfo | undefined, ...perms: Perm[]) {
 	if (!perm) return false;
-	for (let p of perms) {
+	for (const p of perms) {
 		if (perm.get(p)) return true;
 	}
 	return false;

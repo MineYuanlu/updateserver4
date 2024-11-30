@@ -1,8 +1,8 @@
-import { error } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { createOAuthProvider } from '$lib/server/db/funcs';
 import { OAuthProviderTypeNames } from '$lib/server/oauth';
-import { success } from '../../../../common';
+import { checkRequestField, failure, success } from '../../../../common';
+import { api__common_invalid_field as common_invalid_field } from '$lib/paraglide/messages';
 
 export type ReqData = {
 	name: string;
@@ -13,21 +13,25 @@ export type ReqData = {
 	redirect_uri: string;
 };
 
-export const POST: RequestHandler = async ({ request, url }) => {
-	const { name, desc, type, client_id, client_secret, redirect_uri } = await request.json();
+export const POST: RequestHandler = async ({ request }) => {
+	const { name, desc, type, client_id, client_secret, redirect_uri } = checkRequestField(
+		await request.json(),
+		{
+			name: validateName,
+			desc: validateDesc,
+			type: validateType,
+			client_id: validateClientId,
+			client_secret: validateClientSecret,
+			redirect_uri: validateRedirectUri,
+		},
+		(field) => failure(common_invalid_field({ field })),
+	);
 
 	// TODO 鉴权
 
-	if (!validateName(name)) error(400, "'name' is invalid");
-	if (!validateDesc(desc)) error(400, "'desc' is invalid");
-	if (!validateType(type)) error(400, "'type' is invalid");
-	if (!validateClientId(client_id)) error(400, "'client_id' is invalid");
-	if (!validateClientSecret(client_secret)) error(400, "'client_secret' is invalid");
-	if (!validateRedirectUri(redirect_uri)) error(400, "'redirect_uri' is invalid");
-
 	await createOAuthProvider(name, desc, type, client_id, client_secret, redirect_uri);
 
-	return success(name);
+	return success(true);
 };
 
 function validateName(name: unknown): name is string {
@@ -60,7 +64,7 @@ function validateRedirectUri(redirect_uri: unknown): redirect_uri is string {
 	if (redirect_uri.length < 1 || redirect_uri.length > 200) return false;
 	try {
 		new URL(redirect_uri);
-	} catch (e) {
+	} catch (_) {
 		return false;
 	}
 	return true;

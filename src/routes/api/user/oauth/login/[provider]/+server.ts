@@ -1,7 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getOAuthProvider } from '$lib/server/db/funcs';
 import { buildURL, OAuthProviderTypes } from '$lib/server/oauth';
-import { redirect } from '@sveltejs/kit';
 import { generateRandomString } from '$lib/server/common';
 import { COOKIES } from '$lib/common/cookies';
 import {

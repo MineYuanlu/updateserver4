@@ -130,7 +130,7 @@
 		{/if}
 
 		<!-- 页码按钮 -->
-		{#each pages as page, i (page)}
+		{#each pages as page (page)}
 			<li>
 				{#if page === current}
 					<button

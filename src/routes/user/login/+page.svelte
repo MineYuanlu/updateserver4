@@ -107,7 +107,7 @@
 				{#if providers.length > 0}
 					<Divider text={btn_oauth()} />
 					<div class="flex justify-center space-x-4">
-						{#each providers as { name, logo, desc }}
+						{#each providers as { name }}
 							<Button
 								class="flex w-full items-center  justify-center rounded-lg px-4  py-3 text-center font-semibold "
 								color="white"

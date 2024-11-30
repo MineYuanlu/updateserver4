@@ -1,7 +1,6 @@
-// Snippet or Component?
 import type { Component, Snippet } from 'svelte';
 
-export type SoC<Params extends unknown[] = [], Props extends Record<string, any> = {}> =
+export type SoC<Params extends unknown[] = [], Props extends Record<string, any> = object> =
 	| Snippet<Params>
 	| Component<Props>;
 

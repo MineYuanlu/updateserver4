@@ -1,10 +1,5 @@
 <script lang="ts">
-	import CommandPalette from '$lib/components/CommandPalette/CommandPalette.svelte';
-	import CpItem from '$lib/components/CommandPalette/CpItem.svelte';
 	import * as m from '$lib/paraglide/messages.js';
-	import { Globe } from 'radix-icons-svelte';
-	import { onMount } from 'svelte';
-	import { navbar } from '$lib/stores/common';
 
 	// onMount(() => {
 	// 	let hasNavBar = false;

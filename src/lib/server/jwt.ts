@@ -89,7 +89,7 @@ async function getJwtCookie<Data extends Record<string, unknown>, T extends JwtT
 	if (token === undefined) return undefined;
 	try {
 		return await parseJwt<Data, T>(token, type);
-	} catch (e) {
+	} catch (_) {
 		deleteSessionTokenCookie(event, cookie);
 		return undefined;
 	}

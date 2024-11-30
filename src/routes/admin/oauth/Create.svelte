@@ -1,11 +1,34 @@
 <!-- name, desc, type, client_id, client_secret, redirect_uri  -->
 
 <script lang="ts">
+	import { dev } from '$app/environment';
 	import { createOauthProvider, getOauthProviderTypes } from '$lib/api/user';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
 	import Modal from '$lib/components/Modal/Modal.svelte';
+	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
+	import {
+		page_admin_oauth__create_title as title,
+		page_admin_oauth__create_name_label as name_label,
+		page_admin_oauth__create_name_placeholder as name_placeholder,
+		page_admin_oauth__create_type_label as type_label,
+		page_admin_oauth__create_type_placeholder as type_placeholder,
+		page_admin_oauth__create_description_label as description_label,
+		page_admin_oauth__create_description_placeholder as description_placeholder,
+		page_admin_oauth__create_client_id_label as client_id_label,
+		page_admin_oauth__create_client_id_placeholder as client_id_placeholder,
+		page_admin_oauth__create_client_secret_label as client_secret_label,
+		page_admin_oauth__create_client_secret_placeholder as client_secret_placeholder,
+		page_admin_oauth__create_redirect_uri_label as redirect_uri_label,
+		page_admin_oauth__create_redirect_uri_placeholder as redirect_uri_placeholder,
+		page_admin_oauth__create_btn_create as btn_create,
+		page_admin_oauth__create_btn_cancel as btn_cancel,
+		page_admin_oauth__create_success_title as success_title,
+		page_admin_oauth__create_success_message as success_message,
+	} from '$lib/paraglide/messages';
 	import type { ReqData } from '../../api/user/oauth/providers/create/+server';
+
+	let { createModCount = $bindable() }: { createModCount: number } = $props();
 
 	const defaultData: ReqData = {
 		name: '',
@@ -17,38 +40,91 @@
 	};
 
 	let data = $state({ ...defaultData });
+	let modalOpen = $state(false);
 
 	function handleConfirm() {
-		console.debug('create oauth provider', data);
-		const resp = createOauthProvider(data);
-		// data = { ...defaultData };
+		if (dev) console.info('create oauth provider', data);
+		const name = data.name;
+		createOauthProvider(data).then((ok) => {
+			if (ok) {
+				data = { ...defaultData };
+				modalOpen = false;
+				addNotification({
+					title: success_title(),
+					message: success_message({ name }),
+					type: 'success',
+				});
+				createModCount++;
+			}
+		});
 		return false;
 	}
 </script>
 
 <Modal
+	title={title()}
+	bind:open={modalOpen}
 	btns={[
-		{ label: '添加', color: 'success' },
-		{ label: '取消', color: 'secondary' },
+		{ label: btn_create(), color: 'success' },
+		{ label: btn_cancel(), color: 'secondary' },
 	]}
 	onConfirm={handleConfirm}
+	onCancel={() => {
+		createModCount++;
+	}}
 >
-	{#snippet controls(toggleModal)}
+	{#snippet controls(toggleModal: () => void)}
 		<Button color="blue" onclick={() => toggleModal()}>新增</Button>
 	{/snippet}
-	{#snippet content(toggleModal)}
+	{#snippet content()}
 		<div class="grid grid-cols-2 gap-4">
-			<Input label="登录器名称" class="w-full" bind:value={data.name} />
+			<Input
+				label={name_label()}
+				placeholder={name_placeholder()}
+				class="w-full"
+				bind:value={data.name}
+			/>
 
 			{#await getOauthProviderTypes()}
-				<Input label="登录器类型" bind:value={data.type} />
+				<Input
+					label={type_label()}
+					placeholder={type_placeholder()}
+					class="w-full"
+					bind:value={data.type}
+				/>
 			{:then providerTypes}
-				<Input label="登录器类型" options={providerTypes} bind:value={data.type} />
+				<Input
+					label={type_label()}
+					placeholder={type_placeholder()}
+					class="w-full"
+					options={providerTypes}
+					bind:value={data.type}
+				/>
 			{/await}
 		</div>
-		<Input label="登录器描述" bind:value={data.desc} />
-		<Input label="客户端ID (client_id)" bind:value={data.client_id} />
-		<Input label="客户端密钥 (client_secret)" bind:value={data.client_secret} />
-		<Input label="回调地址 (redirect_uri)" bind:value={data.redirect_uri} />
+		<Input
+			label={description_label()}
+			placeholder={description_placeholder()}
+			class="w-full"
+			bind:value={data.desc}
+		/>
+		<Input
+			label={client_id_label()}
+			placeholder={client_id_placeholder()}
+			class="w-full"
+			bind:value={data.client_id}
+		/>
+		<Input
+			label={client_secret_label()}
+			placeholder={client_secret_placeholder()}
+			class="w-full"
+			bind:value={data.client_secret}
+		/>
+		<Input
+			label={redirect_uri_label()}
+			placeholder={redirect_uri_placeholder()}
+			class="w-full"
+			bind:value={data.redirect_uri}
+		/>
 	{/snippet}
 </Modal>

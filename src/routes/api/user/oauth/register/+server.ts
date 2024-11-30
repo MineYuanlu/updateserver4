@@ -23,7 +23,7 @@ export const POST: RequestHandler = async (req) => {
 		const data = await oauthRegisterJwt.parseJwt(jwt);
 		id = data.id;
 		provider = data.p;
-	} catch (e) {
+	} catch (_) {
 		return failure(err_invalid_token());
 	}
 

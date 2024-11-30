@@ -4,7 +4,7 @@
 	import Input from '$lib/components/Form/Input.svelte';
 	import Notification, { notiTypes } from '$lib/components/Notifications/Notification.svelte';
 	import Table from '$lib/components/Table/Table.svelte';
-	import { si1password, si2k, siFreelancer, siGithub } from 'simple-icons';
+	import { si1password, si2k, siGithub } from 'simple-icons';
 	import Dark from './Dark.svelte';
 	import {
 		addNotification,

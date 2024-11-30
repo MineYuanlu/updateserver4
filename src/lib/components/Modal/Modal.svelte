@@ -43,10 +43,6 @@
 		preClose,
 		postClose,
 	}: {
-		/** 弹窗状态 (可绑定) */
-		open?: boolean;
-		/**控制组件, 传入null不显示, 不指定或传入undefined显示默认按钮 */
-		controls?: Snippet<[Toggle]> | undefined | null;
 		/** 弹窗类名 */
 		class?: string;
 		/** 图标组件 */
@@ -72,14 +68,6 @@
 			| [string]
 			| [string, string];
 		footer?: Snippet;
-		/** 打开弹窗前事件, 返回`false`可阻止打开弹窗 */
-		onPreOpen?: () => boolean | void;
-		/** 打开弹窗事件 */
-		onOpen?: () => void;
-		/** 关闭弹窗前事件, 返回`false`可阻止关闭弹窗 */
-		onPreClose?: () => boolean | void;
-		/** 关闭弹窗事件 */
-		onClose?: () => void;
 		/** 取消按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
 		onCancel?: OnClick;
 		/** 确认按钮事件, 返回`false`可阻止关闭弹窗, 可以被`btns`内的`onClick`覆盖 */
@@ -222,7 +210,7 @@
 							<div
 								class="bg-gray-50 px-4 py-3 dark:bg-gray-700 sm:flex sm:flex-row-reverse sm:px-6"
 							>
-								{#each btns as { label, onClick, color = 'blue' }, i}
+								{#each btns as { label, onClick, color = 'blue' }}
 									<Button
 										class="ml-3 justify-center"
 										{color}

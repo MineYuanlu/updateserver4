@@ -150,7 +150,7 @@
 
 <div
 	class="fixed bottom-0 right-0 flex h-screen w-screen flex-col-reverse items-end"
-	style="pointer-events: none;"
+	style="pointer-events: none;z-index: 10000"
 >
 	{#each Object.values(list) as { id, snippet, data } (id)}
 		<div

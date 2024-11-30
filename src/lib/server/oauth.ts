@@ -182,7 +182,7 @@ export async function execute<Callback extends string, Param extends Record<stri
 		data = await resp.text();
 		data = JSON.parse(data);
 	} catch (e) {
-		throw new Error(`Failed to parse response data: ${data}`);
+		throw new Error(`Failed to parse response data: ${data}: ${e}`);
 	}
 	return parseResp(define, data);
 }

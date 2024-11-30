@@ -2,7 +2,6 @@
 	import type { Snippet } from 'svelte';
 	import { PageableArray, PageableFetcher, type Fetcher, type Pageable } from './pageable';
 	import Pagination from './Pagination.svelte';
-	import { browser } from '$app/environment';
 
 	type DataType = string | number | any;
 
@@ -114,10 +113,10 @@
 	// $inspect('totalCount:', totalCount);
 </script>
 
-{#snippet _header(data: DataType, col: number)}
+{#snippet _header(data: DataType, _col: number)}
 	<th class="px-4 py-2 font-medium">{data}</th>
 {/snippet}
-{#snippet _cell(data: DataType | null, row: number, col: number, tmp: boolean)}
+{#snippet _cell(data: DataType | null, _row: number, _col: number, tmp: boolean)}
 	{#if data === null && tmp}
 		<td class="px-4 py-2">&nbsp;</td>
 	{:else}
