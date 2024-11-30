@@ -4,7 +4,7 @@
 	const {
 		handler,
 		exclude,
-		nochild = false
+		nochild = false,
 	}: {
 		handler: (e: MouseEvent) => void;
 		/**被排除的元素(数组)*/

@@ -5,7 +5,7 @@ import {
 	api_user__err_invalid_username as err_invalid_username,
 	api_user__err_invalid_password as err_invalid_password,
 	api_user_login__err_no_password_login as err_no_password_login,
-	api_user_login__err_invalid_credentials as err_invalid_credentials
+	api_user_login__err_invalid_credentials as err_invalid_credentials,
 } from '$lib/paraglide/messages';
 import { getUserAllByName } from '$lib/server/db/funcs';
 import { verify } from '@node-rs/argon2';
@@ -25,14 +25,14 @@ export const POST: RequestHandler = async (req) => {
 
 	const validPassword = await verify(existingUser.passwordHash, password, {
 		...passwordCheckOpt,
-		salt: existingUser.passwordSalt ?? undefined
+		salt: existingUser.passwordSalt ?? undefined,
 	});
 	if (!validPassword) return failure(err_invalid_credentials());
 
 	await userJwt.createJwtCookie(req, {
 		id: existingUser.id,
 		name: existingUser.name,
-		role: existingUser.role
+		role: existingUser.role,
 	});
 
 	return success(true);

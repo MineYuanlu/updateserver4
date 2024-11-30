@@ -45,7 +45,7 @@ export const actions: Actions = {
 			memoryCost: 19456,
 			timeCost: 2,
 			outputLen: 32,
-			parallelism: 1
+			parallelism: 1,
 		});
 		if (!validPassword) {
 			// 密码错误
@@ -55,7 +55,7 @@ export const actions: Actions = {
 		await auth.createSessionTokenCookie(event, {
 			id: existingUser.id,
 			name: existingUser.name,
-			role: existingUser.role
+			role: existingUser.role,
 		});
 
 		return redirect(302, '/demo/lucia');
@@ -78,7 +78,7 @@ export const actions: Actions = {
 			memoryCost: 19456,
 			timeCost: 2,
 			outputLen: 32,
-			parallelism: 1
+			parallelism: 1,
 		});
 
 		try {
@@ -89,5 +89,5 @@ export const actions: Actions = {
 			return fail(500, { message: 'An error has occurred' });
 		}
 		return redirect(302, '/demo/lucia');
-	}
+	},
 };

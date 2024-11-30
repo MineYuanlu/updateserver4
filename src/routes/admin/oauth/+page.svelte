@@ -1,17 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { get, writable } from 'svelte/store';
-	import {
-		Trash as TrashIcon,
-		Pencil1 as PencilIcon,
-		Plus as PlusIcon,
-		CrossCircled
-	} from 'radix-icons-svelte';
+	import { writable } from 'svelte/store';
+	import { CrossCircled } from 'radix-icons-svelte';
 	import Modal from '$lib/components/Modal/Modal.svelte';
 	import Button from '$lib/components/Form/Button.svelte';
-	import { colorPacks } from '$lib/components/color';
-	import Input from '$lib/components/Form/Input.svelte';
-	import { getOauthProviderList, getOauthProviderTypes } from '$lib/api/user';
+	import { getOauthProviderList } from '$lib/api/user';
 	import Create from './Create.svelte';
 	import Table from '$lib/components/Table/Table.svelte';
 
@@ -35,7 +28,7 @@
 		name: '',
 		desc: '',
 		type: '',
-		logo: ''
+		logo: '',
 	};
 
 	let editProvider: OAuthProvider | null = null;
@@ -70,7 +63,7 @@
 			const response = await fetch('/api/user/oauth/providers/create', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(newProvider)
+				body: JSON.stringify(newProvider),
 			});
 			if (!response.ok) throw new Error('Failed to create OAuth provider');
 			const data = await response.json();
@@ -91,7 +84,7 @@
 			const response = await fetch('/api/user/oauth/providers/delete', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ id })
+				body: JSON.stringify({ id }),
 			});
 			if (!response.ok) throw new Error('Failed to delete OAuth provider');
 			// 更新本地列表
@@ -113,7 +106,7 @@
 			await fetch('/api/user/oauth/providers/delete', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({ id: editProvider.id })
+				body: JSON.stringify({ id: editProvider.id }),
 			});
 			// 再新增新的供应商
 			const { id } = await (
@@ -124,8 +117,8 @@
 						name: editProvider.name,
 						desc: editProvider.desc,
 						type: editProvider.type,
-						logo: editProvider.logo
-					})
+						logo: editProvider.logo,
+					}),
 				})
 			).json();
 			// 更新本地列表
@@ -156,12 +149,12 @@
 	btns={[
 		{
 			label: 'Deactivate',
-			color: 'red'
+			color: 'red',
 		},
 		{
 			label: 'Cancel',
-			color: 'secondary'
-		}
+			color: 'secondary',
+		},
 	]}
 ></Modal>
 
@@ -175,7 +168,7 @@
 			const data = await getOauthProviderList();
 			return {
 				data: data.map((it) => [it.name, it.desc, [it.logo, it.type], undefined]),
-				total: data.length
+				total: data.length,
 			};
 		}}
 	>

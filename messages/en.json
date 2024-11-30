@@ -18,7 +18,6 @@
 	"api_user_oauth_login_provider_callback__err_no_cookie": "Invalid request: Missing cookie",
 	"api_user_oauth_login_provider_callback__err_bad_state": "Invalid request: State mismatch",
 	"api_user_oauth_register__invalid_token": "Invalid request: Token is invalid",
-	"api_user_register__err_invalid_username": "Invalid username: {username}",
 	"api_user_register__err_username_taken": "Username is already taken: {username}",
 	"page_index__title": "Easily and efficiently manage your app updates",
 	"page_index__description": "We offer streamlined update support and data collection services for developers, helping you focus on software development while enhancing the user experience.",

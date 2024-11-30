@@ -22,7 +22,7 @@
 		success: 'border-green-500',
 		warning: 'border-yellow-500',
 		error: 'border-red-500',
-		normal: 'border-gray-200 dark:border-gray-600'
+		normal: 'border-gray-200 dark:border-gray-600',
 	};
 
 	const bgColors: Record<NotiType, String> = {
@@ -30,14 +30,14 @@
 		success: 'bg-green-500',
 		warning: 'bg-yellow-500',
 		error: 'bg-red-500',
-		normal: 'bg-gray-200 dark:bg-gray-600'
+		normal: 'bg-gray-200 dark:bg-gray-600',
 	};
 	const textColors: Record<NotiType, String> = {
 		info: 'text-blue-500',
 		success: 'text-green-500',
 		warning: 'text-yellow-500',
 		error: 'text-red-500',
-		normal: 'text-gray-200 dark:text-gray-600'
+		normal: 'text-gray-200 dark:text-gray-600',
 	};
 </script>
 
@@ -68,7 +68,7 @@
 		preOpen,
 		postOpen,
 		preClose,
-		postClose
+		postClose,
 	}: NotificationProps & OpenableProps = $props();
 </script>
 
@@ -118,7 +118,7 @@
 					{#snippet btns(
 						Btn?: string | SoC,
 						color?: ColorPack | PreSetColorPacks,
-						action?: () => void
+						action?: () => void,
 					)}
 						{#if typeof Btn === 'string'}
 							<Button class="rounded-md px-4 py-2" onclick={action} {color}>

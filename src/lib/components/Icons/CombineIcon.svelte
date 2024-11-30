@@ -6,7 +6,7 @@
 		class: className = 'w-[15px] h-[15px]',
 		icons,
 		padding = 8,
-		splitWidth = 5
+		splitWidth = 5,
 	}: {
 		/**整体样式类 */
 		class?: string;

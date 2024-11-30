@@ -4,7 +4,7 @@ import {
 	integer,
 	primaryKey,
 	unique,
-	blob
+	blob,
 } from 'drizzle-orm/sqlite-core';
 import type { UserId, UserRole } from '$lib/common/user';
 
@@ -19,7 +19,7 @@ export const user = createTable('user', {
 	name: text('username').notNull().unique(), // 用户名
 	role: integer('role').notNull().default(0), // 用户角色
 	passwordHash: text('password_hash'), // 密码哈希
-	passwordSalt: blob('password_salt', { mode: 'buffer' }) // 密码盐
+	passwordSalt: blob('password_salt', { mode: 'buffer' }), // 密码盐
 });
 export type _User_Raw = typeof user.$inferSelect;
 export type User = LintMerge<
@@ -39,7 +39,7 @@ export const oauthProvider = createTable('oauth_provider', {
 	type: text('type').notNull(), // 第三方平台类型
 	clientId: text('client_id').notNull(), // 客户端ID
 	clientSecret: text('client_secret').notNull(), // 客户端密钥
-	redirectUri: text('redirect_uri').notNull() // 回调地址
+	redirectUri: text('redirect_uri').notNull(), // 回调地址
 });
 export type OAuthProvider = typeof oauthProvider.$inferSelect;
 
@@ -50,27 +50,27 @@ export const oauth = createTable(
 		uid: text('uid') // 用户ID
 			.references(() => user.id, {
 				onDelete: 'cascade',
-				onUpdate: 'cascade'
+				onUpdate: 'cascade',
 			}),
 		provider: text('provider') // 第三方平台名称
 			.references(() => oauthProvider.name, {
 				onDelete: 'restrict',
-				onUpdate: 'restrict'
+				onUpdate: 'restrict',
 			}),
 		id: text('id'), // 第三方平台用户ID
-		info: text('info') // 第三方平台用户信息
+		info: text('info'), // 第三方平台用户信息
 	},
 	(t) => ({
 		pk: primaryKey({ columns: [t.uid, t.provider] }),
-		pid: unique().on(t.provider, t.id)
-	})
+		pid: unique().on(t.provider, t.id),
+	}),
 );
 export type OAuth = typeof oauth.$inferSelect;
 
 /** 系统设置 */
 export const setting = createTable('setting', {
 	key: text('key').primaryKey(),
-	value: blob('data', { mode: 'buffer' }).notNull()
+	value: blob('data', { mode: 'buffer' }).notNull(),
 });
 export type Setting = typeof setting.$inferSelect;
 
@@ -81,7 +81,7 @@ export const project = createTable('project', {
 		.notNull()
 		.references(() => user.id, {
 			onDelete: 'restrict',
-			onUpdate: 'restrict'
+			onUpdate: 'restrict',
 		}),
 	name: text('name').notNull(), // 项目名称
 	nameKey: text('name_key') // 项目名称的key, 全小写用于比较
@@ -89,6 +89,6 @@ export const project = createTable('project', {
 		.unique(),
 	visibility: integer('visibility').notNull(), // 仓库可见性
 	versionCmp: text('version_cmp'), // 版本比较信息
-	version: integer('version') // 正在使用中的版本号ID
+	version: integer('version'), // 正在使用中的版本号ID
 });
 export type Project = typeof project.$inferSelect;

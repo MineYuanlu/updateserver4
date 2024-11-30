@@ -5,7 +5,7 @@
 		FocusEventHandler,
 		FormEventHandler,
 		KeyboardEventHandler,
-		MouseEventHandler
+		MouseEventHandler,
 	} from 'svelte/elements';
 	import { colorPack2Class, type ColorPack, type PreSetColorPacks } from '../color';
 
@@ -26,7 +26,7 @@
 		disabled,
 		class: className,
 		style,
-		color = 'blue'
+		color = 'blue',
 	}: {
 		children: Snippet<[]>;
 		onclick?: MouseEventHandler<HTMLButtonElement> | null | undefined;

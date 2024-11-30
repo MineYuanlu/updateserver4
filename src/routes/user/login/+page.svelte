@@ -19,7 +19,7 @@
 		page_user_login__login_success_title as login_success_title,
 		page_user_login__login_success_message as login_success_message,
 		page_user_login__register_success_title as register_success_title,
-		page_user_login__register_success_message as register_success_message
+		page_user_login__register_success_message as register_success_message,
 	} from '$lib/paraglide/messages';
 	import { siGithub } from 'simple-icons';
 
@@ -33,7 +33,7 @@
 			addNotification({
 				title: login_success_title(),
 				message: login_success_message({ username: _username }),
-				type: 'success'
+				type: 'success',
 			});
 			goto('/', { invalidateAll: true });
 		}
@@ -46,7 +46,7 @@
 			addNotification({
 				title: register_success_title(),
 				message: register_success_message({ username: _username }),
-				type: 'success'
+				type: 'success',
 			});
 			goto('/', { invalidateAll: true });
 			//TODO: 注册成功后跳转到引导页

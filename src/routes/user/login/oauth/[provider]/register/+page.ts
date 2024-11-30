@@ -9,6 +9,6 @@ export const load: PageLoad = ({ params, url }) => {
 	return {
 		jwt,
 		name,
-		provider
+		provider,
 	};
 };

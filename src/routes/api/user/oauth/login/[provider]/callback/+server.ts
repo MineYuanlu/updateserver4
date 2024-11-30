@@ -5,7 +5,7 @@ import {
 	api_user_oauth_login_provider__err_not_found as err_not_found,
 	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
 	api_user_oauth_login_provider_callback__err_no_cookie as err_no_cookie,
-	api_user_oauth_login_provider_callback__err_bad_state as err_bad_state
+	api_user_oauth_login_provider_callback__err_bad_state as err_bad_state,
 } from '$lib/paraglide/messages.js';
 import { COOKIES } from '$lib/common/cookies';
 import { failure, success } from '../../../../../common';
@@ -35,7 +35,7 @@ export const POST: RequestHandler = async (req) => {
 		client_secret: provider.clientSecret,
 		code,
 		redirect_uri,
-		state
+		state,
 	});
 
 	const { id, name, info } = await execute(type.get_user, {
@@ -46,7 +46,7 @@ export const POST: RequestHandler = async (req) => {
 		state,
 		access_token,
 		token_type,
-		scope
+		scope,
 	});
 
 	const user_info = await getUserInfoByOAuth(provider_name, id);
@@ -59,7 +59,7 @@ export const POST: RequestHandler = async (req) => {
 	await createOAuthUser(id, provider_name, info);
 	const jwt = await oauthRegisterJwt.createJwt({
 		id,
-		p: provider_name
+		p: provider_name,
 	});
 	return success({ jwt, name });
 };

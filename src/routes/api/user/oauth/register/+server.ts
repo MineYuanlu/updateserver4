@@ -4,7 +4,7 @@ import { linkOAuthToNewUser } from '$lib/server/db/funcs';
 import {
 	api_user_register__err_invalid_username as err_invalid_username,
 	api_user_register__err_username_taken as err_username_taken,
-	api_user_oauth_register__invalid_token as err_invalid_token
+	api_user_oauth_register__invalid_token as err_invalid_token,
 } from '$lib/paraglide/messages';
 import type { RequestHandler } from './$types';
 import { failure, success } from '../../../common';
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async (req) => {
 	await userJwt.createJwtCookie(req, {
 		id: userId,
 		name: username,
-		role: defaultUserRole
+		role: defaultUserRole,
 	});
 	return success(true);
 };

@@ -18,7 +18,7 @@ export const GET: RequestHandler = async () => {
 			name: p.name,
 			desc: p.desc,
 			type: p.type,
-			logo: type?.logo
+			logo: type?.logo,
 		};
 	});
 	return success(data);

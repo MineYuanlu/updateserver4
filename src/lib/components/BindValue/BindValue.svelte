@@ -8,7 +8,7 @@
 		bind,
 		value = $bindable(),
 		replace = false,
-		handler = (newVal: any) => (value = newVal)
+		handler = (newVal: any) => (value = newVal),
 	}: {
 		/**需要绑定的查询参数的名称*/
 		bind: string;

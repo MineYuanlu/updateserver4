@@ -13,7 +13,7 @@
 		type: '',
 		client_id: '',
 		client_secret: '',
-		redirect_uri: ''
+		redirect_uri: '',
 	};
 
 	let data = $state({ ...defaultData });
@@ -29,7 +29,7 @@
 <Modal
 	btns={[
 		{ label: '添加', color: 'success' },
-		{ label: '取消', color: 'secondary' }
+		{ label: '取消', color: 'secondary' },
 	]}
 	onConfirm={handleConfirm}
 >

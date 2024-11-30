@@ -11,18 +11,18 @@ const settingsDefine: {
 	JWT_EXPIRATION: {
 		key: 'JWT_EXPIRATION',
 		transform: (value) => parseInt(value.toString()),
-		default: () => `${60 * 60 * 24 * 7}` // 7 days
+		default: () => `${60 * 60 * 24 * 7}`, // 7 days
 	},
 	JWT_SECRET: {
 		key: 'JWT_SECRET',
 		transform: (value) => value,
-		default: () => crypto.getRandomValues(Buffer.allocUnsafe(2048))
+		default: () => crypto.getRandomValues(Buffer.allocUnsafe(2048)),
 	},
 	JWT_ALGORITHM: {
 		key: 'JWT_ALGORITHM',
 		transform: (value) => value.toString(),
-		default: () => 'HS256'
-	}
+		default: () => 'HS256',
+	},
 };
 type Setting<T> = {
 	key: string;
@@ -46,12 +46,12 @@ const settingCache: {
  * @returns 该设置的值
  */
 export async function getSetting<Key extends keyof typeof settingsDefine>(
-	key: Key
+	key: Key,
 ): Promise<SettingValue<Key>> {
 	if (settingCache[key]?.hasValue) return settingCache[key].value;
 
 	const value = settingsDefine[key].transform(
-		await getSettingValue(key, settingsDefine[key].default)
+		await getSettingValue(key, settingsDefine[key].default),
 	);
 	settingCache[key] = { hasValue: true, value } as any;
 	return value as SettingValue<Key>;
@@ -80,11 +80,11 @@ export const baseChars = {
 	10: base10Chars,
 	26: base26Chars,
 	36: base36Chars,
-	62: base62Chars
+	62: base62Chars,
 } as const;
 export function generateRandomString(
 	length: number = 16,
-	chars: string | keyof typeof baseChars = base36Chars
+	chars: string | keyof typeof baseChars = base36Chars,
 ) {
 	if (typeof chars === 'number') chars = baseChars[chars];
 	const bytes = crypto.randomBytes(length);

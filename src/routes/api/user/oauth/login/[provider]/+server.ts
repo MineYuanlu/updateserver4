@@ -6,7 +6,7 @@ import { generateRandomString } from '$lib/server/common';
 import { COOKIES } from '$lib/common/cookies';
 import {
 	api_user_oauth_login_provider__err_not_found as err_not_found,
-	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider
+	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
 } from '$lib/paraglide/messages.js';
 import { failure, success } from '../../../../common';
 
@@ -28,11 +28,11 @@ export const POST: RequestHandler = async (req) => {
 	const url = buildURL(type.authorize, {
 		client_id: provider.clientId,
 		redirect_uri,
-		state
+		state,
 	});
 
 	req.cookies.set(COOKIES.OAuthState, `${state}|${redirect_uri}`, {
-		path: '/'
+		path: '/',
 	});
 
 	return success(url);

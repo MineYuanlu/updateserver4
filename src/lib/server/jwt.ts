@@ -16,7 +16,7 @@ import type { OAuthRegisterInfo } from '$lib/common/oauth';
 async function createJwt(
 	data: Record<string, unknown>,
 	type: JwtTypes,
-	expiresAt?: Date
+	expiresAt?: Date,
 ): Promise<string> {
 	if (expiresAt === undefined) {
 		const expInS = await getSetting('JWT_EXPIRATION');
@@ -24,7 +24,7 @@ async function createJwt(
 	}
 	const token = await new SignJWT({
 		typ: type,
-		...data
+		...data,
 	})
 		.setProtectedHeader({ alg: await getSetting('JWT_ALGORITHM') })
 		.setIssuedAt()
@@ -42,7 +42,7 @@ async function createJwt(
  */
 async function parseJwt<Data extends Record<string, unknown>, T extends JwtTypes>(
 	token: string,
-	type: T
+	type: T,
 ): Promise<JwtInfo<Data, T>> {
 	if (typeof token !== 'string') throw new Error('Invalid token');
 	const { payload } = await jwtVerify(token, await getSetting('JWT_SECRET'));
@@ -61,14 +61,14 @@ async function createJwtCookie(
 	event: RequestEvent,
 	data: Record<string, unknown>,
 	type: JwtTypes,
-	cookie: COOKIE_VALUES
+	cookie: COOKIE_VALUES,
 ) {
 	const expInS = await getSetting('JWT_EXPIRATION');
 	const expire = new Date(Date.now() + expInS * 1000);
 	const token = await createJwt(data, type, expire);
 	event.cookies.set(cookie, token, {
 		expires: expire,
-		path: '/'
+		path: '/',
 	});
 }
 
@@ -83,7 +83,7 @@ async function createJwtCookie(
 async function getJwtCookie<Data extends Record<string, unknown>, T extends JwtTypes>(
 	event: RequestEvent,
 	type: T,
-	cookie: COOKIE_VALUES
+	cookie: COOKIE_VALUES,
 ): Promise<JwtInfo<Data, T> | undefined> {
 	const token = event.cookies.get(cookie);
 	if (token === undefined) return undefined;
@@ -102,7 +102,7 @@ async function getJwtCookie<Data extends Record<string, unknown>, T extends JwtT
  */
 function deleteSessionTokenCookie(event: RequestEvent, cookie: COOKIE_VALUES) {
 	event.cookies.delete(cookie, {
-		path: '/'
+		path: '/',
 	});
 }
 
@@ -123,19 +123,19 @@ type JwtCookieFuncs<Data extends Record<string, unknown>, T extends JwtTypes> = 
 
 function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>(
 	type: T,
-	cookie: COOKIE_VALUES
+	cookie: COOKIE_VALUES,
 ): JwtFuncs<Data, T> & JwtCookieFuncs<Data, T>;
 function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>(
-	type: T
+	type: T,
 ): JwtFuncs<Data, T>;
 
 function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>(
 	type: T,
-	cookie?: COOKIE_VALUES
+	cookie?: COOKIE_VALUES,
 ) {
 	const funcs: JwtFuncs<Data, T> = {
 		createJwt: (data: Data, expiresAt?: Date) => createJwt(data, type, expiresAt),
-		parseJwt: (token: string) => parseJwt<Data, T>(token, type)
+		parseJwt: (token: string) => parseJwt<Data, T>(token, type),
 	};
 	if (!cookie) return funcs;
 	return {
@@ -143,7 +143,7 @@ function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>
 		createJwtCookie: (event: RequestEvent, data: Data) =>
 			createJwtCookie(event, data, type, cookie),
 		getJwtCookie: (event: RequestEvent) => getJwtCookie<Data, T>(event, type, cookie),
-		deleteSessionTokenCookie: (event: RequestEvent) => deleteSessionTokenCookie(event, cookie)
+		deleteSessionTokenCookie: (event: RequestEvent) => deleteSessionTokenCookie(event, cookie),
 	} satisfies JwtFuncs<Data, T> & JwtCookieFuncs<Data, T>;
 }
 

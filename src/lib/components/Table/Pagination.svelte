@@ -75,9 +75,9 @@
 					{ value: 10, duration: 50 },
 					{ value: -5, duration: 50 },
 					{ value: 5, duration: 50 },
-					{ value: 0, duration: 50 }
+					{ value: 0, duration: 50 },
 				],
-				easing: 'easeInOutSine'
+				easing: 'easeInOutSine',
 			});
 			setTimeout(() => {
 				currentElement.innerHTML = `${current}`;

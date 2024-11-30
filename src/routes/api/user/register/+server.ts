@@ -4,7 +4,7 @@ import { defaultUserRole, validatePassword, validateUserName } from '$lib/common
 import {
 	api_user__err_invalid_username as err_invalid_username,
 	api_user__err_invalid_password as err_invalid_password,
-	api_user_register__err_username_taken as err_username_taken
+	api_user_register__err_username_taken as err_username_taken,
 } from '$lib/paraglide/messages';
 import { createUser } from '$lib/server/db/funcs';
 import { hash } from '@node-rs/argon2';
@@ -24,13 +24,13 @@ export const POST: RequestHandler = async (req) => {
 	const passwordSalt = crypto.randomBytes(16);
 	const passwordHash = await hash(password, {
 		...passwordCheckOpt,
-		salt: passwordSalt
+		salt: passwordSalt,
 	});
 
 	try {
 		await createUser(userId, username, defaultUserRole, {
 			hash: passwordHash,
-			salt: passwordSalt
+			salt: passwordSalt,
 		});
 	} catch (e) {
 		if (e instanceof SqliteError) {

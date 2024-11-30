@@ -6,7 +6,7 @@
 		Person as PersonIcon,
 		Exit as ExitIcon,
 		Gear as GearIcon,
-		Globe as GlobeIcon
+		Globe as GlobeIcon,
 	} from 'radix-icons-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import IconBtn from '$lib/components/Icons/IconBtn.svelte';
@@ -23,7 +23,7 @@
 
 	let {
 		user,
-		theme = $bindable()
+		theme = $bindable(),
 	}: {
 		user?: UserSession | null;
 		theme?: string | null;
@@ -104,7 +104,7 @@
 						<CombineIcon
 							icons={[
 								[MoonIcon, 'rt'],
-								[SunIcon, 'lb']
+								[SunIcon, 'lb'],
 							]}
 							padding={15}
 						/>

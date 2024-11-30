@@ -8,7 +8,7 @@
 	import Dark from './Dark.svelte';
 	import {
 		addNotification,
-		removeNotification
+		removeNotification,
 	} from '$lib/components/Notifications/NotificationList.svelte';
 	import { demoMakeErrorResp } from '$lib/api/demo';
 </script>
@@ -34,7 +34,7 @@
 	options={colorPackNames.flatMap((c, i) =>
 		Array(i)
 			.fill(c)
-			.map((_, j) => `${c}-${j + 1}`)
+			.map((_, j) => `${c}-${j + 1}`),
 	)}
 />
 
@@ -48,7 +48,7 @@
 	data={Array.from({ length: 10 }).flatMap((_, i) => [
 		['John', i, 'Male'],
 		['Jane', i, 'Female'],
-		['Bob', i, 'Male']
+		['Bob', i, 'Male'],
 	])}
 />
 <h6>Fetcher</h6>
@@ -66,7 +66,7 @@
 			len = Math.min(len, max - off);
 			return {
 				data: Array.from({ length: len }).map((_, i) => ['John', off + i, 'Male']),
-				total: max
+				total: max,
 			};
 		}}
 	/>
@@ -87,7 +87,7 @@
 					preClose={() => {
 						addNotification({
 							title: 'Demo禁止关闭',
-							message: `关闭事件生效了 ${type}`
+							message: `关闭事件生效了 ${type}`,
 						});
 						return false;
 					}}
@@ -109,7 +109,7 @@
 								title: 'Demo禁止关闭',
 								message: `关闭事件生效了 ${type} ${icon.title}`,
 								type,
-								icon
+								icon,
 							});
 							return false;
 						}}
@@ -138,7 +138,7 @@
 			notification,
 			[`Notification ${Math.random()}`, `This is a notification ${Date.now()}`],
 			3000,
-			0
+			0,
 		);
 	}}
 >

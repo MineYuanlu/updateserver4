@@ -11,7 +11,7 @@
 		/** OAUTH注册姓名*/
 		name,
 		/** OAUTH提供商*/
-		provider
+		provider,
 	} = data;
 
 	let username = $state(name);

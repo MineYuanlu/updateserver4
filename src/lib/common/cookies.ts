@@ -4,7 +4,7 @@ export const COOKIES = (() => {
 		Session: 'Session', // 用户
 		Robot: 'Robot', // 机器人
 		Theme: 'Theme', // 主题
-		OAuthState: 'OAuthState' // OAuth 请求状态
+		OAuthState: 'OAuthState', // OAuth 请求状态
 	} as const;
 	for (const key in cookies) {
 		(cookies as any)[key] = `${COOKIE_PREFIX}${key}`;

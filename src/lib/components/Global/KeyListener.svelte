@@ -3,7 +3,7 @@
 
 	const {
 		key,
-		handler
+		handler,
 	}: {
 		key: string | string[];
 		handler: (e: KeyboardEvent) => void;

@@ -11,7 +11,7 @@
 	onMount(async () => {
 		const resp = await loginOauthCallback(
 			provider,
-			Object.fromEntries($page.url.searchParams.entries())
+			Object.fromEntries($page.url.searchParams.entries()),
 		);
 		if (resp === true) {
 			//成功登录

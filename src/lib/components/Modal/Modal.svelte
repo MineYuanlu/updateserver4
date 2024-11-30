@@ -6,11 +6,12 @@
 		type Color,
 		type ColorLightable,
 		type PreableColorPacks,
-		type TextColor
+		type TextColor,
 	} from '../color';
 	import Button from '../Form/Button.svelte';
 	import { fade, fly } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
+	import Openable, { type OpenableProps } from '../base/Openable.svelte';
 
 	type OnClick = (e: MouseEvent) => boolean | void;
 
@@ -21,8 +22,6 @@
 	};
 	type Toggle = (open?: boolean) => void;
 	let {
-		open: outerOpen = $bindable(false),
-		controls,
 		class: className,
 		icon: Icon,
 		iconColor = 'blue',
@@ -32,14 +31,17 @@
 		body,
 		btns: _btns = [],
 		footer,
-		onPreOpen,
-		onOpen,
-		onPreClose,
-		onClose,
 		onCancel = () => toggleModal(false),
 		onConfirm = () => toggleModal(false),
 		closeOnOutsideClick = true,
-		closeOnEscape = true
+		closeOnEscape = true,
+
+		open = $bindable(false),
+		controls,
+		preOpen,
+		postOpen,
+		preClose,
+		postClose,
 	}: {
 		/** 弹窗状态 (可绑定) */
 		open?: boolean;
@@ -86,11 +88,11 @@
 		closeOnOutsideClick?: boolean;
 		/**是否允许按Esc关闭面板 (默认true) */
 		closeOnEscape?: boolean;
-	} = $props();
+	} & OpenableProps = $props();
 
 	const _fallbackBtns: BtnProp[] = $derived([
 		{ onClick: onConfirm, color: 'blue' },
-		{ onClick: onCancel, color: 'secondary' }
+		{ onClick: onCancel, color: 'secondary' },
 	]);
 
 	const _getBtns = (() => {
@@ -99,7 +101,7 @@
 			return {
 				label: btn.label,
 				onClick: btn?.onClick || fb.onClick,
-				color: btn?.color || fb.color
+				color: btn?.color || fb.color,
 			};
 		}
 		return (btns: typeof _btns, fbs: typeof _fallbackBtns): BtnProp[] => {
@@ -112,50 +114,16 @@
 	})();
 
 	const btns = $derived(_getBtns(_btns, _fallbackBtns));
-
-	/** 内部实际弹窗状态, **不可直接修改** */
-	let open = $state(false);
 	/**
 	 * 切换弹窗状态
 	 * @param o 弹窗状态, 传入`true`打开弹窗, 传入`false`关闭弹窗, 不传入则切换弹窗状态
 	 */
 	function toggleModal(o?: boolean) {
-		if (o !== undefined && o === open) {
-			outerOpen = open;
-			return;
-		}
-		const val = o ?? !open;
-		if (val) {
-			if (onPreOpen && onPreOpen() === false) {
-				outerOpen = open;
-				return;
-			}
-		} else {
-			if (onPreClose && onPreClose() === false) {
-				outerOpen = open;
-				return;
-			}
-		}
-		outerOpen = open = val;
-		if (open) {
-			if (onOpen) onOpen();
-		} else {
-			if (onClose) onClose();
-		}
+		open = o ?? !open;
 	}
-	$effect(() => {
-		// 同步外部
-		if (outerOpen !== open) toggleModal(outerOpen);
-	});
 </script>
 
-{#if controls}
-	{@render controls(toggleModal)}
-{:else if controls !== null}
-	<Button onclick={() => toggleModal()}>Menu</Button>
-{/if}
-
-{#if open}
+<Openable bind:open {controls} {preOpen} {postOpen} {preClose} {postClose}>
 	<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
 		<!--
       Background backdrop, show/hide based on modal state.
@@ -168,7 +136,7 @@
         To: "opacity-0"
     -->
 		<div
-			class="backdrop-blur-xs fixed inset-0 bg-gray-500/75 transition-opacity"
+			class="fixed inset-0 bg-gray-500/75 backdrop-blur-xs transition-opacity"
 			aria-hidden="true"
 			transition:fade={{ duration: 100 }}
 		>
@@ -210,12 +178,12 @@
 										{@const txtColor = color2Class(
 											'text',
 											typeof iconColor === 'string' ? iconColor : iconColor[0],
-											'600'
+											'600',
 										)}
 										{@const bgColor = color2Class(
 											'bg',
 											typeof iconColor === 'string' ? iconColor : iconColor[1],
-											'100'
+											'100',
 										)}
 										<div
 											class="mx-auto flex size-12 shrink-0 items-center justify-center rounded-full {bgColor} sm:mx-0 sm:size-10"
@@ -273,4 +241,4 @@
 			</div>
 		</div>
 	</div>
-{/if}
+</Openable>

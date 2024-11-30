@@ -14,7 +14,7 @@ export function apiResp(
 	code = 0,
 	msg?: string,
 	status?: number,
-	headers?: Record<string, string>
+	headers?: Record<string, string>,
 ) {
 	let init: ResponseInit | undefined = undefined;
 	if (headers || status) init = { status, headers };

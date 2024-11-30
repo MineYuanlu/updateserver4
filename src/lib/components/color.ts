@@ -43,7 +43,7 @@ export const ColorUsages: readonly ColorUsage[] = [
 	'hover:bg',
 	'dark:hover:bg',
 	'border',
-	'dark:border'
+	'dark:border',
 ];
 
 /**
@@ -102,7 +102,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-blue-500',
 		hbg: 'hover:bg-blue-700',
 		dbg: 'dark:bg-blue-600',
-		dhbg: 'dark:hover:bg-blue-800'
+		dhbg: 'dark:hover:bg-blue-800',
 	},
 	red: {
 		t: 'text-white',
@@ -110,7 +110,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-red-500',
 		hbg: 'hover:bg-red-700',
 		dbg: 'dark:bg-red-600',
-		dhbg: 'dark:hover:bg-red-800'
+		dhbg: 'dark:hover:bg-red-800',
 	},
 	yellow: {
 		t: 'text-gray-900',
@@ -118,7 +118,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-yellow-500',
 		hbg: 'hover:bg-yellow-600',
 		dbg: 'dark:bg-yellow-700',
-		dhbg: 'dark:hover:bg-yellow-800'
+		dhbg: 'dark:hover:bg-yellow-800',
 	},
 	orange: {
 		t: 'text-white',
@@ -126,7 +126,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-orange-500',
 		hbg: 'hover:bg-orange-700',
 		dbg: 'dark:bg-orange-600',
-		dhbg: 'dark:hover:bg-orange-800'
+		dhbg: 'dark:hover:bg-orange-800',
 	},
 	white: {
 		t: 'text-gray-900',
@@ -136,7 +136,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		dbg: 'dark:bg-gray-800',
 		dhbg: 'dark:hover:bg-gray-900',
 		b: 'border-gray-800',
-		db: 'dark:border-gray-50'
+		db: 'dark:border-gray-50',
 	},
 	warning: {
 		t: 'text-gray-900',
@@ -144,7 +144,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-yellow-400',
 		hbg: 'hover:bg-yellow-500',
 		dbg: 'dark:bg-yellow-600',
-		dhbg: 'dark:hover:bg-yellow-700'
+		dhbg: 'dark:hover:bg-yellow-700',
 	},
 	error: {
 		t: 'text-white',
@@ -152,7 +152,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-red-500',
 		hbg: 'hover:bg-red-600',
 		dbg: 'dark:bg-red-700',
-		dhbg: 'dark:hover:bg-red-800'
+		dhbg: 'dark:hover:bg-red-800',
 	},
 	info: {
 		t: 'text-white',
@@ -160,7 +160,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-blue-500',
 		hbg: 'hover:bg-blue-600',
 		dbg: 'dark:bg-blue-700',
-		dhbg: 'dark:hover:bg-blue-800'
+		dhbg: 'dark:hover:bg-blue-800',
 	},
 	primary: {
 		t: 'text-white',
@@ -168,7 +168,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-blue-600',
 		hbg: 'hover:bg-blue-700',
 		dbg: 'dark:bg-blue-800',
-		dhbg: 'dark:hover:bg-blue-900'
+		dhbg: 'dark:hover:bg-blue-900',
 	},
 	secondary: {
 		t: 'text-gray-800',
@@ -176,7 +176,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-gray-200',
 		hbg: 'hover:bg-gray-300',
 		dbg: 'dark:bg-gray-600',
-		dhbg: 'dark:hover:bg-gray-700'
+		dhbg: 'dark:hover:bg-gray-700',
 	},
 	green: {
 		t: 'text-white',
@@ -184,7 +184,7 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-green-500',
 		hbg: 'hover:bg-green-600',
 		dbg: 'dark:bg-green-700',
-		dhbg: 'dark:hover:bg-green-800'
+		dhbg: 'dark:hover:bg-green-800',
 	},
 	success: {
 		t: 'text-white',
@@ -192,8 +192,8 @@ export const colorPacks: Record<PreSetColorPacks, ColorPack> = {
 		bg: 'bg-green-400',
 		hbg: 'hover:bg-green-500',
 		dbg: 'dark:bg-green-600',
-		dhbg: 'dark:hover:bg-green-700'
-	}
+		dhbg: 'dark:hover:bg-green-700',
+	},
 };
 export const colorPackNames = Object.keys(colorPacks) as PreSetColorPacks[];
 
@@ -211,11 +211,11 @@ export function colorPack2Class(v: ColorPack | PreSetColorPacks | undefined, str
  */
 export function colorPack2Class(
 	v: ColorPack | PreSetColorPacks | undefined,
-	str?: false
+	str?: false,
 ): ColorPack;
 export function colorPack2Class(
 	v: ColorPack | PreSetColorPacks | undefined,
-	str = false
+	str = false,
 ): ColorPack | string {
 	v = (typeof v === 'string' ? colorPacks[v] : v) ?? {};
 	return str
@@ -237,7 +237,7 @@ export function colorPack2Class(
 export const color2Class = <U extends ColorUsage>(
 	usage: U,
 	color: ColorLightable | Color | `${U}-${ColorLightable}` | `${U}-${Color}`,
-	light: AllLight
+	light: AllLight,
 ): `${U}-${Color}` => {
 	if (!color.includes('-') && !specialColors.includes(color as ColorSpecial))
 		color = `${color}-${light}` as ColorNormal;

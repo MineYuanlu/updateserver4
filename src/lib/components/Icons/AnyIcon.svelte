@@ -10,7 +10,7 @@
 
 	const {
 		icon: Icon,
-		class: className
+		class: className,
 	}: {
 		icon?: AnyIconType;
 		class?: string;

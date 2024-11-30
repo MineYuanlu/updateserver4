@@ -35,7 +35,7 @@
 		preOpen,
 		postOpen,
 		preClose,
-		postClose
+		postClose,
 	}: OpenableProps & {
 		/** 子组件 */
 		children: Snippet;

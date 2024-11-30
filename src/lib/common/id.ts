@@ -1,7 +1,7 @@
 export const US4IdTypesDesc = {
 	u: 'user',
 	p: 'project',
-	r: 'robot'
+	r: 'robot',
 } as const;
 
 (() => {

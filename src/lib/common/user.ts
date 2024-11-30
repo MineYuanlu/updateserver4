@@ -27,7 +27,7 @@ export function validatePassword(password: unknown): password is string {
 
 export const USER_ROLES = {
 	0: 'user',
-	1: 'admin'
+	1: 'admin',
 } as const;
 export type UserRole = keyof typeof USER_ROLES;
 export type UserId = US4ID<'u'>;

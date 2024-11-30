@@ -15,10 +15,10 @@ export default {
 	theme: {
 		extend: {
 			backdropBlur: {
-				xs: '0.8px'
-			}
-		}
+				xs: '0.8px',
+			},
+		},
 	},
 
-	plugins: [typography, forms, containerQueries]
+	plugins: [typography, forms, containerQueries],
 } satisfies Config;

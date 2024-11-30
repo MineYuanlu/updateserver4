@@ -14,7 +14,7 @@
 		onmouseenter,
 		onclick,
 		href,
-		hreflang
+		hreflang,
 	}: {
 		/**显示标题, 字符串/代码片段 */
 		title?: string | Snippet<[]>;

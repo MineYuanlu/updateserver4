@@ -23,7 +23,7 @@
 		totalCount = $bindable(-1),
 		cached = false,
 		loading = $bindable(false),
-		bindSearch
+		bindSearch,
 	}: {
 		/** 表头数据 */
 		headers: DataType[];
@@ -83,7 +83,7 @@
 	const pageManager: Pageable<DataType[]> = $derived(
 		typeof rawData === 'function'
 			? new PageableFetcher(rawData, cached)
-			: new PageableArray(rawData)
+			: new PageableArray(rawData),
 	);
 	const dataPromise = $derived(pageManager.getData((currentPage - 1) * pageSize, pageSize));
 	let dataImmCache: DataType[][] = $state([]);

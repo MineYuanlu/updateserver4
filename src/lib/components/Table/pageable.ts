@@ -10,7 +10,7 @@ type MaybePromise<T> = T | Promise<T>;
  */
 export type Fetcher<T> = (
 	offset: number,
-	length: number
+	length: number,
 ) => MaybePromise<T[] | { total?: number; data: T[]; guessTotal?: number }>;
 
 export interface Pageable<T> {
@@ -49,7 +49,7 @@ export class PageableFetcher<T> implements Pageable<T> {
 	private totalUpperBound: number = -1;
 	public constructor(
 		private fetcher: Fetcher<T>,
-		private cacheData: boolean = true
+		private cacheData: boolean = true,
 	) {}
 	/** @return 总条数, -1代表未知 */
 	public getTotal() {

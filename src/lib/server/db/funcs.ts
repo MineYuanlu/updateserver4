@@ -31,7 +31,7 @@ export function createUser(
 	id: _t.User['id'],
 	name: string,
 	role: _t.User['role'] = defaultUserRole,
-	password: { hash: string; salt: Buffer } | null = null
+	password: { hash: string; salt: Buffer } | null = null,
 ) {
 	return db
 		.insert(_t.user)
@@ -40,7 +40,7 @@ export function createUser(
 			name,
 			passwordHash: password?.hash,
 			passwordSalt: password?.salt,
-			role
+			role,
 		})
 		.execute();
 }
@@ -52,7 +52,7 @@ export async function createOAuthProvider(
 	type: string,
 	client_id: string,
 	client_secret: string,
-	redirect_uri: string
+	redirect_uri: string,
 ) {
 	return await db
 		.insert(_t.oauthProvider)
@@ -62,7 +62,7 @@ export async function createOAuthProvider(
 			type: type,
 			clientId: client_id,
 			clientSecret: client_secret,
-			redirectUri: redirect_uri
+			redirectUri: redirect_uri,
 		})
 		.execute();
 }
@@ -73,7 +73,7 @@ export async function listOAuthProviders() {
 		.select({
 			name: _t.oauthProvider.name,
 			type: _t.oauthProvider.type,
-			desc: _t.oauthProvider.desc
+			desc: _t.oauthProvider.desc,
 		})
 		.from(_t.oauthProvider)
 		.execute();
@@ -115,7 +115,7 @@ export async function createOAuthUser(id: string, provider: string, info: string
 		.values({ id, provider, info })
 		.onConflictDoUpdate({
 			target: [_t.oauth.id, _t.oauth.provider],
-			set: { info }
+			set: { info },
 		})
 		.execute();
 }
@@ -146,7 +146,7 @@ export async function linkOAuthToNewUser(
 	provider: string,
 	provider_id: string,
 	username: string,
-	role: _t.User['role'] = defaultUserRole
+	role: _t.User['role'] = defaultUserRole,
 ) {
 	return await db.transaction(
 		async (trx) => {
@@ -168,14 +168,14 @@ export async function linkOAuthToNewUser(
 
 			return null;
 		},
-		{ behavior: 'exclusive' }
+		{ behavior: 'exclusive' },
 	);
 }
 
 /** 获取设置值(如果不存在则插入设置值并返回默认值) */
 export async function getSettingValue(
 	key: string,
-	defaultValue: string | Buffer | (() => string | Buffer)
+	defaultValue: string | Buffer | (() => string | Buffer),
 ) {
 	const results = await db
 		.select({ value: _t.setting.value })

@@ -49,7 +49,7 @@
 		notification: Snippet<[number, any]>,
 		data: any,
 		duration?: number | null,
-		delay?: number
+		delay?: number,
 	): void;
 
 	/**
@@ -63,14 +63,14 @@
 	export function addNotification(
 		data: NotificationProps,
 		duration?: number | null,
-		delay?: number
+		delay?: number,
 	): void;
 
 	export function addNotification(
 		notification: Snippet<[number, any]> | NotificationProps | undefined,
 		data?: any,
 		duration?: number | null,
-		delay?: number
+		delay?: number,
 	) {
 		if (!isSnippet(notification)) {
 			delay = duration as number;
@@ -89,7 +89,7 @@
 			const id = oldId ? oldId + 1 : 1;
 			return [
 				...n.filter((n) => inTime(n, now)),
-				{ id, snippet: notification, data, show_time, close_time }
+				{ id, snippet: notification, data, show_time, close_time },
 			];
 		});
 	}

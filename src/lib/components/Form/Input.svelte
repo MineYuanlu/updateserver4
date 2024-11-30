@@ -5,7 +5,7 @@
 		FormEventHandler,
 		HTMLInputTypeAttribute,
 		KeyboardEventHandler,
-		MouseEventHandler
+		MouseEventHandler,
 	} from 'svelte/elements';
 	import { slide } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
@@ -39,7 +39,7 @@
 		onkeyup,
 		onmouseenter,
 		onmousemove,
-		onmouseleave
+		onmouseleave,
 	}: {
 		/** 最外层容器的类名 */
 		class?: string;
@@ -90,7 +90,7 @@
 	} = $props();
 
 	const filteredOptions = $derived(
-		options ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())) : []
+		options ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())) : [],
 	);
 
 	let container: HTMLDivElement | undefined = $state();

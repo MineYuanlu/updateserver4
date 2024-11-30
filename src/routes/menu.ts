@@ -7,18 +7,18 @@ export const menus: Menu[] = [
 	{
 		name: m.menu_project,
 		path: '/project',
-		match: '/project'
+		match: '/project',
 	},
 	{
 		name: m.menu_admin,
 		path: '/admin',
-		match: '/admin'
+		match: '/admin',
 	},
 	{
 		name: m.name,
 		path: '/demo/components',
-		match: '/demo/components'
-	}
+		match: '/demo/components',
+	},
 ];
 
 export function isNowMenu(menu: Menu, url: URL): boolean {

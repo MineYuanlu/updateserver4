@@ -9,9 +9,9 @@ function error(path: string, msg: string, data: any, showErr: number) {
 				message: msg,
 				type: 'error',
 				icon: true,
-				showClose: true
+				showClose: true,
 			},
-			showErr
+			showErr,
 		);
 }
 type CommonResp<T = any> = {
@@ -38,7 +38,7 @@ export const apiReq = async <T>(
 	method: 'GET' | 'POST',
 	defaultVal: T,
 	data?: string[][] | Record<string, string> | string | null,
-	showErr = 10 * 1000
+	showErr = 10 * 1000,
 ) => {
 	let response: Response;
 	if (method === 'GET') {
@@ -48,9 +48,9 @@ export const apiReq = async <T>(
 		response = await fetch(path, {
 			method: 'POST',
 			headers: {
-				'Content-Type': 'application/json'
+				'Content-Type': 'application/json',
 			},
-			body: JSON.stringify(data)
+			body: JSON.stringify(data),
 		});
 	}
 	let resp: string = '';
@@ -58,14 +58,14 @@ export const apiReq = async <T>(
 	try {
 		resp = await response.text();
 		json = JSON.parse(resp);
-	} catch (e) {}
+	} catch (_) {}
 
 	if (!response.ok) {
 		error(
 			path,
 			json?.msg || `${response.status} - ${response.statusText}`,
 			{ response, body: json ?? resp },
-			showErr
+			showErr,
 		);
 		return defaultVal;
 	}

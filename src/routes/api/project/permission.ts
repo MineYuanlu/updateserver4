@@ -38,7 +38,7 @@ export enum Perm {
 	/** 修改机器人 */
 	RobotUpdate,
 	/** 移除机器人 */
-	RobotDelete
+	RobotDelete,
 }
 
 export type PermInfo = BitSet;

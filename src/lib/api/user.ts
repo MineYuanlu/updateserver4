@@ -31,7 +31,7 @@ export const loginOauthCallback = (provider: string, params: Record<string, stri
 		'POST',
 		null,
 		params,
-		60 * 1000
+		60 * 1000,
 	);
 
 /**

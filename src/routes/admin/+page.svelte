@@ -11,7 +11,7 @@
 		{ path: '/admin/oauth', name: 'OAuth 管理', desc: '管理和配置 OAuth 供应商' },
 		{ path: '/admin/users', name: '用户管理', desc: '管理系统中的用户和权限' },
 		{ path: '/admin/settings', name: '系统设置', desc: '配置系统的各项参数' },
-		{ path: '/admin/reports', name: '报表中心', desc: '查看和生成系统报表' }
+		{ path: '/admin/reports', name: '报表中心', desc: '查看和生成系统报表' },
 		// 你可以根据需要添加更多菜单项
 	];
 </script>

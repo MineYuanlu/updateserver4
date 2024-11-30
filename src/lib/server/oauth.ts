@@ -69,12 +69,12 @@ const Github: OAuthProviderType = {
 			client_id,
 			redirect_uri,
 			scope: 'user:email',
-			state
+			state,
 		}),
 		callback: {
 			code: 'code',
-			state: 'state'
-		}
+			state: 'state',
+		},
 	},
 	access_token: {
 		origin: 'https://github.com',
@@ -85,27 +85,27 @@ const Github: OAuthProviderType = {
 			client_secret,
 			code,
 			redirect_uri,
-			state
+			state,
 		}),
 		callback: {
 			access_token: 'access_token',
 			token_type: 'token_type',
-			scope: 'scope'
-		}
+			scope: 'scope',
+		},
 	},
 	get_user: {
 		origin: 'https://api.github.com',
 		path: '/user',
 		method: 'GET',
 		headers: ({ access_token }) => ({
-			Authorization: `token ${access_token}`
+			Authorization: `token ${access_token}`,
 		}),
 		callback: {
 			id: 'id',
 			name: 'name',
-			info: (r) => JSON.stringify(r)
-		}
-	}
+			info: (r) => JSON.stringify(r),
+		},
+	},
 };
 
 /** OAuth提供商类型列表 */
@@ -122,7 +122,7 @@ export const OAuthProviderTypeNames = OAuthProviderTypes.map((p) => p.name);
  */
 export function buildURL<Param extends Record<string, any>>(
 	define: OAuthReqDef<any, Param>,
-	param: Param
+	param: Param,
 ): string {
 	if (define.method !== 'GET') throw new Error('Only GET method is supported');
 	if (define.headers) throw new Error('Headers is not supported in buildURL');
@@ -135,7 +135,7 @@ export function buildURL<Param extends Record<string, any>>(
 
 export async function parseResp<Callback extends string>(
 	define: OAuthReqDef<Callback, any>,
-	data: any
+	data: any,
 ): Promise<Record<Callback, string>> {
 	const result: Record<Callback, string> = {} as any;
 	for (const name in define.callback) {
@@ -156,7 +156,7 @@ export async function parseResp<Callback extends string>(
 export async function execute<Callback extends string, Param extends Record<string, any>>(
 	define: OAuthReqDef<Callback, Param>,
 	param: Param,
-	fetchParam?: RequestInit
+	fetchParam?: RequestInit,
 ): Promise<Record<Callback, string>> {
 	let resp: Response;
 	if (define.method === 'GET') {

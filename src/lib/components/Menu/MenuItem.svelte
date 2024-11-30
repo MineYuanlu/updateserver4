@@ -10,7 +10,7 @@
 		onmouseleave,
 		hover = $bindable(false),
 		href,
-		hreflang
+		hreflang,
 	}: {
 		/**左侧图标 icon(hover: boolean)*/
 		icon?: Snippet<[boolean]>;

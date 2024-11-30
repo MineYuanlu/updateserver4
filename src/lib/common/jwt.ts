@@ -4,7 +4,7 @@ export const jwtTypes = {
 	/**机器人信息 */
 	R: 'Robot',
 	/**OAuth注册信息: 在用户Oauth登录后, 在本平台注册时的临时token */
-	OAUTH_R: 'OAuthR'
+	OAUTH_R: 'OAuthR',
 };
 export type JwtTypes = keyof typeof jwtTypes;
 

@@ -7,12 +7,12 @@
 		availableLanguageTags,
 		languageTag,
 		sourceLanguageTag,
-		type AvailableLanguageTag
+		type AvailableLanguageTag,
 	} from '$lib/paraglide/runtime';
 	import { Enter } from 'radix-icons-svelte';
 
 	let {
-		open = $bindable(false)
+		open = $bindable(false),
 	}: {
 		open: boolean;
 	} = $props();

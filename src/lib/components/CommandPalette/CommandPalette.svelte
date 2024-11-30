@@ -1,32 +1,33 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Button from '../Form/Button.svelte';
 	import Input from '../Form/Input.svelte';
 	import { MagnifyingGlass } from 'radix-icons-svelte';
 	import { fly, fade } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
+	import Openable, { type OpenableProps } from '../base/Openable.svelte';
 	type TogglePalette = (open?: boolean) => void;
 	let {
-		open = $bindable(false),
 		input = $bindable(''),
-		controls,
 		item,
 		closeOnOutsideClick = true,
-		closeOnEscape = true
+		closeOnEscape = true,
+
+		open = $bindable(false),
+		controls,
+		preOpen,
+		postOpen,
+		preClose,
+		postClose,
 	}: {
-		/**面板打开状态(可绑定) */
-		open?: boolean;
 		/**搜索框输入值(可绑定) */
 		input?: string;
-		/**控制组件, 传入null不显示, 不指定或传入undefined显示默认按钮 */
-		controls?: Snippet<[(open?: boolean) => void]> | null;
 		/**命令项组件, item(输入值, 控制面板打开状态)*/
 		item: Snippet<[string, TogglePalette]>;
 		/**是否允许点击外面关闭面板 (默认true) */
 		closeOnOutsideClick?: boolean;
 		/**是否允许按Esc关闭面板 (默认true) */
 		closeOnEscape?: boolean;
-	} = $props();
+	} & OpenableProps = $props();
 
 	const togglePalette = (o?: boolean) => {
 		open = o ?? !open;
@@ -38,14 +39,8 @@
 命令面板组件, 展示一个类Modal的顶层组件，包括输入框和结果列表
   -->
 
-{#if controls}
-	{@render controls(togglePalette)}
-{:else if controls !== null}
-	<Button onclick={() => togglePalette()}>Menu</Button>
-{/if}
-
 <!-- Command Palette -->
-{#if open}
+<Openable bind:open {controls} {preOpen} {postOpen} {preClose} {postClose}>
 	<div
 		class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm"
 		onclick={(e) => {
@@ -74,4 +69,4 @@
 	{#if closeOnEscape}
 		<KeyListener key="Escape" handler={() => (open = false)} />
 	{/if}
-{/if}
+</Openable>

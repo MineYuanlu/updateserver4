@@ -3,7 +3,7 @@
 
 	const {
 		icon,
-		class: className
+		class: className,
 	}: {
 		icon: SimpleIcon;
 		class?: string;
