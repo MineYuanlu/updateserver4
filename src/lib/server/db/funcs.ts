@@ -30,10 +30,19 @@ export async function getUserAllByName(name: string) {
 export function createUser(
 	id: _t.User['id'],
 	name: string,
-	password: string | null = null,
-	role: _t.User['role'] = defaultUserRole
+	role: _t.User['role'] = defaultUserRole,
+	password: { hash: string; salt: Buffer } | null = null
 ) {
-	return db.insert(_t.user).values({ id, name, passwordHash: password, role }).execute();
+	return db
+		.insert(_t.user)
+		.values({
+			id,
+			name,
+			passwordHash: password?.hash,
+			passwordSalt: password?.salt,
+			role
+		})
+		.execute();
 }
 
 /** 创建OAuth提供商 */

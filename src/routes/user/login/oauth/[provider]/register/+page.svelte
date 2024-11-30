@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 	import { registerOauth } from '$lib/api/user';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';

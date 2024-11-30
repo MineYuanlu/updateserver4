@@ -1,8 +1,8 @@
 import type { RequestHandler } from './$types';
-import { deleteSessionTokenCookie } from '$lib/server/auth';
 import { success } from '../../common';
+import { userJwt } from '$lib/server/jwt';
 
 export const POST: RequestHandler = async (req) => {
-	deleteSessionTokenCookie(req);
+	userJwt.deleteSessionTokenCookie(req);
 	return success();
 };

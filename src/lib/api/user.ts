@@ -35,13 +35,28 @@ export const loginOauthCallback = (provider: string, params: Record<string, stri
 	);
 
 /**
- *  注册oauth用户
+ * 注册oauth用户
  * @param username 用户名
  * @param jwt oauth token
- * @returns
  */
 export const registerOauth = (username: string, jwt: string) =>
 	apiReq<boolean>(`/api/user/oauth/register`, 'POST', false, { username, jwt }, 60 * 1000);
+
+/**
+ * 登陆用户
+ * @param username 用户名
+ * @param password 密码
+ */
+export const loginUser = (username: string, password: string) =>
+	apiReq<boolean>('/api/user/login', 'POST', false, { username, password });
+
+/**
+ * 注册用户
+ * @param username 用户名
+ * @param password 密码
+ */
+export const registerUser = (username: string, password: string) =>
+	apiReq<boolean>('/api/user/register', 'POST', false, { username, password });
 
 /** 登出用户 */
 export const logoutUser = () => apiReq<null>('/api/user/logout', 'POST', null);

@@ -18,7 +18,8 @@ export const user = createTable('user', {
 	id: text('id').primaryKey(), // 用户ID
 	name: text('username').notNull().unique(), // 用户名
 	role: integer('role').notNull().default(0), // 用户角色
-	passwordHash: text('password_hash') // 密码哈希
+	passwordHash: text('password_hash'), // 密码哈希
+	passwordSalt: blob('password_salt', { mode: 'buffer' }) // 密码盐
 });
 export type _User_Raw = typeof user.$inferSelect;
 export type User = LintMerge<

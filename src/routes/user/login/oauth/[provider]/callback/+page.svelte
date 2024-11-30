@@ -4,14 +4,11 @@
 	import { loginOauthCallback } from '$lib/api/user';
 	import { onMount } from 'svelte';
 
-	// /api/user/oauth/login/${provider_name}/callback
-
 	const provider = $page.params.provider;
 
 	let failed = $state(false);
 
 	onMount(async () => {
-		console.log('oauth callback', Object.fromEntries($page.url.searchParams.entries()));
 		const resp = await loginOauthCallback(
 			provider,
 			Object.fromEntries($page.url.searchParams.entries())

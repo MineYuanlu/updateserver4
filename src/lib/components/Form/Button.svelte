@@ -65,6 +65,8 @@
 	{disabled}
 	class:border-2={!!b}
 	class:dark:border-2={!!db}
+	class:opacity-50={disabled}
+	class:cursor-not-allowed={disabled}
 	class="rounded-lg px-4 py-2 focus:outline-none {t} {dt} {bg} {hbg} {dbg} {dhbg} {b} {db} {className}"
 	{style}
 >
