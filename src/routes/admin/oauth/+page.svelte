@@ -3,6 +3,8 @@
 	import { getOauthProviderList } from '$lib/api/user';
 	import Create from './Create.svelte';
 	import Table from '$lib/components/Table/Table.svelte';
+	import { getIcon } from '$lib/common/oauth';
+	import Si from '$lib/components/Icons/Si.svelte';
 
 	let createModCount = $state(0);
 </script>
@@ -17,7 +19,7 @@
 			data={async () => {
 				const data = await getOauthProviderList();
 				return {
-					data: data.map((it) => [it.name, it.desc, [it.logo, it.type], undefined]),
+					data: data.map((it) => [it.name, it.desc, it.type, undefined]),
 					total: data.length,
 				};
 			}}
@@ -27,9 +29,12 @@
 					{#if data === null && tmp}
 						&nbsp;
 					{:else if col === 2}
+						{@const icon = getIcon(data)}
 						<span class="flex items-center justify-center">
-							<img src={data[0]} alt={data[1]} class="mr-1 h-8 w-8" />
-							<span> {data[1]}</span>
+							{#if icon}
+								<Si class="mr-2 h-5 w-5" {icon} />
+							{/if}
+							<span> {data}</span>
 						</span>
 					{:else if col === 3}
 						<Button>编辑</Button>

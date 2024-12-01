@@ -1,4 +1,4 @@
-import { validateUserName } from '$lib/common/user';
+import { validateProjectName } from '$lib/common/project';
 import type { ParamMatcher } from '@sveltejs/kit';
 
-export const match = validateUserName satisfies ParamMatcher;
+export const match = validateProjectName satisfies ParamMatcher;

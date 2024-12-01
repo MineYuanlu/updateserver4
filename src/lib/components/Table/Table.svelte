@@ -15,7 +15,7 @@
 		striped,
 		hover,
 		centering,
-		className,
+		class: className,
 
 		pageSize = $bindable(10),
 		currentPage = $bindable(1),
@@ -61,7 +61,7 @@
 		/** 是否居中显示 */
 		centering?: boolean;
 		/** 额外的自定义类名 */
-		className?: string;
+		class?: string;
 
 		//分页相关
 
@@ -153,7 +153,7 @@
 	{/if}
 {/snippet}
 
-<div class="max-w-full overflow-x-auto {className} relative">
+<div class="relative max-w-full overflow-x-auto {className}">
 	<!-- <pre>{JSON.stringify(
 			{
 				currentPage,

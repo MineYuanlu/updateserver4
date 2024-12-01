@@ -82,6 +82,12 @@ export const baseChars = {
 	36: base36Chars,
 	62: base62Chars,
 } as const;
+/**
+ * 生成一个随机字符串
+ * @param length 字符串长度
+ * @param chars 字符集，默认为base36Chars
+ * @returns 一个随机字符串
+ */
 export function generateRandomString(
 	length: number = 16,
 	chars: string | keyof typeof baseChars = base36Chars,

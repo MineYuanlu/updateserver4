@@ -25,7 +25,7 @@
 				<Navbar navbar={$navbar} />
 
 				<!-- 主体内容 -->
-				<main class="flex-grow bg-white p-6 dark:bg-gray-900 dark:text-gray-100">
+				<main class="flex-grow bg-gray-50 p-6 dark:bg-gray-900 dark:text-gray-100">
 					{@render children()}
 				</main>
 			</div>

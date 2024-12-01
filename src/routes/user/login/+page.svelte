@@ -2,6 +2,7 @@
 	import { browser, dev } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { getOauthProviderList, loginOauth, loginUser, registerUser } from '$lib/api/user';
+	import { getIcon, OAuthProviderTypeNames } from '$lib/common/oauth';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
@@ -21,7 +22,6 @@
 		page_user_login__register_success_title as register_success_title,
 		page_user_login__register_success_message as register_success_message,
 	} from '$lib/paraglide/messages';
-	import { siGithub } from 'simple-icons';
 
 	let username = $state('');
 	let password = $state('');
@@ -54,8 +54,8 @@
 	};
 </script>
 
-<section class="flex items-center justify-center px-4 dark:bg-gray-900">
-	<div class="w-full max-w-md rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800">
+<section class="flex min-h-full flex-col items-center justify-center px-4 py-16">
+	<div class="w-full max-w-lg rounded-lg bg-white p-8 text-center shadow-lg dark:bg-gray-800">
 		<!-- 页面标题 -->
 		<h2 class="mb-6 text-center text-2xl font-bold text-gray-700 dark:text-gray-100">
 			{title()}
@@ -107,19 +107,20 @@
 				{#if providers.length > 0}
 					<Divider text={btn_oauth()} />
 					<div class="flex justify-center space-x-4">
-						{#each providers as { name }}
+						{#each providers as { name, type }}
+							{@const icon = getIcon(type)}
 							<Button
-								class="flex w-full items-center  justify-center rounded-lg px-4  py-3 text-center font-semibold "
+								class="flex w-full items-center justify-center rounded-lg px-4  py-3 text-center font-semibold "
 								color="white"
 								onclick={async () => {
 									const url = await loginOauth(name);
 									if (dev) console.log('Redirecting to', url);
-									if (url) window.location.href = url;
-									// if (url) window.open(url);
+									if (url) window.open(url, '_blank');
 								}}
 							>
-								<Si icon={siGithub} class="mr-2 h-5 w-5 dark:text-white" />
-								<!-- <img src={logo} alt={name} class="mr-2 h-5 w-5 filter dark:invert" /> -->
+								{#if icon}
+									<Si {icon} class="mr-2 h-5 w-5" />
+								{/if}
 								<span>{name}</span>
 							</Button>
 						{/each}

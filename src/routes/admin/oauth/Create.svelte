@@ -2,9 +2,11 @@
 
 <script lang="ts">
 	import { dev } from '$app/environment';
-	import { createOauthProvider, getOauthProviderTypes } from '$lib/api/user';
+	import { createOauthProvider } from '$lib/api/user';
+	import { getIcon, OAuthProviderTypeNames } from '$lib/common/oauth';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
+	import Si from '$lib/components/Icons/Si.svelte';
 	import Modal from '$lib/components/Modal/Modal.svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 	import {
@@ -77,7 +79,7 @@
 		<Button color="blue" onclick={() => toggleModal()}>新增</Button>
 	{/snippet}
 	{#snippet content()}
-		<div class="grid grid-cols-2 gap-4">
+		<div class="mt-2 grid grid-cols-2 gap-4">
 			<Input
 				label={name_label()}
 				placeholder={name_placeholder()}
@@ -85,45 +87,44 @@
 				bind:value={data.name}
 			/>
 
-			{#await getOauthProviderTypes()}
-				<Input
-					label={type_label()}
-					placeholder={type_placeholder()}
-					class="w-full"
-					bind:value={data.type}
-				/>
-			{:then providerTypes}
-				<Input
-					label={type_label()}
-					placeholder={type_placeholder()}
-					class="w-full"
-					options={providerTypes}
-					bind:value={data.type}
-				/>
-			{/await}
+			<Input
+				label={type_label()}
+				placeholder={type_placeholder()}
+				class="w-full"
+				options={OAuthProviderTypeNames}
+				bind:value={data.type}
+			>
+				{#snippet optionSnippet(option)}
+					{@const icon = getIcon(option)}
+					{#if icon}
+						<Si class="mr-2 h-5 w-5" {icon} />
+					{/if}
+					<span>{option}</span>
+				{/snippet}
+			</Input>
 		</div>
 		<Input
 			label={description_label()}
 			placeholder={description_placeholder()}
-			class="w-full"
+			class="mt-2 w-full"
 			bind:value={data.desc}
 		/>
 		<Input
 			label={client_id_label()}
 			placeholder={client_id_placeholder()}
-			class="w-full"
+			class="mt-2 w-full"
 			bind:value={data.client_id}
 		/>
 		<Input
 			label={client_secret_label()}
 			placeholder={client_secret_placeholder()}
-			class="w-full"
+			class="mt-2 w-full"
 			bind:value={data.client_secret}
 		/>
 		<Input
 			label={redirect_uri_label()}
 			placeholder={redirect_uri_placeholder()}
-			class="w-full"
+			class="mt-2 w-full"
 			bind:value={data.redirect_uri}
 		/>
 	{/snippet}

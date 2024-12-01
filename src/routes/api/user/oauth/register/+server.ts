@@ -1,8 +1,8 @@
-import { defaultUserRole, validateUserName } from '$lib/common/user';
+import { defaultWebRole, validateUserName } from '$lib/common/user';
 import { generateId } from '$lib/server/common';
 import { linkOAuthToNewUser } from '$lib/server/db/funcs';
 import {
-	api_user_register__err_invalid_username as err_invalid_username,
+	api_user__err_invalid_username as err_invalid_username,
 	api_user_register__err_username_taken as err_username_taken,
 	api_user_oauth_register__invalid_token as err_invalid_token,
 } from '$lib/paraglide/messages';
@@ -29,7 +29,7 @@ export const POST: RequestHandler = async (req) => {
 
 	const userId = generateId('u');
 	try {
-		await linkOAuthToNewUser(userId, provider, id, username, defaultUserRole);
+		await linkOAuthToNewUser(userId, provider, id, username, defaultWebRole);
 	} catch (e) {
 		if (e instanceof SqliteError) {
 			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return failure(err_username_taken({ username }));
@@ -40,7 +40,7 @@ export const POST: RequestHandler = async (req) => {
 	await userJwt.createJwtCookie(req, {
 		id: userId,
 		name: username,
-		role: defaultUserRole,
+		role: defaultWebRole,
 	});
 	return success(true);
 };

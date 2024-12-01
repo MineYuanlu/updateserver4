@@ -10,6 +10,7 @@
 	import { slide } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
 	import ClickListener from '../Global/ClickListener.svelte';
+	import { isSnippet } from '../SoC/soc';
 
 	let {
 		class: className,
@@ -20,14 +21,18 @@
 		placeholder,
 		value = $bindable(''),
 		disabled,
+		required,
+		invalid = $bindable(false),
+		checker: checkerLike,
+		initNoErr = true,
+		hint,
 		inputClass,
 		prefix,
 		prefixIcon: PrefixIcon,
-		prefixSnippet,
 		suffix,
 		suffixIcon: SuffixIcon,
-		suffixSnippet,
 		options,
+		optionSnippet,
 		focusing = $bindable(false),
 		showDropdown = $bindable(false),
 		onclick,
@@ -40,6 +45,7 @@
 		onmouseenter,
 		onmousemove,
 		onmouseleave,
+		...props
 	}: {
 		/** 最外层容器的类名 */
 		class?: string;
@@ -57,22 +63,29 @@
 		value?: string;
 		/** 输入框是否禁用 */
 		disabled?: boolean | null | undefined;
+		/** 输入框是否必填 */
+		required?: boolean | null | undefined;
+		/** 输入框是否无效 */
+		invalid?: boolean | null | undefined;
+		/** 输入框的校验器 (正则表达式或函数) */
+		checker?: RegExp | ((value: string) => boolean);
+		/** 输入框是否初始化时无错误 */
+		initNoErr?: boolean;
+		/** 输入框的提示信息 */
+		hint?: string | Snippet;
 		/** 输入框的类名 */
 		inputClass?: string;
 		/** 前缀内容 */
-		prefix?: string;
-		/** 前缀图标 */
+		prefix?: string | Snippet;
+		/** 前缀图标, 在prefix是Snippet时失效 */
 		prefixIcon?: Component | any;
-		/** 前缀内容(优先于prefix & prefixIcon) */
-		prefixSnippet?: Snippet;
 		/** 后缀内容 */
-		suffix?: string;
-		/** 后缀图标 */
+		suffix?: string | Snippet;
+		/** 后缀图标, 在suffix是Snippet时失效 */
 		suffixIcon?: Component | any;
-		/** 后缀内容(优先于suffix & suffixIcon) */
-		suffixSnippet?: Snippet;
 		/** 下拉列表选项 */
-		options?: string[];
+		options?: readonly string[];
+		optionSnippet?: Snippet<[string]>;
 		/** 输入框是否有焦点 (可绑定) */
 		focusing?: boolean;
 		/** 下拉列表是否显示 (可绑定) */
@@ -92,6 +105,18 @@
 	const filteredOptions = $derived(
 		options ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())) : [],
 	);
+	const checker = $derived(
+		checkerLike
+			? typeof checkerLike == 'function'
+				? checkerLike
+				: () => checkerLike.test(value)
+			: null,
+	);
+	let isInit = $state(true); // 是否是初始状态, 在首次失去焦点或有任意输入时变为 false
+	$effect(() => {
+		if (isInit && initNoErr) invalid = false;
+		else if (checker) invalid = !checker(value);
+	});
 
 	let container: HTMLDivElement | undefined = $state();
 </script>
@@ -107,7 +132,15 @@
 
 	<!-- 输入框容器 -->
 	<div
-		class="relative flex items-center rounded-md border border-gray-300 bg-white text-black shadow-sm ring-1 ring-blue-500 hover:border-blue-500 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:ring-gray-800 dark:hover:border-blue-500 dark:focus:border-blue-500"
+		class:ring-blue-500={!invalid}
+		class:hover:ring-blue-600={!invalid}
+		class:dark:ring-blue-600={!invalid}
+		class:dark:hover:ring-blue-500={!invalid}
+		class:ring-red-500={invalid}
+		class:hover:ring-red-600={invalid}
+		class:dark:ring-red-600={invalid}
+		class:dark:hover:ring-red-500={invalid}
+		class="relative flex items-center rounded-md bg-white text-black shadow-sm ring-1 dark:bg-gray-800 dark:text-white"
 		{onmouseenter}
 		{onmousemove}
 		{onmouseleave}
@@ -115,8 +148,8 @@
 		bind:this={container}
 	>
 		<!-- 前缀 -->
-		{#if prefixSnippet}
-			{@render prefixSnippet()}
+		{#if isSnippet(prefix)}
+			{@render prefix()}
 		{:else if prefix || PrefixIcon}
 			<div
 				class="flex items-center border-r-2 border-r-gray-300 px-3 py-2 text-sm font-medium text-gray-500 dark:border-r-gray-600 dark:text-gray-300"
@@ -137,7 +170,10 @@
 		<input
 			{id}
 			{name}
-			{oninput}
+			oninput={(e) => {
+				isInit = false;
+				if (oninput) oninput(e);
+			}}
 			{type}
 			onfocus={(e) => {
 				focusing = true;
@@ -146,6 +182,7 @@
 			}}
 			onblur={(e) => {
 				focusing = false;
+				isInit = false;
 				if (onblur) onblur(e);
 			}}
 			{onkeydown}
@@ -154,12 +191,18 @@
 			{placeholder}
 			bind:value
 			{disabled}
-			class="flex-1 rounded-md border-0 px-2 py-2 text-sm text-black placeholder-gray-400 focus:outline-none focus:ring-0 focus:ring-blue-500 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 dark:focus:ring-blue-500 {inputClass}"
+			{required}
+			{...props}
+			class:focus:ring-blue-500={!invalid}
+			class:dark:focus:ring-blue-500={!invalid}
+			class:focus:ring-red-600={invalid}
+			class:dark:focus:ring-red-600={invalid}
+			class="flex-1 rounded-md border-0 px-2 py-2 text-black placeholder-gray-400 focus:outline-none focus:ring-0 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500 {inputClass}"
 		/>
 
 		<!-- 后缀 -->
-		{#if suffixSnippet}
-			{@render suffixSnippet()}
+		{#if isSnippet(suffix)}
+			{@render suffix()}
 		{:else if suffix || SuffixIcon}
 			<button
 				{onclick}
@@ -186,17 +229,26 @@
 			>
 				{#each filteredOptions as option}
 					<button
-						class="w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-blue-100 dark:text-white dark:hover:bg-blue-600"
+						class="flex w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-blue-100 dark:text-white dark:hover:bg-blue-600"
 						onclick={() => {
 							console.log(option);
 							value = option;
 							showDropdown = false;
 						}}
 					>
-						{option}
+						{#if optionSnippet}
+							{@render optionSnippet(option)}
+						{:else}
+							{option}
+						{/if}
 					</button>
 				{/each}
 			</ul>
 		{/if}
 	</div>
+	{#if isSnippet(hint)}
+		{@render hint()}
+	{:else if hint}
+		<p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{hint}</p>
+	{/if}
 </div>

@@ -24,7 +24,6 @@ export const POST: RequestHandler = async ({ request }) => {
 			client_secret: validateClientSecret,
 			redirect_uri: validateRedirectUri,
 		},
-		(field) => failure(common_invalid_field({ field })),
 	);
 
 	// TODO 鉴权

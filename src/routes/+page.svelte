@@ -35,7 +35,7 @@
 
 		<!-- CTA 按钮 -->
 		<a
-			href="#get-started"
+			href="/project/create"
 			class="inline-block transform rounded-lg bg-indigo-600 px-8 py-3 font-semibold text-white shadow-lg transition-all hover:scale-105 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
 		>
 			{m.page_index__btn_start()}

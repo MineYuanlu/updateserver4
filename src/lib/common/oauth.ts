@@ -1,3 +1,4 @@
+import { siGithub, type SimpleIcon } from 'simple-icons';
 import type { JwtInfo } from './jwt';
 
 export type OAuthRegisterInfo = {
@@ -7,3 +8,13 @@ export type OAuthRegisterInfo = {
 	p: string;
 };
 export type UserSession = JwtInfo<OAuthRegisterInfo, 'OAUTH_R'>;
+
+export const OAuthProviderTypeNames = ['GitHub'] as const;
+
+const icons: Readonly<Record<(typeof OAuthProviderTypeNames)[number], SimpleIcon>> = {
+	GitHub: siGithub,
+} as const;
+
+export function getIcon(provider: string): SimpleIcon | undefined {
+	return icons[provider as (typeof OAuthProviderTypeNames)[number]];
+}

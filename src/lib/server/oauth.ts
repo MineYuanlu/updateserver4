@@ -1,3 +1,5 @@
+import type { OAuthProviderTypeNames } from '$lib/common/oauth';
+
 type ServerCfg = {
 	client_id: string;
 	redirect_uri: string;
@@ -44,8 +46,6 @@ export type OAuthReqDef<Callback extends string, Param extends Record<string, an
 export type OAuthProviderType = {
 	/** OAuth提供商的名称 */
 	name: string;
-	/** OAuth提供商的logo */
-	logo: string;
 
 	authorize: OAuthReqDef<'code' | 'state', ServerCfg & PreUserCfg>;
 	access_token: OAuthReqDef<
@@ -60,7 +60,6 @@ export type OAuthProviderType = {
 
 const Github: OAuthProviderType = {
 	name: 'GitHub',
-	logo: '/github.svg',
 	authorize: {
 		origin: 'https://github.com',
 		path: '/login/oauth/authorize',
@@ -109,8 +108,11 @@ const Github: OAuthProviderType = {
 };
 
 /** OAuth提供商类型列表 */
-export const OAuthProviderTypes: readonly OAuthProviderType[] = [Github] as const;
-export const OAuthProviderTypeNames = OAuthProviderTypes.map((p) => p.name);
+export const OAuthProviderTypes: Readonly<
+	Record<(typeof OAuthProviderTypeNames)[number], OAuthProviderType>
+> = {
+	GitHub: Github,
+};
 
 /**
  * 构建OAuth请求URL, 仅支持纯GET请求, 且不支持headers

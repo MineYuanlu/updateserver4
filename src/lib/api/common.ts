@@ -38,7 +38,7 @@ export const apiReq = async <T>(
 	path: string,
 	method: 'GET' | 'POST',
 	defaultVal: T,
-	data?: string[][] | Record<string, string> | string | null,
+	data?: [string, any][] | Record<string, any> | string | null,
 	showErr = 10 * 1000,
 ) => {
 	let response: Response;

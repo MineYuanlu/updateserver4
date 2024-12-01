@@ -1,13 +1,37 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, exists, gte, or } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
-import { defaultUserRole } from '$lib/common/user';
+import { defaultWebRole } from '$lib/common/user';
+import { UserRole, Visibility } from '$lib/common/project';
 
-function _lintType(t: _t._User_Raw | undefined): _t.User | undefined;
-function _lintType(t: _t._User_Info_Raw | undefined): _t._User_Info | undefined;
-/// 内部函数, 仅用于类型检查
-function _lintType(t: any): any {
-	return t;
+/** 获取设置值(如果不存在则插入设置值并返回默认值) */
+export async function getSettingValue(
+	key: string,
+	defaultValue: string | Buffer | (() => string | Buffer),
+) {
+	const results = await db
+		.select({ value: _t.setting.value })
+		.from(_t.setting)
+		.where(eq(_t.setting.key, key))
+		.execute();
+	const result = results.at(0);
+	if (result) return result.value;
+
+	if (typeof defaultValue === 'function') defaultValue = defaultValue();
+	if (typeof defaultValue === 'string') defaultValue = Buffer.from(defaultValue);
+
+	return await db.transaction(async (trx) => {
+		const results = await trx
+			.select({ value: _t.setting.value })
+			.from(_t.setting)
+			.where(eq(_t.setting.key, key))
+			.execute();
+		const result = results.at(0);
+		if (result) return result.value;
+
+		await trx.insert(_t.setting).values({ key, value: defaultValue }).execute();
+		return defaultValue;
+	});
 }
 
 /**
@@ -16,7 +40,7 @@ function _lintType(t: any): any {
  */
 export async function getUserAllByName(name: string) {
 	const results = await db.select().from(_t.user).where(eq(_t.user.name, name)).execute();
-	return _lintType(results.at(0));
+	return results.at(0);
 }
 
 /**
@@ -30,7 +54,7 @@ export async function getUserAllByName(name: string) {
 export function createUser(
 	id: _t.User['id'],
 	name: string,
-	role: _t.User['role'] = defaultUserRole,
+	role: _t.User['role'] = defaultWebRole,
 	password: { hash: string; salt: Buffer } | null = null,
 ) {
 	return db
@@ -98,7 +122,7 @@ export async function getUserInfoByOAuth(provider: string, provider_id: string) 
 		.from(_t.oauth)
 		.innerJoin(_t.user, eq(_t.oauth.uid, _t.user.id))
 		.where(and(eq(_t.oauth.provider, provider), eq(_t.oauth.id, provider_id)));
-	return _lintType(ret.at(0));
+	return ret.at(0);
 }
 
 /**
@@ -146,7 +170,7 @@ export async function linkOAuthToNewUser(
 	provider: string,
 	provider_id: string,
 	username: string,
-	role: _t.User['role'] = defaultUserRole,
+	role: _t.User['role'] = defaultWebRole,
 ) {
 	return await db.transaction(
 		async (trx) => {
@@ -172,32 +196,93 @@ export async function linkOAuthToNewUser(
 	);
 }
 
-/** 获取设置值(如果不存在则插入设置值并返回默认值) */
-export async function getSettingValue(
-	key: string,
-	defaultValue: string | Buffer | (() => string | Buffer),
+/**
+ * 创建项目
+ * @param id 项目ID
+ * @param name 项目名称
+ * @param owner 项目所有者ID
+ * @param desc 项目描述
+ * @param visibility 项目可见性
+ */
+export async function createProject(
+	id: _t.Project['id'],
+	name: string,
+	owner: _t.User['id'],
+	desc: string = '',
+	visibility: _t.Project['visibility'] = Visibility.private.val,
 ) {
-	const results = await db
-		.select({ value: _t.setting.value })
-		.from(_t.setting)
-		.where(eq(_t.setting.key, key))
+	const nameKey = name.trim().toLowerCase();
+	return await db
+		.insert(_t.project)
+		.values({ id, owner, name, nameKey, desc, visibility })
 		.execute();
-	const result = results.at(0);
-	if (result) return result.value;
+}
 
-	if (typeof defaultValue === 'function') defaultValue = defaultValue();
-	if (typeof defaultValue === 'string') defaultValue = Buffer.from(defaultValue);
+/**
+ * 列出项目
+ * @param limit 条数
+ * @param offset 偏移量
+ */
+export async function listProjects(offset: number, limit: number) {
+	return await db
+		.select({
+			id: _t.project.id,
+			name: _t.project.name,
+			oid: _t.project.owner,
+			owner: _t.user.name,
+			desc: _t.project.desc,
+			visibility: _t.project.visibility,
+		})
+		.from(_t.project)
+		.leftJoin(_t.user, eq(_t.project.owner, _t.user.id))
+		.orderBy(_t.project.nameKey)
+		.limit(limit)
+		.offset(offset)
+		.execute();
+}
 
-	return await db.transaction(async (trx) => {
-		const results = await trx
-			.select({ value: _t.setting.value })
-			.from(_t.setting)
-			.where(eq(_t.setting.key, key))
-			.execute();
-		const result = results.at(0);
-		if (result) return result.value;
+/**
+ * 检查项目权限并获取项目ID
+ *
+ * 只在此种情况下返回有效的项目ID:
+ * - 项目可见性为公开
+ * - 用户拥有权限(至少`role`的权限)
+ * @param name 项目名称(key)
+ * @param user 用户ID
+ * @param role 最小权限
+ * @returns 项目ID / undefined
+ */
+export async function checkPermGetProjIdByName(
+	name: string,
+	user?: _t.User['id'] | null | undefined,
+	role: _t.ProjectMember['role'] = UserRole.guest.val,
+) {
+	const nameKey = name.trim().toLowerCase();
 
-		await trx.insert(_t.setting).values({ key, value: defaultValue }).execute();
-		return defaultValue;
-	});
+	const perm = user
+		? or(
+				eq(_t.project.visibility, Visibility.public.val),
+				exists(
+					db
+						.select({ uid: _t.projectMember.uid })
+						.from(_t.projectMember)
+						.where(
+							and(
+								eq(_t.projectMember.uid, user),
+								eq(_t.projectMember.pid, _t.project.id),
+								gte(_t.projectMember.role, role),
+							),
+						),
+				),
+			)
+		: eq(_t.project.visibility, Visibility.public.val);
+
+	const ret = await db
+		.select({
+			id: _t.project.id,
+		})
+		.from(_t.project)
+		.where(and(eq(_t.project.nameKey, nameKey), perm))
+		.execute();
+	return ret.at(0)?.id;
 }

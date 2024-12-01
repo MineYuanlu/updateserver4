@@ -14,7 +14,7 @@ export const POST: RequestHandler = async (req) => {
 	const provider = await getOAuthProvider(provider_name);
 	if (!provider) return failure(err_not_found({ name: provider_name }), 1);
 
-	const type = OAuthProviderTypes.find((t) => t.name === provider.type);
+	const type = OAuthProviderTypes[provider.type as keyof typeof OAuthProviderTypes];
 	if (!type) return failure(err_invalid_provider({ type: provider.type }), 2);
 
 	const redirect_uri = (() => {

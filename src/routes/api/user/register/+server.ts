@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { failure, success } from '../../common';
-import { defaultUserRole, validatePassword, validateUserName } from '$lib/common/user';
+import { defaultWebRole, validatePassword, validateUserName } from '$lib/common/user';
 import {
 	api_user__err_invalid_username as err_invalid_username,
 	api_user__err_invalid_password as err_invalid_password,
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async (req) => {
 	});
 
 	try {
-		await createUser(userId, username, defaultUserRole, {
+		await createUser(userId, username, defaultWebRole, {
 			hash: passwordHash,
 			salt: passwordSalt,
 		});
@@ -40,6 +40,6 @@ export const POST: RequestHandler = async (req) => {
 		}
 		throw e;
 	}
-	await userJwt.createJwtCookie(req, { id: userId, name: username, role: defaultUserRole });
+	await userJwt.createJwtCookie(req, { id: userId, name: username, role: defaultWebRole });
 	return success(true);
 };
