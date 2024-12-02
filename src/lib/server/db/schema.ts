@@ -88,11 +88,15 @@ export const project = createTable(
 			.$type<EnumVal<typeof Visibility>>()
 			.notNull(),
 		versionCmp: text('version_cmp'), // 版本比较信息
-		version: integer('version'), // 正在使用中的版本号ID
+		version: text('version'), // 正在使用中的版本号ID
 		createdAt: integer('created_at').default(sql`(current_timestamp)`), // 创建时间
+		links: text('links', { mode: 'json' }) // 项目链接
+			.$type<Record<string, string>>()
+			.notNull()
+			.default({}),
 	},
 	(t) => ({
-		ownerIndex: index('owner_index').on(t.owner),
+		ownerIndex: index('proj_owner_index').on(t.owner),
 	}),
 );
 export type Project = typeof project.$inferSelect;
@@ -102,10 +106,19 @@ export const projectVersion = createTable(
 	'project_version',
 	{
 		version: text('version').notNull(), // 版本号
-		pid: text('pid'), // 项目ID
+		pid: text('pid') // 项目ID
+			.$type<ProjId>()
+			.references(() => project.id, {
+				onDelete: 'cascade',
+				onUpdate: 'cascade',
+			}),
+		time: integer('time').notNull(), // 版本创建时间
+		desc: text('desc'), // 版本描述
+		link: text('link'), // 版本链接
 	},
 	(t) => ({
 		pk: primaryKey({ columns: [t.version, t.pid] }),
+		pidIndex: index('proj_ver_pid_index').on(t.pid),
 	}),
 );
 export type ProjectVersion = typeof projectVersion.$inferSelect;
@@ -135,3 +148,23 @@ export const projectMember = createTable(
 	}),
 );
 export type ProjectMember = typeof projectMember.$inferSelect;
+
+/** 项目标签信息 */
+export const projectTag = createTable(
+	'project_tag',
+	{
+		pid: text('pid') // 项目ID
+			.$type<ProjId>()
+			.references(() => project.id, {
+				onDelete: 'cascade',
+				onUpdate: 'cascade',
+			}),
+		tag: text('tag').notNull(), // 标签
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.pid, t.tag] }),
+		pidIndex: index('proj_tag_pid_index').on(t.pid),
+		tagIndex: index('proj_tag_tag_index').on(t.tag),
+	}),
+);
+export type ProjectTag = typeof projectTag.$inferSelect;

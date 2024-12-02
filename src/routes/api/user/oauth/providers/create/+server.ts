@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { createOAuthProvider } from '$lib/server/db/funcs';
-import { OAuthProviderTypeNames } from '$lib/server/oauth';
+import { OAuthProviderTypeNames } from '$lib/server/user/oauth';
 import { checkRequestField, failure, success } from '../../../../common';
 import { api__common_invalid_field as common_invalid_field } from '$lib/paraglide/messages';
 

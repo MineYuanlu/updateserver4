@@ -1,4 +1,4 @@
-import { and, eq, exists, gte, or } from 'drizzle-orm';
+import { and, desc, eq, exists, gte, ne, or } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
 import { defaultWebRole } from '$lib/common/user';
@@ -241,6 +241,25 @@ export async function listProjects(offset: number, limit: number) {
 		.execute();
 }
 
+const _proj_check_perm_public = eq(_t.project.visibility, Visibility.public.val);
+const _proj_check_perm_role = (user: _t.User['id'], role: _t.ProjectMember['role']) =>
+	exists(
+		db
+			.select({ uid: _t.projectMember.uid })
+			.from(_t.projectMember)
+			.where(
+				and(
+					eq(_t.projectMember.uid, user),
+					eq(_t.projectMember.pid, _t.project.id),
+					gte(_t.projectMember.role, role),
+				),
+			),
+	);
+const _proj_check_perm = (
+	user?: _t.User['id'] | null | undefined,
+	role: _t.ProjectMember['role'] = UserRole.guest.val,
+) =>
+	user ? or(_proj_check_perm_public, _proj_check_perm_role(user, role)) : _proj_check_perm_public;
 /**
  * 检查项目权限并获取项目ID
  *
@@ -258,31 +277,95 @@ export async function checkPermGetProjIdByName(
 	role: _t.ProjectMember['role'] = UserRole.guest.val,
 ) {
 	const nameKey = name.trim().toLowerCase();
-
-	const perm = user
-		? or(
-				eq(_t.project.visibility, Visibility.public.val),
-				exists(
-					db
-						.select({ uid: _t.projectMember.uid })
-						.from(_t.projectMember)
-						.where(
-							and(
-								eq(_t.projectMember.uid, user),
-								eq(_t.projectMember.pid, _t.project.id),
-								gte(_t.projectMember.role, role),
-							),
-						),
-				),
-			)
-		: eq(_t.project.visibility, Visibility.public.val);
-
 	const ret = await db
 		.select({
 			id: _t.project.id,
 		})
 		.from(_t.project)
-		.where(and(eq(_t.project.nameKey, nameKey), perm))
+		.where(and(eq(_t.project.nameKey, nameKey), _proj_check_perm(user, role)))
 		.execute();
 	return ret.at(0)?.id;
+}
+
+/**
+ * 检查用户是否拥有项目权限
+ *
+ * 只在此种情况下返回true:
+ * - 项目可见性为公开
+ * - 用户拥有权限(至少`role`的权限)
+ * @param name 项目名称(key)
+ * @param user 用户ID
+ * @param role 最小权限
+ */
+export async function checkPermByProjId(
+	id: _t.Project['id'],
+	user?: _t.User['id'] | null | undefined,
+	role: _t.ProjectMember['role'] = UserRole.guest.val,
+) {
+	const ret = await db
+		.select({
+			id: _t.project.id,
+		})
+		.from(_t.project)
+		.where(and(eq(_t.project.id, id), _proj_check_perm(user, role)))
+		.execute();
+	return !!ret.at(0);
+}
+
+/**
+ * 检查用户权限, 并获取项目详情
+ * @param id 项目ID
+ * @param user 请求用户的ID
+ * @param role 最小权限
+ * @returns 项目详情 / undefined
+ */
+export async function getProjectDetailById(
+	id: _t.Project['id'],
+	user?: _t.User['id'] | null | undefined,
+	role: _t.ProjectMember['role'] = UserRole.guest.val,
+) {
+	const ret0 = await db
+		.select({
+			id: _t.project.id,
+			name: _t.project.name,
+			oid: _t.project.owner,
+			owner: _t.user.name,
+			desc: _t.project.desc,
+			visibility: _t.project.visibility,
+			version: _t.project.version,
+			versionCmp: _t.project.versionCmp,
+			createdAt: _t.project.createdAt,
+			links: _t.project.links,
+		})
+		.from(_t.project)
+		.leftJoin(_t.user, eq(_t.project.owner, _t.user.id))
+		.where(and(eq(_t.project.id, id), _proj_check_perm(user, role)))
+		.execute();
+	const proj = ret0.at(0);
+	if (!proj) return undefined;
+	const versions = await db
+		.select({
+			version: _t.projectVersion.version,
+			desc: _t.projectVersion.desc,
+			time: _t.projectVersion.time,
+			size: _t.projectVersion.link,
+		})
+		.from(_t.projectVersion)
+		.where(eq(_t.projectVersion.pid, id))
+		.orderBy(desc(_t.projectVersion.time))
+		.limit(3)
+		.execute();
+	const ret1 = await db
+		.select({
+			tag: _t.projectTag.tag,
+		})
+		.from(_t.projectTag)
+		.where(eq(_t.projectTag.pid, id))
+		.execute();
+	const tags = ret1.map((t) => t.tag);
+	return {
+		proj,
+		versions,
+		tags,
+	};
 }

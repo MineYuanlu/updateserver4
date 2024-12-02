@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { createOAuthUser, getOAuthProvider, getUserInfoByOAuth } from '$lib/server/db/funcs';
-import { execute, OAuthProviderTypes, parseResp } from '$lib/server/oauth';
+import { execute, OAuthProviderTypes, parseResp } from '$lib/server/user/oauth';
 import {
 	api_user_oauth_login_provider__err_not_found as err_not_found,
 	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
@@ -9,7 +9,8 @@ import {
 } from '$lib/paraglide/messages.js';
 import { COOKIES } from '$lib/common/cookies';
 import { failure, success } from '../../../../../common';
-import { oauthRegisterJwt, userJwt } from '$lib/server/jwt';
+import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
+import type { OAuthProviderTypeName } from '$lib/common/oauth';
 
 export const POST: RequestHandler = async (req) => {
 	const body = await req.request.json();
@@ -23,7 +24,7 @@ export const POST: RequestHandler = async (req) => {
 
 	const [req_state, redirect_uri] = state_info.split('|', 2);
 
-	const type = OAuthProviderTypes.find((t) => t.name === provider.type);
+	const type = OAuthProviderTypes[provider.type as OAuthProviderTypeName];
 	if (!type) return failure(err_invalid_provider({ type: provider.type }), 2);
 
 	const { code, state } = await parseResp(type.authorize, body);

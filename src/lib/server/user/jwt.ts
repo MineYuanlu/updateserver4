@@ -1,6 +1,6 @@
 import type { JwtInfo, JwtTypes } from '$lib/common/jwt';
 import { jwtVerify, SignJWT } from 'jose';
-import { getSetting } from './common';
+import { getSetting } from '../common';
 import type { RequestEvent } from '@sveltejs/kit';
 import { COOKIES, type COOKIE_VALUES } from '$lib/common/cookies';
 import type { UserInfo } from '$lib/common/user';

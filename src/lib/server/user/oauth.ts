@@ -1,4 +1,4 @@
-import type { OAuthProviderTypeNames } from '$lib/common/oauth';
+import type { OAuthProviderTypeName, OAuthProviderTypeNames } from '$lib/common/oauth';
 
 type ServerCfg = {
 	client_id: string;
@@ -108,9 +108,7 @@ const Github: OAuthProviderType = {
 };
 
 /** OAuth提供商类型列表 */
-export const OAuthProviderTypes: Readonly<
-	Record<(typeof OAuthProviderTypeNames)[number], OAuthProviderType>
-> = {
+export const OAuthProviderTypes: Readonly<Record<OAuthProviderTypeName, OAuthProviderType>> = {
 	GitHub: Github,
 };
 

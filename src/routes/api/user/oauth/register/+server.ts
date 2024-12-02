@@ -8,7 +8,7 @@ import {
 } from '$lib/paraglide/messages';
 import type { RequestHandler } from './$types';
 import { failure, success } from '../../../common';
-import { oauthRegisterJwt, userJwt } from '$lib/server/jwt';
+import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
 import { SqliteError } from 'better-sqlite3';
 
 export const POST: RequestHandler = async (req) => {

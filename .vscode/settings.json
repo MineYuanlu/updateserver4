@@ -1,3 +1,9 @@
 {
-	"editor.formatOnSave": true
+	"editor.formatOnSave": true,
+	"files.exclude": {
+		".svelte-kit": true,
+		"node_modules": true,
+		"project.inlang/cache": true,
+		"src/lib/paraglide": true
+	}
 }

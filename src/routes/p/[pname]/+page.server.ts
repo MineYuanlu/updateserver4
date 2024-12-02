@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { checkPermGetProjIdByName } from '$lib/server/db/funcs';
-import { userJwt } from '$lib/server/jwt';
+import { userJwt } from '$lib/server/user/jwt';
 import { languageTag } from '$lib/paraglide/runtime';
 import { langPrefix } from '../../api/common';
 import { validateProjectName } from '$lib/common/project';

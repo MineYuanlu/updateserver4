@@ -7,7 +7,7 @@ import {
 	api__need_login as err_need_login,
 } from '$lib/paraglide/messages';
 import { createProject } from '$lib/server/db/funcs';
-import { userJwt } from '$lib/server/jwt';
+import { userJwt } from '$lib/server/user/jwt';
 import { maxProjectDescriptionLength, validateProjectName, Visibility } from '$lib/common/project';
 import { generateId } from '$lib/server/common';
 import { SqliteError } from 'better-sqlite3';

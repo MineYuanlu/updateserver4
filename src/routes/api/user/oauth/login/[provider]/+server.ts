@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { getOAuthProvider } from '$lib/server/db/funcs';
-import { buildURL, OAuthProviderTypes } from '$lib/server/oauth';
+import { buildURL, OAuthProviderTypes } from '$lib/server/user/oauth';
 import { generateRandomString } from '$lib/server/common';
 import { COOKIES } from '$lib/common/cookies';
 import {
@@ -8,13 +8,14 @@ import {
 	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
 } from '$lib/paraglide/messages.js';
 import { failure, success } from '../../../../common';
+import type { OAuthProviderTypeName } from '$lib/common/oauth';
 
 export const POST: RequestHandler = async (req) => {
 	const provider_name = req.params.provider;
 	const provider = await getOAuthProvider(provider_name);
 	if (!provider) return failure(err_not_found({ name: provider_name }), 1);
 
-	const type = OAuthProviderTypes[provider.type as keyof typeof OAuthProviderTypes];
+	const type = OAuthProviderTypes[provider.type as OAuthProviderTypeName];
 	if (!type) return failure(err_invalid_provider({ type: provider.type }), 2);
 
 	const redirect_uri = (() => {

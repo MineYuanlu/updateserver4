@@ -4,7 +4,7 @@ import type { Handle } from '@sveltejs/kit';
 import { COOKIES } from '$lib/common/cookies';
 import { decodeJwt } from 'jose/jwt/decode';
 import type { UserSession } from '$lib/common/user';
-import { userJwt } from '$lib/server/jwt';
+import { userJwt } from '$lib/server/user/jwt';
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const jwt = event.cookies.get(COOKIES.Session);

@@ -10,11 +10,12 @@ export type OAuthRegisterInfo = {
 export type UserSession = JwtInfo<OAuthRegisterInfo, 'OAUTH_R'>;
 
 export const OAuthProviderTypeNames = ['GitHub'] as const;
+export type OAuthProviderTypeName = (typeof OAuthProviderTypeNames)[number];
 
-const icons: Readonly<Record<(typeof OAuthProviderTypeNames)[number], SimpleIcon>> = {
+const icons: Readonly<Record<OAuthProviderTypeName, SimpleIcon>> = {
 	GitHub: siGithub,
 } as const;
 
 export function getIcon(provider: string): SimpleIcon | undefined {
-	return icons[provider as (typeof OAuthProviderTypeNames)[number]];
+	return icons[provider as OAuthProviderTypeName];
 }

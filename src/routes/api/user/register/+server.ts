@@ -8,8 +8,8 @@ import {
 } from '$lib/paraglide/messages';
 import { createUser } from '$lib/server/db/funcs';
 import { hash } from '@node-rs/argon2';
-import { userJwt } from '$lib/server/jwt';
-import { passwordCheckOpt } from '$lib/server/auth';
+import { userJwt } from '$lib/server/user/jwt';
+import { passwordCheckOpt } from '$lib/server/user/auth';
 import { generateId } from '$lib/server/common';
 import crypto from 'crypto';
 import { SqliteError } from 'better-sqlite3';

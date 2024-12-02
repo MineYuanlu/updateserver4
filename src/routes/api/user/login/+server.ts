@@ -9,8 +9,8 @@ import {
 } from '$lib/paraglide/messages';
 import { getUserAllByName } from '$lib/server/db/funcs';
 import { verify } from '@node-rs/argon2';
-import { userJwt } from '$lib/server/jwt';
-import { passwordCheckOpt } from '$lib/server/auth';
+import { userJwt } from '$lib/server/user/jwt';
+import { passwordCheckOpt } from '$lib/server/user/auth';
 
 export const POST: RequestHandler = async (req) => {
 	const { username, password } = await req.request.json();
