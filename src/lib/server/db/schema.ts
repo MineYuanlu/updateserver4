@@ -168,3 +168,21 @@ export const projectTag = createTable(
 	}),
 );
 export type ProjectTag = typeof projectTag.$inferSelect;
+
+/** 计数器表 */
+export const cnts = createTable(
+	'cnts',
+	{
+		name: text('name').notNull(), // 计数器名称
+		unit: integer('unit'), // 计数器单位 枚举, null代表总量
+		time: integer('point').notNull(), // 计数点: 计数器时间戳 除以 时间单位
+		value: integer('value').notNull(), // 计数器值
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.name, t.unit, t.time] }),
+		nuIdx: index('cnts_name_unit_time_index').on(t.name, t.unit),
+		utIdx: index('cnts_unit_time_index').on(t.unit, t.time),
+	}),
+);
+
+export type Cnts = typeof cnts.$inferSelect;

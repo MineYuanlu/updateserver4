@@ -1,4 +1,4 @@
-import { and, desc, eq, exists, gte, ne, or } from 'drizzle-orm';
+import { and, desc, eq, exists, gte, lt, ne, or } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
 import { defaultWebRole } from '$lib/common/user';
@@ -343,6 +343,7 @@ export async function getProjectDetailById(
 		.execute();
 	const proj = ret0.at(0);
 	if (!proj) return undefined;
+
 	const versions = await db
 		.select({
 			version: _t.projectVersion.version,
@@ -355,6 +356,7 @@ export async function getProjectDetailById(
 		.orderBy(desc(_t.projectVersion.time))
 		.limit(3)
 		.execute();
+
 	const ret1 = await db
 		.select({
 			tag: _t.projectTag.tag,
@@ -368,4 +370,17 @@ export async function getProjectDetailById(
 		versions,
 		tags,
 	};
+}
+
+/**
+ * 删除过期的计数器统计
+ * @param unit 计数器单位
+ * @param threshold 删除阈值
+ * @returns
+ */
+export function deleteExpireCounts(unit: number, threshold: number) {
+	return db
+		.delete(_t.cnts)
+		.where(and(eq(_t.cnts.unit, unit), lt(_t.cnts.time, threshold)))
+		.execute();
 }
