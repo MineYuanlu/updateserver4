@@ -32,6 +32,29 @@ export function apiResp(
 export function success(data?: any, headers?: Record<string, string>) {
 	return apiResp(data, 0, undefined, 200, headers);
 }
+
+/**
+ * API成功返回函数(protobuf)
+ * @param data 返回数据(protobuf)
+ * @param header HTTP头
+ * @returns Response对象
+ */
+export function success_proto(data: Uint8Array, header?: Record<string, string>) {
+	const headers = new Headers(header);
+
+	if (!headers.has('content-type')) {
+		headers.set('content-type', 'application/x-protobuf');
+	}
+	if (!headers.has('content-length')) {
+		headers.set('content-length', data.length.toString());
+	}
+
+	return new Response(data, {
+		headers,
+		status: 200,
+	});
+}
+
 /**
  * API失败返回函数
  * @param msg 错误信息

@@ -174,8 +174,8 @@ export const cnts = createTable(
 	'cnts',
 	{
 		name: text('name').notNull(), // 计数器名称
-		unit: integer('unit'), // 计数器单位 枚举, null代表总量
-		time: integer('point').notNull(), // 计数点: 计数器时间戳 除以 时间单位
+		unit: integer('unit').notNull(), // 计数器单位的序号（0,1,2,...), -1代表总量
+		time: integer('point').notNull(), // 计数点: 计数器时间戳 除以 时间单位, 总量下为0
 		value: integer('value').notNull(), // 计数器值
 	},
 	(t) => ({

@@ -1,7 +1,13 @@
 <script lang="ts">
+	import type { IAllCount } from '$lib/protos';
+	import { onMount } from 'svelte';
+
 	// 项目数据（此部分为模拟数据，实际情况需要从后端获取）
 
 	import Tag from './Tag.svelte';
+	import { getCnts } from '$lib/api/cnts';
+	import { getKey } from '$lib/common/cnts';
+	import TimeLine from '$lib/components/Charts/TimeLine.svelte';
 
 	const { data } = $props();
 	const project1 = data.project;
@@ -27,9 +33,19 @@
 			repository: 'https://github.com/updateserver/project',
 		},
 	};
+	let cntsVisit: IAllCount | null = $state(null);
+	onMount(() => {
+		getCnts(getKey(project1.proj.id, 'v')).then((cnt) => {
+			cntsVisit = cnt;
+		});
+	});
 </script>
 
 <pre>{JSON.stringify(project1, null, 2)}</pre>
+<!-- <pre>{JSON.stringify(cntsVisit, null, 2)}</pre> -->
+{#if cntsVisit}
+	<TimeLine data={cntsVisit} />
+{/if}
 <section class="min-h-screen bg-gray-50 px-4 py-16 dark:bg-gray-900">
 	<div class="mx-auto max-w-7xl space-y-12">
 		<!-- 页面标题和描述 -->

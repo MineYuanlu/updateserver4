@@ -372,15 +372,25 @@ export async function getProjectDetailById(
 	};
 }
 
-/**
- * 删除过期的计数器统计
- * @param unit 计数器单位
- * @param threshold 删除阈值
- * @returns
- */
-export function deleteExpireCounts(unit: number, threshold: number) {
-	return db
-		.delete(_t.cnts)
-		.where(and(eq(_t.cnts.unit, unit), lt(_t.cnts.time, threshold)))
+export async function getTotalCount(key: string) {
+	const ret = await db
+		.select({
+			count: _t.cnts.value,
+		})
+		.from(_t.cnts)
+		.where(and(eq(_t.cnts.name, key), eq(_t.cnts.unit, -1), eq(_t.cnts.time, 0)))
+		.execute();
+	return ret.at(0)?.count || 0;
+}
+
+export async function getSubCounts(key: string) {
+	return await db
+		.select({
+			c: _t.cnts.value,
+			u: _t.cnts.unit,
+			t: _t.cnts.time,
+		})
+		.from(_t.cnts)
+		.where(and(eq(_t.cnts.name, key)))
 		.execute();
 }

@@ -1,6 +1,6 @@
 import type { PageServerLoad } from './$types';
 import { userJwt } from '$lib/server/user/jwt';
-import { checkPermByProjId, getProjectDetailById } from '$lib/server/db/funcs';
+import { getProjectDetailById } from '$lib/server/db/funcs';
 import type { ProjId } from '$lib/common/project';
 import { error } from '@sveltejs/kit';
 

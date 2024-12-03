@@ -10,6 +10,8 @@ export const db = ((type: DatabaseType) => {
 		case 'sqlite3': {
 			if (!env.DATABASE_URL) throw new Error('DATABASE_URL is not set');
 			const db = new DatabaseSqlite3(env.DATABASE_URL);
+			// db.exec('PRAGMA journal_mode = WAL');
+			// db.exec('PRAGMA synchronous = NORMAL');
 			return drizzle_sqlite3(db);
 		}
 		case 'mysql': {

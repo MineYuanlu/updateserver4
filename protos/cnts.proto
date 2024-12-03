@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message CountFrame {
+  int32 c = 1;
+  int32 u = 2;
+  int32 t = 3;
+}
+
+message CountUnit {
+  int32 u = 1;
+  int32 scale = 2;
+}
+
+message AllCount {
+  int32 total = 1;
+  repeated CountFrame data = 2;
+  repeated CountUnit units = 3;
+}
