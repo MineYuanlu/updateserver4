@@ -10,9 +10,10 @@
 	import { LineChart, type LineSeriesOption } from 'echarts/charts';
 	import { UniversalTransition } from 'echarts/features';
 	import { CanvasRenderer } from 'echarts/renderers';
-	import { init, use, type ComposeOption, type ECharts } from 'echarts/core';
+	import { use, type ComposeOption, type ECharts } from 'echarts/core';
 	import ChartBase from './ChartBase.svelte';
 	import type { IAllCount } from '$lib/protos';
+	import * as m from '$lib/paraglide/messages';
 
 	use([
 		TitleComponent,
@@ -28,42 +29,52 @@
 
 	let {
 		data,
+		title,
 	}: {
 		data: IAllCount;
+		title: string;
 	} = $props();
 
-	const units = $derived(
-		data?.units ? data.units.filter((x) => typeof x.u === 'number').map((x) => x.u as number) : [],
-	);
-	const legends = $derived(Object.fromEntries(units.map((x) => [`单位${x}`, x])));
-	let displayUnit = $state(0);
-	const scale = $derived(data?.units?.[displayUnit]?.scale ?? null);
+	const legend = (unit: number) => {
+		const unitStr = m[`counter__unit_${unit as 0}`];
+		return m.component_charts_time_line__legend({ unit: unitStr() });
+	};
+
+	/** 各个时间单位 idx - scale*/
+	const idxToScale = $derived(Object.fromEntries(data.units!.map((x) => [x.u, x.scale])));
+	const idx = $derived(data.units!.map((x) => x.u!));
+	const legendToIdx = $derived(Object.fromEntries(idx.map((x) => [legend(x), x])));
+	let displayIdx = $state(0);
+	const scale = $derived(data.units![displayIdx]!.scale);
 
 	const seriesData = $derived.by(() => {
-		const a = data.data?.filter?.((d) => d.u === displayUnit).sort((a, b) => a.t - b.t);
-		const x = a?.map?.((v) => (v.t ?? 0) * (scale ?? 0)).map((x) => new Date(x).toLocaleString());
-		const y = a?.map?.((v) => v.c ?? 0);
+		const add: Map<number, number> = new Map<number, number>();
+		debugger;
+		data.data!.forEach((d) => {
+			if (d.u === -1) return;
+			if (d.u === displayIdx) {
+				add.set(d.t!, (add.get(d.t!) || 0) + d.c!);
+			} else if (d.u! < displayIdx) {
+				// 在大范围低精度的统计上补全最后一个point的计数
+				const point = (d.t! * (idxToScale[d.u!] / idxToScale[displayIdx])) | 0;
+				add.set(point, (add.get(point) || 0) + d.c!);
+			}
+		});
+		const arr = Array.from(add).sort((a, b) => a[0] - b[0]);
+		const x = arr.map(([point, _]) => new Date(point * scale!).toLocaleString());
+		const y = arr.map(([_, count]) => count);
 		return [x, y];
 	});
 
 	const option: EChartsOption = $derived({
-		// 图表标题
-		title: {
-			text: '计数数据随时间变化',
-		},
-
-		// 提示框配置
+		title: { text: title },
 		tooltip: {
-			trigger: 'axis', // 触发方式：轴触发（即触发器为 x 轴）
-			axisPointer: {
-				type: 'cross', // 十字准星指示器
-			},
+			trigger: 'axis',
+			axisPointer: { type: 'cross' },
 		},
-
-		// 图例配置
 		legend: {
-			data: units.map((x) => `单位${x}`),
-			selected: Object.fromEntries(units.map((x) => [`单位${x}`, x === displayUnit])),
+			data: idx.map(legend),
+			selected: Object.fromEntries(idx.map((x) => [legend(x), x === displayIdx])),
 		},
 
 		// x 轴配置
@@ -82,10 +93,10 @@
 		},
 
 		// 数据系列配置
-		series: units.map((x) => ({
-			name: `单位${x}`,
+		series: idx.map((x) => ({
+			name: legend(x),
 			type: 'line',
-			data: x === displayUnit ? seriesData?.[1] : [],
+			data: x === displayIdx ? seriesData?.[1] : [],
 			smooth: true,
 			showSymbol: false,
 		})),
@@ -94,9 +105,9 @@
 		chart.on('legendselectchanged', (ev: any) => {
 			const selected: Record<string, boolean> = ev.selected;
 			for (const key in selected) {
-				const unit = legends[key];
-				if (unit !== displayUnit && selected[key]) {
-					displayUnit = unit;
+				const idx = legendToIdx[key];
+				if (idx !== displayIdx && selected[key]) {
+					displayIdx = idx;
 					break;
 				}
 			}

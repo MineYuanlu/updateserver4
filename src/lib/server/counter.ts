@@ -152,7 +152,7 @@ async function flushCache() {
 	});
 
 	let timePoint: number[] = [];
-	setInterval(async () => {
+	const interval1 = setInterval(async () => {
 		// 过期数据放入更大的计数区间, 并删除
 		const now = Date.now();
 		const news = countUnit.map((u) => (now / u) | 0);
@@ -165,7 +165,22 @@ async function flushCache() {
 		}
 	}, 1000 * 30); // 每 30 秒测试删除过期计数一次
 
-	setInterval(flushCache, 1000 * 60);
+	const interval2 = setInterval(flushCache, 1000 * 60);
+
+	process.on('SIGINT', () => {
+		console.log('保存计数数据中...');
+		clearInterval(interval1);
+		clearInterval(interval2);
+		flushCache();
+		console.log('计数数据保存完成');
+	});
+	process.on('SIGTERM', () => {
+		console.log('保存计数数据中...');
+		clearInterval(interval1);
+		clearInterval(interval2);
+		flushCache();
+		console.log('计数数据保存完成');
+	});
 
 	console.log('计数器worker初始化完成');
 })();

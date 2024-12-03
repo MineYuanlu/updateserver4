@@ -103,5 +103,10 @@
 	"page_project_create__success_message": "项目 {name} 创建成功!",
 
 	"page_p__error_404_message": "抱歉, 项目 \"{name}\" 不存在。",
-	"page_p__error_400_message": "抱歉, \"{name}\" 不是一个有效的项目名称。"
+	"page_p__error_400_message": "抱歉, \"{name}\" 不是一个有效的项目名称。",
+
+	"counter__unit_0": "半小时",
+	"counter__unit_1": "天",
+	"counter__unit_2": "周",
+	"component_charts_time_line__legend": "每{unit}统计"
 }
