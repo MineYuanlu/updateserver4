@@ -90,5 +90,11 @@
 	"page_project_create__visibility_private": "Private projects are visible only to you, others cannot access them.",
 	"page_project_create__btn_create": "Create Project",
 	"page_project_create__success_title": "Creation Successful",
-	"page_project_create__success_message": "Project {name} has been created successfully!"
+	"page_project_create__success_message": "Project {name} has been created successfully!",
+	"page_p__error_404_message": "Sorry, the item \" {name} \" does not exist.",
+	"page_p__error_400_message": "Sorry, \" {name} \" is not a valid item name.",
+	"counter__unit_0": "0.5Hour",
+	"counter__unit_1": "daily",
+	"counter__unit_2": "weekly",
+	"component_charts_time_line__legend": "Statistics per {unit}"
 }

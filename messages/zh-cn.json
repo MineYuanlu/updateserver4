@@ -49,7 +49,6 @@
 	"page_admin_oauth__create_btn_cancel": "取消",
 	"page_admin_oauth__create_success_title": "创建成功",
 	"page_admin_oauth__create_success_message": "登录器 {name} 创建成功",
-
 	"page_user_login__title": "登录到您的账户",
 	"page_user_login__username_label": "用户名",
 	"page_user_login__username_placeholder": "请输入用户名",
@@ -62,7 +61,6 @@
 	"page_user_login__login_success_message": "欢迎回来, {username}!",
 	"page_user_login__register_success_title": "注册成功",
 	"page_user_login__register_success_message": "欢迎加入, {username}!",
-
 	"check_project_name__not_string": "必须为字符串",
 	"check_project_name__has_special": "特殊名称不可用",
 	"check_project_name__is_empty": "名称不能为空",
@@ -78,17 +76,14 @@
 	"check_user_password__not_string": "必须为字符串",
 	"check_user_password__too_short": "密码长度不能少于6个字符",
 	"check_user_password__too_long": "密码长度不能超过255个字符",
-
 	"enum_project__visibility_public": "公开",
 	"enum_project__visibility_private": "私有",
 	"enum_user__web_role_user": "普通用户",
 	"enum_user__web_role_admin": "管理员",
-
 	"enum_project__user_role_guest": "访客",
 	"enum_project__user_role_developer": "开发者",
 	"enum_project__user_role_manager": "管理者",
 	"enum_project__user_role_owner": "所有者",
-
 	"page_project_create__title": "创建新项目",
 	"page_project_create__name_label": "项目名称",
 	"page_project_create__name_placeholder": "输入您的项目名称",
@@ -101,10 +96,8 @@
 	"page_project_create__btn_create": "创建项目",
 	"page_project_create__success_title": "创建成功",
 	"page_project_create__success_message": "项目 {name} 创建成功!",
-
 	"page_p__error_404_message": "抱歉, 项目 \"{name}\" 不存在。",
 	"page_p__error_400_message": "抱歉, \"{name}\" 不是一个有效的项目名称。",
-
 	"counter__unit_0": "半小时",
 	"counter__unit_1": "天",
 	"counter__unit_2": "周",
