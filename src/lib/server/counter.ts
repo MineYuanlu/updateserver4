@@ -1,6 +1,10 @@
 import { and, eq, lt, sql, sum } from 'drizzle-orm';
 import { db } from './db';
 import { cnts } from './db/schema';
+import exitHook from 'exit-hook';
+import { getLogger } from './logger';
+
+const logger = getLogger('counter');
 
 /**
  * 计数单位, 相对于`Date.now()`的单位(ms), 每一个都可以被前一个整除
@@ -160,27 +164,20 @@ async function flushCache() {
 		timePoint = [...news];
 		for (let i = 0; i < countUnit.length; i++) {
 			if (news[i] === olds[i]) continue;
-			console.log(`清理计数区间 ${i} ${olds[i]} -> ${news[i]}`);
+			logger.trace(`清理计数区间 ${i} ${olds[i]} -> ${news[i]}`);
 			await flushExpire(i, now);
 		}
 	}, 1000 * 30); // 每 30 秒测试删除过期计数一次
 
 	const interval2 = setInterval(flushCache, 1000 * 60);
 
-	process.on('SIGINT', () => {
-		console.log('保存计数数据中...');
+	exitHook(() => {
+		logger.info('计数器worker退出清理...');
 		clearInterval(interval1);
 		clearInterval(interval2);
 		flushCache();
-		console.log('计数数据保存完成');
-	});
-	process.on('SIGTERM', () => {
-		console.log('保存计数数据中...');
-		clearInterval(interval1);
-		clearInterval(interval2);
-		flushCache();
-		console.log('计数数据保存完成');
+		logger.info('计数器worker退出完成');
 	});
 
-	console.log('计数器worker初始化完成');
+	logger.info('计数器worker初始化完成');
 })();

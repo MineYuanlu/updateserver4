@@ -1,10 +1,12 @@
+<script module lang="ts">
+	import { SVGRenderer, CanvasRenderer } from 'echarts/renderers';
+	import { use } from 'echarts/core';
+	use([CanvasRenderer, SVGRenderer]);
+</script>
+
 <script lang="ts">
-	import { GridComponent, type GridComponentOption } from 'echarts/components';
-	import { LineChart, type LineSeriesOption } from 'echarts/charts';
-	import { UniversalTransition } from 'echarts/features';
-	import { CanvasRenderer } from 'echarts/renderers';
-	import { init, use, type ComposeOption, type ECharts } from 'echarts/core';
-	import type { ECBasicOption } from 'echarts/types/dist/shared';
+	import { init, type ECharts } from 'echarts/core';
+	import type { ECBasicOption, EChartsInitOpts } from 'echarts/types/dist/shared';
 	import { browser } from '$app/environment';
 	import { onDestroy } from 'svelte';
 
@@ -16,6 +18,8 @@
 		class: className,
 		style,
 		id,
+		theme,
+		svg,
 
 		onInit,
 	}: {
@@ -26,13 +30,18 @@
 		class?: string;
 		style?: string;
 		id?: string;
+		theme?: string | object | null;
+		svg?: boolean;
 
 		onInit?: (chart: ECharts) => void;
 	} = $props();
 
 	$effect(() => {
 		if ((SSR || browser) && dom && (!chart || chart.isDisposed())) {
-			chart = init(dom);
+			const opts: EChartsInitOpts = {};
+			if (svg !== undefined) opts.renderer = svg ? 'svg' : 'canvas';
+			if (SSR !== undefined) opts.ssr = SSR;
+			chart = init(dom, theme, opts);
 			onInit?.(chart);
 		}
 	});

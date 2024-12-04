@@ -8,6 +8,9 @@
 	import { getCnts } from '$lib/api/cnts';
 	import { getKey } from '$lib/common/cnts';
 	import TimeLine from '$lib/components/Charts/TimeLine.svelte';
+	import { browser } from '$app/environment';
+	import MultiTimeLine from '$lib/components/Charts/MultiTimeLine.svelte';
+	import Pie from '$lib/components/Charts/Pie.svelte';
 
 	const { data } = $props();
 	const project1 = data.project;
@@ -43,9 +46,6 @@
 
 <pre>{JSON.stringify(project1, null, 2)}</pre>
 <!-- <pre>{JSON.stringify(cntsVisit, null, 2)}</pre> -->
-{#if cntsVisit}
-	<TimeLine data={cntsVisit} />
-{/if}
 <section class="min-h-screen bg-gray-50 px-4 py-16 dark:bg-gray-900">
 	<div class="mx-auto max-w-7xl space-y-12">
 		<!-- 页面标题和描述 -->
@@ -114,6 +114,23 @@
 				{/if}
 			</div>
 		</div>
+
+		{#if browser}
+			{#await getCnts(getKey(project1.proj.id, 'v')) then cntsVisit}
+				{#await getCnts(getKey(project1.proj.id, 'd')) then cntsDownload}
+					{#if cntsVisit && cntsDownload}
+						<MultiTimeLine datas={[cntsVisit, cntsDownload]} title="" />
+						<TimeLine data={cntsVisit} title="活跃用户" />
+						<TimeLine data={cntsDownload} title="下载次数" />
+					{/if}
+				{/await}
+			{/await}
+		{/if}
+		<Pie />
+
+		<!-- {#if cntsVisit}
+			<TimeLine data={cntsVisit} />
+		{/if} -->
 
 		<!-- 统计信息 -->
 		<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">

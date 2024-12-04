@@ -55,7 +55,9 @@
 		"bitset": "^5.2.3",
 		"drizzle-orm": "^0.36.4",
 		"echarts": "^5.5.1",
+		"exit-hook": "^4.0.0",
 		"jose": "^5.9.6",
+		"pino": "^9.5.0",
 		"protobufjs": "^7.4.0",
 		"radix-icons-svelte": "^1.2.1",
 		"simple-icons": "^13.18.0"
