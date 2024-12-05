@@ -101,5 +101,15 @@
 	"counter__unit_0": "半小时",
 	"counter__unit_1": "天",
 	"counter__unit_2": "周",
-	"component_charts_time_line__legend": "每{unit}统计"
+	"component_charts_time_line__legend": "每{unit}统计",
+
+	"enum_cnts__project_cnt_type_simple_pie": "简单饼图",
+	"enum_cnts__project_cnt_type_drilldown_pie": "下钻饼图",
+	"enum_cnts__project_cnt_type_single_line": "单线图",
+	"enum_cnts__project_cnt_type_multi_line": "多线图",
+	"enum_cnts__project_cnt_type_bar": "柱状图",
+	"enum_cnts__project_cnt_type_stacked_bar": "堆叠柱状图",
+	"enum_cnts__project_cnt_type_scatter_2d": "散点图",
+	"enum_cnts__project_cnt_type_scatter_3d": "三维散点图",
+	"enum_cnts__project_cnt_type_map": "地图"
 }

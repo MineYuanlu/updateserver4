@@ -372,25 +372,35 @@ export async function getProjectDetailById(
 	};
 }
 
+/**
+ * 获取总量计数(时间类计数)
+ * @param key 要获取的键
+ * @returns 计数
+ */
 export async function getTotalCount(key: string) {
 	const ret = await db
 		.select({
-			count: _t.cnts.value,
+			count: _t.timeCnts.value,
 		})
-		.from(_t.cnts)
-		.where(and(eq(_t.cnts.name, key), eq(_t.cnts.unit, -1), eq(_t.cnts.time, 0)))
+		.from(_t.timeCnts)
+		.where(and(eq(_t.timeCnts.name, key), eq(_t.timeCnts.unit, -1), eq(_t.timeCnts.time, 0)))
 		.execute();
 	return ret.at(0)?.count || 0;
 }
 
+/**
+ * 获取分段计数(时间类计数)
+ * @param key 要获取的键
+ * @returns `{c: 片段计数, u: 单位索引, t: 时间点}
+ */
 export async function getSubCounts(key: string) {
 	return await db
 		.select({
-			c: _t.cnts.value,
-			u: _t.cnts.unit,
-			t: _t.cnts.time,
+			c: _t.timeCnts.value,
+			u: _t.timeCnts.unit,
+			t: _t.timeCnts.time,
 		})
-		.from(_t.cnts)
-		.where(and(eq(_t.cnts.name, key)))
+		.from(_t.timeCnts)
+		.where(and(eq(_t.timeCnts.name, key)))
 		.execute();
 }

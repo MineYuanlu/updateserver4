@@ -11,6 +11,7 @@ import { sql } from 'drizzle-orm';
 import type { UserId, WebRole } from '$lib/common/user';
 import type { Visibility, ProjId, UserRole } from '$lib/common/project';
 import type { EnumVal } from '$lib/common/enum';
+import type { projCntTypes, CntDimFilter, CntValueFilter } from '$lib/common/cnts';
 
 /** 用户基本信息 */
 export const user = createTable('user', {
@@ -169,9 +170,9 @@ export const projectTag = createTable(
 );
 export type ProjectTag = typeof projectTag.$inferSelect;
 
-/** 计数器表 */
-export const cnts = createTable(
-	'cnts',
+/** 时间计数器表, 可以记住历史数据 */
+export const timeCnts = createTable(
+	'time_cnts',
 	{
 		name: text('name').notNull(), // 计数器名称
 		unit: integer('unit').notNull(), // 计数器单位的序号（0,1,2,...), -1代表总量
@@ -185,4 +186,49 @@ export const cnts = createTable(
 	}),
 );
 
-export type Cnts = typeof cnts.$inferSelect;
+export type TimeCnts = typeof timeCnts.$inferSelect;
+
+/** 瞬时计数器表, 只能记住当前和一个历史数据 */
+export const instantCnts = createTable(
+	'instant_cnts',
+	{
+		name: text('name').notNull(), // 计数器名称
+		time: integer('time').notNull(), // 计数点: 计数器时间戳 除以 时间单位
+		dim: text('dim'), // 计数器维度
+		value: integer('value').notNull(), // 计数器值
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.name, t.time] }),
+	}),
+);
+
+export type InstantCnts = typeof instantCnts.$inferSelect;
+
+/** 项目计数器表, 记录项目的各种计数器 */
+export const projectCounters = createTable(
+	'project_counters',
+	{
+		pid: text('pid') // 项目ID
+			.$type<ProjId>()
+			.references(() => project.id, {
+				onDelete: 'cascade',
+				onUpdate: 'cascade',
+			}),
+		id: text('id').notNull(), // 计数器id
+		title: text('title').notNull(), // 计数器名称
+		type: integer('type') // 计数器类型
+			.$type<EnumVal<typeof projCntTypes>>()
+			.notNull(),
+		df: text('df', { mode: 'json' }) // 计数器维度过滤条件
+			.$type<CntDimFilter>(),
+		vf: text('vf', { mode: 'json' }) // 计数器值过滤条件
+			.$type<CntValueFilter>(),
+		configs: text('configs', { mode: 'json' }), // 计数器配置
+	},
+	(t) => ({
+		pk: primaryKey({ columns: [t.pid, t.id] }),
+		pidIndex: index('proj_cnt_pid_index').on(t.pid),
+	}),
+);
+
+export type ProjectCounters = typeof projectCounters.$inferSelect;

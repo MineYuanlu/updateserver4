@@ -12,7 +12,6 @@ import {
 	enum_project__user_role_manager,
 	enum_project__user_role_owner,
 } from '$lib/paraglide/messages';
-import type { Project } from '$lib/server/db/schema';
 import { makeEnum } from './enum';
 import type { US4ID } from './id';
 

@@ -1,8 +1,8 @@
 import { and, eq, lt, sql, sum } from 'drizzle-orm';
-import { db } from './db';
-import { cnts } from './db/schema';
+import { db } from '../db';
+import { timeCnts } from '../db/schema';
 import exitHook from 'exit-hook';
-import { getLogger } from './logger';
+import { getLogger } from '../logger';
 
 const logger = getLogger('counter');
 
@@ -75,35 +75,35 @@ export async function insertFakeData(key: string, cnts: number = 10, flush: bool
  */
 async function flushExpire(unit: number, now: number = Date.now()) {
 	const cond = and(
-		eq(cnts.unit, unit),
-		lt(cnts.time, ((now - countExpires[unit]) / countUnit[unit]) | 0),
+		eq(timeCnts.unit, unit),
+		lt(timeCnts.time, ((now - countExpires[unit]) / countUnit[unit]) | 0),
 	);
 
 	if (unit < countUnit.length - 1) {
 		const multi = countUnitMulti[unit];
 		await db
-			.insert(cnts)
+			.insert(timeCnts)
 			.select(
 				db
 					.select({
-						name: cnts.name,
+						name: timeCnts.name,
 						unit: sql`${unit + 1}`.as('unit'),
-						time: sql<number>`FLOOR(${cnts.time} / ${multi})`.as('time'),
-						value: sum(cnts.value).as('value'),
+						time: sql<number>`FLOOR(${timeCnts.time} / ${multi})`.as('time'),
+						value: sum(timeCnts.value).as('value'),
 					})
-					.from(cnts)
+					.from(timeCnts)
 					.where(cond)
-					.groupBy(cnts.name, sql`FLOOR(${cnts.time} / ${multi})`),
+					.groupBy(timeCnts.name, sql`FLOOR(${timeCnts.time} / ${multi})`),
 			)
 			.onConflictDoUpdate({
-				target: [cnts.name, cnts.unit, cnts.time],
+				target: [timeCnts.name, timeCnts.unit, timeCnts.time],
 				set: {
-					value: sql`${cnts.value} + EXCLUDED.value`,
+					value: sql`${timeCnts.value} + EXCLUDED.value`,
 				},
 			})
 			.execute();
 	}
-	await db.delete(cnts).where(cond).execute();
+	await db.delete(timeCnts).where(cond).execute();
 }
 /**
  * 重置缓存计数数据, 并插入到最小计数区间
@@ -120,7 +120,7 @@ async function flushCache() {
 				const value = counts[name];
 				if (!value) return;
 				await trx
-					.insert(cnts)
+					.insert(timeCnts)
 					.values([
 						{
 							name,
@@ -136,9 +136,9 @@ async function flushCache() {
 						},
 					])
 					.onConflictDoUpdate({
-						target: [cnts.name, cnts.unit, cnts.time],
+						target: [timeCnts.name, timeCnts.unit, timeCnts.time],
 						set: {
-							value: sql`${cnts.value} + EXCLUDED.value`,
+							value: sql`${timeCnts.value} + EXCLUDED.value`,
 						},
 					})
 					.execute();
