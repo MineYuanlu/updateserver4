@@ -7,7 +7,7 @@
 		open?: boolean;
 
 		/** 控制按钮, Snippet / Component / string / undefined */
-		controls?: SoC<[ToggleFunc], { onclick: ToggleFunc }> | undefined | string;
+		controls?: SoC<[ToggleFunc], { onclick: ToggleFunc }> | null | undefined | string;
 
 		/** 打开前回调, 返回 false 则不打开 */
 		preOpen?: PreFunc;

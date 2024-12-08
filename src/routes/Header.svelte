@@ -20,13 +20,17 @@
 	import { COOKIES } from '$lib/common/cookies';
 	import { logoutUser } from '$lib/api/user';
 	import { goto } from '$app/navigation';
+	import type { Settings } from '$lib/stores/common';
+	import type { ToggleFunc } from '$lib/components/base/Openable.svelte';
 
 	let {
 		user,
 		theme = $bindable(),
+		settings,
 	}: {
 		user?: UserSession | null;
 		theme?: string | null;
+		settings: Settings;
 	} = $props();
 
 	let isDarkMode = $state(theme === 'dark');
@@ -41,6 +45,10 @@
 
 	let settingMenuOpen = $state(false);
 	let languageSelectOpen = $state(false);
+
+	const toggleSettingMenu = (v?: boolean) => {
+		settingMenuOpen = v ?? !settingMenuOpen;
+	};
 </script>
 
 <header
@@ -63,8 +71,9 @@
 
 	<!-- 右侧按钮 -->
 	<div class="flex items-center space-x-4">
+		<!-- 用户菜单 -->
 		<Menu>
-			{#snippet controls(toggleMenu)}
+			{#snippet controls(toggleMenu: ToggleFunc)}
 				<IconBtn icon={PersonIcon} content={user?.name} onclick={() => toggleMenu()} />
 			{/snippet}
 			<MenuPlain title>{m.header_user_title()}</MenuPlain>
@@ -93,10 +102,16 @@
 				</MenuItem>
 			{/if}
 		</Menu>
+		<!-- 设置菜单 -->
 		<Menu bind:open={settingMenuOpen}>
-			{#snippet controls(toggleMenu)}
+			{#snippet controls(toggleMenu: ToggleFunc)}
 				<IconBtn icon={GearIcon} onclick={() => toggleMenu()} />
 			{/snippet}
+			{#if settings}
+				{#each Object.values(settings) as setting}
+					{@render setting(toggleSettingMenu)}
+				{/each}
+			{/if}
 			<MenuPlain title>{m.header_settings_title()}</MenuPlain>
 			<MenuItem onclick={toggleTheme}>
 				{#snippet icon(hover)}

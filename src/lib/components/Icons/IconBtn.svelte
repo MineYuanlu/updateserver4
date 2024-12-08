@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component, Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
-	import { isSimpleIcon, type SimpleIcon } from './simple_icon';
+	import { isSimpleIcon, type SimpleIcon } from './helpers';
 	import Si from './Si.svelte';
 
 	export let icon: Component<{ class: string }> | SimpleIcon | any;

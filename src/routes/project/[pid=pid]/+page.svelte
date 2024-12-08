@@ -11,6 +11,16 @@
 	import { browser } from '$app/environment';
 	import MultiTimeLine from '$lib/components/Charts/MultiTimeLine.svelte';
 	import Pie from '$lib/components/Charts/Pie.svelte';
+	import { ExternalLink, Gear, Link2, Person } from 'radix-icons-svelte';
+	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
+	import * as m from '$lib/paraglide/messages';
+	import { getSlinkByProjectName } from '$lib/common/project';
+	import { copyToClipboard } from '$lib/components/Global/clipboard';
+	import MenuPlain from '$lib/components/Menu/MenuPlain.svelte';
+	import MenuItem from '$lib/components/Menu/MenuItem.svelte';
+	import { setSettings } from '$lib/stores/common';
+	import type { ToggleFunc } from '$lib/components/base/Openable.svelte';
+	import Common from './Common.svelte';
 
 	const { data } = $props();
 	const project1 = data.project;
@@ -42,130 +52,141 @@
 			cntsVisit = cnt;
 		});
 	});
+
+	setSettings(settings);
 </script>
 
-<pre>{JSON.stringify(project1, null, 2)}</pre>
+{#snippet settings(toggleMenu: ToggleFunc)}
+	<MenuPlain title>项目</MenuPlain>
+	<MenuItem onclick={() => {}}>
+		{#snippet icon()}
+			<Person />
+		{/snippet}
+		人员管理
+	</MenuItem>
+	<MenuItem onclick={() => {}}>
+		{#snippet icon()}
+			<Person />
+		{/snippet}
+		人员管理
+	</MenuItem>
+{/snippet}
+
+<!-- <pre>{JSON.stringify(project1, null, 2)}</pre> -->
 <!-- <pre>{JSON.stringify(cntsVisit, null, 2)}</pre> -->
-<section class="min-h-screen bg-gray-50 px-4 py-16 dark:bg-gray-900">
-	<div class="mx-auto max-w-7xl space-y-12">
-		<!-- 页面标题和描述 -->
-		<div class="text-center">
-			<h1 class="mb-2 text-4xl font-bold text-gray-800 dark:text-gray-100">{project.title}</h1>
-			<p class="text-lg text-gray-600 dark:text-gray-300">{project.description}</p>
+<Common project={project1}>
+	<!-- 统计信息模块 -->
+	<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+		<!-- 版本历史模块 -->
+		<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+			<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">当前版本</h3>
+			<p class="text-lg text-gray-600 dark:text-gray-300">{project.currentVersion}</p>
+			<a href="/project/{project1.proj.id}/versions" data-sveltekit-noscroll>
+				<h3
+					class="mb-4 mt-4 flex justify-between text-xl font-semibold text-gray-800 dark:text-gray-100"
+				>
+					<span>版本列表</span>
+					<ExternalLink class="h-5 w-5" />
+				</h3>
+			</a>
+			<ul class="space-y-4 text-gray-600 dark:text-gray-300">
+				{#each project.versions as version}
+					<li>
+						<div class="flex justify-between">
+							<span>{version.version}</span>
+							<span class="text-sm text-gray-500 dark:text-gray-400">{version.date}</span>
+						</div>
+						<p class="mt-1 text-sm">{version.description}</p>
+					</li>
+				{/each}
+			</ul>
 		</div>
 
-		<!-- 统计信息模块 -->
-		<div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-			<!-- 版本历史模块 -->
-			<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-				<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">当前版本</h3>
-				<p class="text-lg text-gray-600 dark:text-gray-300">{project.currentVersion}</p>
-				<h3 class="mb-4 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">版本列表</h3>
-				<ul class="space-y-4 text-gray-600 dark:text-gray-300">
-					{#each project.versions as version}
-						<li>
-							<div class="flex justify-between">
-								<span>{version.version}</span>
-								<span class="text-sm text-gray-500 dark:text-gray-400">{version.date}</span>
-							</div>
-							<p class="mt-1 text-sm">{version.description}</p>
-						</li>
+		<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+			<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">实时使用量</h3>
+			<ul class="space-y-2 text-gray-600 dark:text-gray-300">
+				<li>活跃用户：{project.usageStats.activeUsers}</li>
+				<li>每分钟请求：{project.usageStats.requestsPerMinute}</li>
+				<li>内存使用：{project.usageStats.memoryUsage}</li>
+				<li>正常运行时间：{project.usageStats.uptime}</li>
+			</ul>
+		</div>
+
+		<!-- 当前版本模块 -->
+		<div class="relative rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+			<a
+				href="/project/{project1.proj.id}/settings"
+				data-sveltekit-noscroll
+				class="absolute right-6 top-6"
+			>
+				<Gear class="h-6 w-6" />
+			</a>
+			<h3 class="mb-2 text-xl font-semibold text-gray-800 dark:text-gray-100">所有者</h3>
+			<p class="text-lg text-gray-600 dark:text-gray-300">
+				<a href="/user/{project1.proj.oid}">
+					{project1.proj.owner}
+				</a>
+			</p>
+			<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">创建时间</h3>
+			<p class="text-lg text-gray-600 dark:text-gray-300">
+				{project1.proj.createdAt ? new Date(project1.proj.createdAt).toLocaleString() : ''}
+			</p>
+			{#if project1.tags.length > 0}
+				<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">标签</h3>
+				<p class="text-lg text-gray-600 dark:text-gray-300">
+					{#each project1.tags as tag}
+						<Tag children={tag} href="/tag/{tag}" />
 					{/each}
-				</ul>
-			</div>
-
-			<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-				<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">实时使用量</h3>
-				<ul class="space-y-2 text-gray-600 dark:text-gray-300">
-					<li>活跃用户：{project.usageStats.activeUsers}</li>
-					<li>每分钟请求：{project.usageStats.requestsPerMinute}</li>
-					<li>内存使用：{project.usageStats.memoryUsage}</li>
-					<li>正常运行时间：{project.usageStats.uptime}</li>
-				</ul>
-			</div>
-
-			<!-- 当前版本模块 -->
-			<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-				<h3 class="mb-2 text-xl font-semibold text-gray-800 dark:text-gray-100">所有者</h3>
-				<p class="text-lg text-gray-600 dark:text-gray-300">
-					<a href="/user/{project1.proj.oid}">
-						{project1.proj.owner}
-					</a>
 				</p>
-				<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">创建时间</h3>
+			{/if}
+			{#if Object.keys(project1.proj.links).length > 0}
+				<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">链接</h3>
 				<p class="text-lg text-gray-600 dark:text-gray-300">
-					{project1.proj.createdAt ? new Date(project1.proj.createdAt).toLocaleString() : ''}
+					{#each Object.entries(project1.proj.links) as [name, link]}
+						<Tag children={name} href={link} target="_blank" />
+					{/each}
 				</p>
-				{#if project1.tags.length > 0}
-					<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">标签</h3>
-					<p class="text-lg text-gray-600 dark:text-gray-300">
-						{#each project1.tags as tag}
-							<Tag children={tag} href="/tag/{tag}" />
-						{/each}
-					</p>
-				{/if}
-				{#if Object.keys(project1.proj.links).length > 0}
-					<h3 class="mb-2 mt-4 text-xl font-semibold text-gray-800 dark:text-gray-100">链接</h3>
-					<p class="text-lg text-gray-600 dark:text-gray-300">
-						{#each Object.entries(project1.proj.links) as [name, link]}
-							<Tag children={name} href={link} target="_blank" />
-						{/each}
-					</p>
-				{/if}
-			</div>
+			{/if}
 		</div>
+	</div>
 
-		{#if browser}
-			{#await getCnts(getKey(project1.proj.id, 'v')) then cntsVisit}
-				{#await getCnts(getKey(project1.proj.id, 'd')) then cntsDownload}
-					{#if cntsVisit && cntsDownload}
-						<MultiTimeLine datas={[cntsVisit, cntsDownload]} title="" />
-						<TimeLine data={cntsVisit} title="活跃用户" />
-						<TimeLine data={cntsDownload} title="下载次数" />
-					{/if}
-				{/await}
+	{#if browser}
+		{#await getCnts(getKey(project1.proj.id, 'v')) then cntsVisit}
+			{#await getCnts(getKey(project1.proj.id, 'd')) then cntsDownload}
+				{#if cntsVisit && cntsDownload}
+					<MultiTimeLine datas={[cntsVisit, cntsDownload]} title="" />
+					<TimeLine data={cntsVisit} title="活跃用户" />
+					<TimeLine data={cntsDownload} title="下载次数" />
+				{/if}
 			{/await}
-		{/if}
-		<Pie />
+		{/await}
+	{/if}
+	<Pie />
 
-		<!-- {#if cntsVisit}
+	<!-- {#if cntsVisit}
 			<TimeLine data={cntsVisit} />
 		{/if} -->
 
-		<!-- 统计信息 -->
-		<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-			<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">全部统计信息</h3>
-			<div class="space-y-4 text-gray-600 dark:text-gray-300">
-				<p><strong>总下载次数：</strong>{project.stats.totalDownloads}</p>
-				<p><strong>总用户数：</strong>{project.stats.totalUsers}</p>
-				<p><strong>上次部署：</strong>{project.stats.lastDeploy}</p>
-				<p>
-					<strong>代码仓库：</strong><a
-						href={project.stats.repository}
-						target="_blank"
-						class="text-teal-600 hover:text-teal-800">{project.stats.repository}</a
-					>
-				</p>
-			</div>
+	<!-- 统计信息 -->
+	<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
+		<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">全部统计信息</h3>
+		<div class="space-y-4 text-gray-600 dark:text-gray-300">
+			<p><strong>总下载次数：</strong>{project.stats.totalDownloads}</p>
+			<p><strong>总用户数：</strong>{project.stats.totalUsers}</p>
+			<p><strong>上次部署：</strong>{project.stats.lastDeploy}</p>
+			<p>
+				<strong>代码仓库：</strong><a
+					href={project.stats.repository}
+					target="_blank"
+					class="text-teal-600 hover:text-teal-800">{project.stats.repository}</a
+				>
+			</p>
 		</div>
 	</div>
-</section>
+</Common>
 
 <style>
-	/* 样式调整 */
-	section {
-		background-color: #f7fafc; /* 轻微浅色背景 */
-	}
-
-	h1,
 	h3 {
 		line-height: 1.2;
-	}
-
-	/* 响应式调整 */
-	@media (max-width: 1024px) {
-		.max-w-7xl {
-			max-width: 100%;
-		}
 	}
 </style>

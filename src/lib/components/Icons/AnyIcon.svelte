@@ -1,12 +1,13 @@
 <script module lang="ts">
-	export type AnyIconType = SoC<[string | undefined], { class?: string }> | SimpleIcon;
+	export type AnyIconType = SoC<[string | undefined], { class?: string }> | SimpleIcon | HeroIcon;
 </script>
 
 <script lang="ts">
 	import type { SimpleIcon } from 'simple-icons';
 	import { isComponent, isSnippet, type SoC } from '../SoC/soc';
-	import { isSimpleIcon } from './simple_icon';
+	import { isHeroIcon, isSimpleIcon, type HeroIcon } from './helpers';
 	import Si from './Si.svelte';
+	import Hi from './Hi.svelte';
 
 	const {
 		icon: Icon,
@@ -29,6 +30,8 @@
 	{@render Icon(className)}
 {:else if isComponent(Icon)}
 	<Icon class={className} />
+{:else if isHeroIcon(Icon)}
+	<Hi icon={Icon} class={className} />
 {:else if isSimpleIcon(Icon)}
 	<Si icon={Icon} class={className} />
 {/if}

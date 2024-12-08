@@ -3,7 +3,7 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
 	import * as m from '$lib/paraglide/messages.js';
-	import { navbar } from '$lib/stores/common';
+	import { navbar, settings } from '$lib/stores/common';
 	import Header from './Header.svelte';
 	import Navbar from './Navbar.svelte';
 	import NotificationList from '$lib/components/Notifications/NotificationList.svelte';
@@ -17,7 +17,7 @@
 	<ParaglideJS {i18n}>
 		<div class="flex h-screen flex-col">
 			<!-- Header -->
-			<Header user={data?.user} bind:theme />
+			<Header user={data?.user} bind:theme settings={$settings} />
 
 			<!-- 主体内容部分 -->
 			<div class="flex flex-grow">

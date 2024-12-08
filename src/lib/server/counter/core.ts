@@ -3,6 +3,7 @@ import { db } from '../db';
 import { timeCnts } from '../db/schema';
 import exitHook from 'exit-hook';
 import { getLogger } from '../logger';
+import { dev } from '$app/environment';
 
 const logger = getLogger('counter');
 
@@ -56,6 +57,7 @@ export function modCount(key: string, value: number = 1, time: number = Date.now
  * @param key 计数键
  */
 export async function insertFakeData(key: string, cnts: number = 10, flush: boolean = true) {
+	if (!dev) throw new Error('仅开发环境下允许插入假数据');
 	const timeMax = Date.now();
 	const timeMin = timeMax - countExpires[countExpires.length - 1];
 

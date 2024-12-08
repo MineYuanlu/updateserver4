@@ -2,6 +2,7 @@
 	import { page } from '$app/stores';
 	import CommandPalette from '$lib/components/CommandPalette/CommandPalette.svelte';
 	import CpItem from '$lib/components/CommandPalette/CpItem.svelte';
+	import { getRealPath } from '$lib/i18n';
 	import { messages } from '$lib/paraglide/messages';
 	import {
 		availableLanguageTags,
@@ -24,22 +25,7 @@
 
 		return msg.includes(query) || tag.includes(query);
 	}
-	function languagePath(tag: AvailableLanguageTag) {
-		return tag === sourceLanguageTag ? '' : `/${tag}`;
-	}
-	const rel_path = $derived.by(() => {
-		let path = $page.url.pathname;
-		for (const lang of availableLanguageTags) {
-			if (lang === sourceLanguageTag) continue;
-			const prefix = languagePath(lang);
-			if (path.startsWith(prefix)) {
-				path = path.substring(prefix.length);
-				break;
-			}
-		}
-		if (!path.startsWith('/')) path = `/${path}`;
-		return path;
-	});
+	const rel_path = $derived(getRealPath($page.url.pathname));
 </script>
 
 <CommandPalette bind:open controls={null}>

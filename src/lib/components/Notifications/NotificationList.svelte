@@ -42,7 +42,7 @@
 	 * 若设置持续显示, 需要使用 `removeNotification` 关闭, 否则会占用内存
 	 * @param notification 通知内容 @render(id, data)
 	 * @param data 通知数据
-	 * @param duration 通知显示时间, 单位: 毫秒, null 表示持续显示, 默认 3000ms
+	 * @param duration 通知显示时间, 单位: 毫秒, null 表示持续显示, 默认 5000ms
 	 * @param delay 通知显示延迟, 单位: 毫秒, 默认 0ms
 	 */
 	export function addNotification(
@@ -57,7 +57,7 @@
 	 *
 	 * 若设置持续显示, 需要使用 `removeNotification` 关闭, 否则会占用内存
 	 * @param data 通知内容
-	 * @param duration 通知显示时间, 单位: 毫秒, null 表示持续显示, 默认 3000ms
+	 * @param duration 通知显示时间, 单位: 毫秒, null 表示持续显示, 默认 5000ms
 	 * @param delay 通知显示延迟, 单位: 毫秒, 默认 0ms
 	 */
 	export function addNotification(
@@ -79,7 +79,7 @@
 			notification = undefined;
 		}
 		if (delay === undefined) delay = 0;
-		if (duration === undefined) duration = 3000;
+		if (duration === undefined) duration = 5000;
 
 		const now = Date.now();
 		const show_time = now + delay;

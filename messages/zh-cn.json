@@ -111,5 +111,17 @@
 	"enum_cnts__project_cnt_type_stacked_bar": "堆叠柱状图",
 	"enum_cnts__project_cnt_type_scatter_2d": "散点图",
 	"enum_cnts__project_cnt_type_scatter_3d": "三维散点图",
-	"enum_cnts__project_cnt_type_map": "地图"
+	"enum_cnts__project_cnt_type_map": "地图",
+
+	"page_project_detail__copy_slink_title": "已复制连接",
+	"page_project_detail__copy_slink_message": "您的项目短连接已复制到剪贴板，可以直接粘贴使用。",
+	"util_copy_to_clipboard__failed_title": "复制失败",
+	"util_copy_to_clipboard__failed_message": "您的浏览器不支持复制到剪贴板功能。",
+
+	"page_project_detail__navbar_back": "回到项目",
+	"page_project_detail__navbar_settings": "基础设置",
+	"page_project_detail__navbar_members": "成员管理",
+	"page_project_detail__navbar_robots": "自动化",
+	"page_project_detail__navbar_cnts": "统计分析",
+	"page_project_detail__navbar_versions": "版本管理"
 }
