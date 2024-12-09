@@ -1,8 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import { paraglide } from '@inlang/paraglide-sveltekit/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import heroiconsPlugin from './plugins/heroicon';
-import path from 'path';
 
 export default defineConfig({
 	plugins: [

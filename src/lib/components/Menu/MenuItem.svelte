@@ -35,7 +35,7 @@
 			{#if isSnippet(icon)}
 				{@render icon(hover)}
 			{:else}
-				<Icon src={icon} />
+				<Icon src={icon} class="h-4 w-4" />
 			{/if}
 		</span>
 	{/if}

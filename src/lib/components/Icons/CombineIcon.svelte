@@ -3,7 +3,7 @@
 	type Pos = 'lt' | 'rt' | 'lb' | 'rb';
 	type IconPos<P extends Pos> = [IconSource, P];
 	const {
-		class: className = 'w-[15px] h-[15px]',
+		class: className = 'w-4 h-4',
 		icons,
 		padding = 8,
 		splitWidth = 5,

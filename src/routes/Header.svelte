@@ -79,7 +79,7 @@
 					icon={Exit}
 					onclick={async () => {
 						await logoutUser();
-						goto('.', { invalidateAll: true });
+						goto('', { invalidateAll: true });
 					}}
 				>
 					{m.header_user_logout()}
@@ -115,9 +115,9 @@
 							padding={15}
 						/>
 					{:else if isDarkMode}
-						<Icon src={Moon} />
+						<Icon src={Moon} class="h-4 w-4" />
 					{:else}
-						<Icon src={Sun} />
+						<Icon src={Sun} class="h-4 w-4" />
 					{/if}
 				{/snippet}
 				{m.header_settings_theme()}

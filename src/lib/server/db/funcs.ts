@@ -268,13 +268,13 @@ const _proj_check_perm = (
  * - 用户拥有权限(至少`role`的权限)
  * @param name 项目名称(key)
  * @param user 用户ID
- * @param role 最小权限
+ * @param minRole 最小权限
  * @returns 项目ID / undefined
  */
 export async function checkPermGetProjIdByName(
 	name: string,
 	user?: _t.User['id'] | null | undefined,
-	role: _t.ProjectMember['role'] = UserRole.guest.val,
+	minRole: _t.ProjectMember['role'] = UserRole.guest.val,
 ) {
 	const nameKey = name.trim().toLowerCase();
 	const ret = await db
@@ -282,7 +282,7 @@ export async function checkPermGetProjIdByName(
 			id: _t.project.id,
 		})
 		.from(_t.project)
-		.where(and(eq(_t.project.nameKey, nameKey), _proj_check_perm(user, role)))
+		.where(and(eq(_t.project.nameKey, nameKey), _proj_check_perm(user, minRole)))
 		.execute();
 	return ret.at(0)?.id;
 }
@@ -295,19 +295,19 @@ export async function checkPermGetProjIdByName(
  * - 用户拥有权限(至少`role`的权限)
  * @param name 项目名称(key)
  * @param user 用户ID
- * @param role 最小权限
+ * @param minRole 最小权限
  */
 export async function checkPermByProjId(
 	id: _t.Project['id'],
 	user?: _t.User['id'] | null | undefined,
-	role: _t.ProjectMember['role'] = UserRole.guest.val,
+	minRole: _t.ProjectMember['role'] = UserRole.guest.val,
 ) {
 	const ret = await db
 		.select({
 			id: _t.project.id,
 		})
 		.from(_t.project)
-		.where(and(eq(_t.project.id, id), _proj_check_perm(user, role)))
+		.where(and(eq(_t.project.id, id), _proj_check_perm(user, minRole)))
 		.execute();
 	return !!ret.at(0);
 }
@@ -316,13 +316,13 @@ export async function checkPermByProjId(
  * 检查用户权限, 并获取项目详情
  * @param id 项目ID
  * @param user 请求用户的ID
- * @param role 最小权限
+ * @param minRole 最小权限
  * @returns 项目详情 / undefined
  */
 export async function getProjectDetailById(
 	id: _t.Project['id'],
 	user?: _t.User['id'] | null | undefined,
-	role: _t.ProjectMember['role'] = UserRole.guest.val,
+	minRole: _t.ProjectMember['role'] = UserRole.guest.val,
 ) {
 	const ret0 = await db
 		.select({
@@ -339,7 +339,7 @@ export async function getProjectDetailById(
 		})
 		.from(_t.project)
 		.leftJoin(_t.user, eq(_t.project.owner, _t.user.id))
-		.where(and(eq(_t.project.id, id), _proj_check_perm(user, role)))
+		.where(and(eq(_t.project.id, id), _proj_check_perm(user, minRole)))
 		.execute();
 	const proj = ret0.at(0);
 	if (!proj) return undefined;
@@ -370,6 +370,21 @@ export async function getProjectDetailById(
 		versions,
 		tags,
 	};
+}
+
+/**
+ * 获取项目用户权限级别
+ * @param id 项目ID
+ * @param user 用户ID
+ * @returns 权限级别 / undefined
+ */
+export async function getProjectUserRole(id: _t.Project['id'], user: _t.User['id']) {
+	const ret = await db
+		.select({ role: _t.projectMember.role })
+		.from(_t.projectMember)
+		.where(and(eq(_t.projectMember.uid, user), eq(_t.projectMember.pid, id)))
+		.execute();
+	return ret.at(0)?.role;
 }
 
 /**

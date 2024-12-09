@@ -13,7 +13,7 @@
 	import Pie from '$lib/components/Charts/Pie.svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 	import * as m from '$lib/paraglide/messages';
-	import { getSlinkByProjectName } from '$lib/common/project';
+	import { getClinkByProjectId, getSlinkByProjectName } from '$lib/common/project';
 	import { copyToClipboard } from '$lib/components/Global/clipboard';
 	import MenuPlain from '$lib/components/Menu/MenuPlain.svelte';
 	import MenuItem from '$lib/components/Menu/MenuItem.svelte';
@@ -25,6 +25,7 @@
 
 	const { data } = $props();
 	const project1 = data.project;
+	const role = data.role;
 	let project = {
 		title: '更新支持平台',
 		description: '这是一个专门为开发者提供小型应用更新管理与支持的平台。',
@@ -54,6 +55,8 @@
 		});
 	});
 
+	const baseUrl = $derived(getClinkByProjectId(project1.proj.id));
+
 	setSettings(settings);
 </script>
 
@@ -71,8 +74,13 @@
 		<!-- 版本历史模块 -->
 		<div class="rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
 			<h3 class="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-100">当前版本</h3>
-			<p class="text-lg text-gray-600 dark:text-gray-300">{project.currentVersion}</p>
-			<a href="/project/{project1.proj.id}/versions" data-sveltekit-noscroll>
+			<a
+				class="inline-block w-full text-lg text-gray-600 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100"
+				href="{baseUrl}/versions?version={project.currentVersion}"
+			>
+				{project.currentVersion}
+			</a>
+			<a href="{baseUrl}/versions" data-sveltekit-noscroll>
 				<h3
 					class="mb-4 mt-4 flex justify-between text-xl font-semibold text-gray-800 dark:text-gray-100"
 				>
@@ -83,11 +91,16 @@
 			<ul class="space-y-4 text-gray-600 dark:text-gray-300">
 				{#each project.versions as version}
 					<li>
-						<div class="flex justify-between">
-							<span>{version.version}</span>
-							<span class="text-sm text-gray-500 dark:text-gray-400">{version.date}</span>
-						</div>
-						<p class="mt-1 text-sm">{version.description}</p>
+						<a
+							href="{baseUrl}/versions?version={version.version}"
+							class="hover:text-gray-800 dark:hover:text-gray-100"
+						>
+							<div class="flex justify-between">
+								<span>{version.version}</span>
+								<span class="text-sm text-gray-500 dark:text-gray-400">{version.date}</span>
+							</div>
+							<p class="mt-1 text-sm">{version.description}</p>
+						</a>
 					</li>
 				{/each}
 			</ul>
@@ -105,11 +118,7 @@
 
 		<!-- 当前版本模块 -->
 		<div class="relative rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800">
-			<a
-				href="/project/{project1.proj.id}/settings"
-				data-sveltekit-noscroll
-				class="absolute right-6 top-6"
-			>
+			<a href="{baseUrl}/settings" data-sveltekit-noscroll class="absolute right-6 top-6">
 				<Icon src={Gear} class="h-5 w-5" />
 			</a>
 			<h3 class="mb-2 text-xl font-semibold text-gray-800 dark:text-gray-100">所有者</h3>

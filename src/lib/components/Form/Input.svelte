@@ -1,53 +1,5 @@
-<script lang="ts">
-	import type { Component, Snippet } from 'svelte';
-	import type {
-		FocusEventHandler,
-		FormEventHandler,
-		HTMLInputTypeAttribute,
-		KeyboardEventHandler,
-		MouseEventHandler,
-	} from 'svelte/elements';
-	import { slide } from 'svelte/transition';
-	import KeyListener from '../Global/KeyListener.svelte';
-	import ClickListener from '../Global/ClickListener.svelte';
-	import { isSnippet } from '../SoC/soc';
-	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
-
-	let {
-		class: className,
-		id,
-		name,
-		label,
-		type = 'text',
-		placeholder,
-		value = $bindable(''),
-		disabled,
-		required,
-		invalid = $bindable(false),
-		checker: checkerLike,
-		initNoErr = true,
-		hint,
-		inputClass,
-		prefix,
-		prefixIcon,
-		suffix,
-		suffixIcon,
-		options,
-		optionSnippet,
-		focusing = $bindable(false),
-		showDropdown = $bindable(false),
-		onclick,
-		oninput,
-		onfocus,
-		onblur,
-		onkeydown,
-		onkeypress,
-		onkeyup,
-		onmouseenter,
-		onmousemove,
-		onmouseleave,
-		...props
-	}: {
+<script module lang="ts">
+	export type Props = {
 		/** 最外层容器的类名 */
 		class?: string;
 		/** 输入框的 id */
@@ -101,7 +53,59 @@
 		onmouseenter?: MouseEventHandler<HTMLDivElement> | null | undefined;
 		onmousemove?: MouseEventHandler<HTMLDivElement> | null | undefined;
 		onmouseleave?: MouseEventHandler<HTMLDivElement> | null | undefined;
-	} = $props();
+	};
+</script>
+
+<script lang="ts">
+	import type { Component, Snippet } from 'svelte';
+	import type {
+		FocusEventHandler,
+		FormEventHandler,
+		HTMLInputTypeAttribute,
+		KeyboardEventHandler,
+		MouseEventHandler,
+	} from 'svelte/elements';
+	import { slide } from 'svelte/transition';
+	import KeyListener from '../Global/KeyListener.svelte';
+	import ClickListener from '../Global/ClickListener.svelte';
+	import { isSnippet } from '../SoC/soc';
+	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
+
+	let {
+		class: className,
+		id,
+		name,
+		label,
+		type = 'text',
+		placeholder,
+		value = $bindable(''),
+		disabled,
+		required,
+		invalid = $bindable(false),
+		checker: checkerLike,
+		initNoErr = true,
+		hint,
+		inputClass,
+		prefix,
+		prefixIcon,
+		suffix,
+		suffixIcon,
+		options,
+		optionSnippet,
+		focusing = $bindable(false),
+		showDropdown = $bindable(false),
+		onclick,
+		oninput,
+		onfocus,
+		onblur,
+		onkeydown,
+		onkeypress,
+		onkeyup,
+		onmouseenter,
+		onmousemove,
+		onmouseleave,
+		...props
+	}: Props = $props();
 
 	const filteredOptions = $derived(
 		options ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())) : [],

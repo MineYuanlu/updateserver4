@@ -29,19 +29,19 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 	 * @param value 枚举值
 	 * @returns 键 / undefined
 	 */
-	_toKey(value: string | number): keyof Map | undefined;
+	_toKey(value: unknown): keyof Map | undefined;
 	/**
 	 * 获取枚举键对应的值
 	 * @param key 枚举键
 	 * @returns 值 / undefined
 	 */
-	_toValue(key: string | number): Map[keyof Map][0] | undefined;
+	_toValue(key: unknown): Map[keyof Map][0] | undefined;
 	/**
 	 * 获取枚举键对应的值
 	 * @param key 枚举键
 	 * @returns 值 / undefined
 	 */
-	_toDesc(key: string | number): string | undefined;
+	_toDesc(key: unknown): string | undefined;
 	/**
 	 * 转为选项数组, [键, 描述][]
 	 */
@@ -96,7 +96,7 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 			if (typeof value === 'string') {
 				if (value in map) return value as Key;
 				value = parseInt(value, 10);
-				if (isNaN(value)) return undefined as any;
+				if (isNaN(value as number)) return undefined as any;
 			}
 			if (typeof value === 'number') return valueToKey[value as Val];
 			return undefined as any;
@@ -105,7 +105,7 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 			if (typeof key === 'string') {
 				if (key in map) return map[key as Key][0];
 				key = parseInt(key, 10);
-				if (isNaN(key)) return undefined as any;
+				if (isNaN(key as number)) return undefined as any;
 			}
 			if (typeof key === 'number' && key in valueToKey) return key as Val;
 			return undefined as any;
@@ -114,7 +114,7 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 			if (typeof key === 'string') {
 				if (key in map) return map[key as Key][1]({ key });
 				key = parseInt(key, 10);
-				if (isNaN(key)) return undefined as any;
+				if (isNaN(key as number)) return undefined as any;
 			}
 			if (typeof key === 'number' && key in valueToKey)
 				return map[valueToKey[key as Val]][1]({ key });
@@ -131,5 +131,10 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 	};
 }
 
+export type EnumItem<T extends Record<string, any>> = {
+	[K in keyof T]: T[K] extends { name: infer N; val: infer V; desc: infer D }
+		? { name: N; val: V; desc: D }
+		: never;
+}[keyof T];
 export type EnumKey<T extends { _keys: readonly string[] }> = T['_keys'][number];
 export type EnumVal<T extends { _values: readonly unknown[] }> = T['_values'][number];

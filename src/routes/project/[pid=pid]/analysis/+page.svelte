@@ -3,5 +3,3 @@
 	const { data } = $props();
 	const { proj, versions, tags } = data.project;
 </script>
-
-<Navbar name={proj.name} id={proj.id} />
