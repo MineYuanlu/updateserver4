@@ -4,13 +4,9 @@
 	import CpItem from '$lib/components/CommandPalette/CpItem.svelte';
 	import { getRealPath } from '$lib/i18n';
 	import { messages } from '$lib/paraglide/messages';
-	import {
-		availableLanguageTags,
-		languageTag,
-		sourceLanguageTag,
-		type AvailableLanguageTag,
-	} from '$lib/paraglide/runtime';
-	import { Enter } from 'radix-icons-svelte';
+	import { availableLanguageTags, languageTag } from '$lib/paraglide/runtime';
+	import { Enter } from '@steeze-ui/radix-icons';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
 	let {
 		open = $bindable(false),
@@ -39,7 +35,7 @@
 					{/snippet}
 					{#snippet suffix(hover)}
 						{#if hover && tag !== languageTag()}
-							<Enter />
+							<Icon src={Enter} />
 						{/if}
 					{/snippet}
 				</CpItem>

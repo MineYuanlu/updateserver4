@@ -11,6 +11,7 @@
 	import KeyListener from '../Global/KeyListener.svelte';
 	import ClickListener from '../Global/ClickListener.svelte';
 	import { isSnippet } from '../SoC/soc';
+	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
 
 	let {
 		class: className,
@@ -28,9 +29,9 @@
 		hint,
 		inputClass,
 		prefix,
-		prefixIcon: PrefixIcon,
+		prefixIcon,
 		suffix,
-		suffixIcon: SuffixIcon,
+		suffixIcon,
 		options,
 		optionSnippet,
 		focusing = $bindable(false),
@@ -78,11 +79,11 @@
 		/** 前缀内容 */
 		prefix?: string | Snippet;
 		/** 前缀图标, 在prefix是Snippet时失效 */
-		prefixIcon?: Component | any;
+		prefixIcon?: IconSource;
 		/** 后缀内容 */
 		suffix?: string | Snippet;
 		/** 后缀图标, 在suffix是Snippet时失效 */
-		suffixIcon?: Component | any;
+		suffixIcon?: IconSource;
 		/** 下拉列表选项 */
 		options?: readonly string[];
 		optionSnippet?: Snippet<[string]>;
@@ -150,15 +151,12 @@
 		<!-- 前缀 -->
 		{#if isSnippet(prefix)}
 			{@render prefix()}
-		{:else if prefix || PrefixIcon}
+		{:else if prefix || prefixIcon}
 			<div
 				class="flex items-center border-r-2 border-r-gray-300 px-3 py-2 text-sm font-medium text-gray-500 dark:border-r-gray-600 dark:text-gray-300"
 			>
-				{#if PrefixIcon}
-					<PrefixIcon />
-				{/if}
-				{#if PrefixIcon && prefix}
-					<span class="ml-1"></span>
+				{#if prefixIcon}
+					<Icon src={prefixIcon} class="mr-1 h-4 w-4 {prefix ? 'ml-1' : ''}" />
 				{/if}
 				{#if prefix}
 					{prefix}
@@ -203,17 +201,14 @@
 		<!-- 后缀 -->
 		{#if isSnippet(suffix)}
 			{@render suffix()}
-		{:else if suffix || SuffixIcon}
+		{:else if suffix || suffixIcon}
 			<button
 				{onclick}
 				type="button"
 				class="flex items-center border-l-2 border-l-gray-300 px-3 py-2 text-sm font-medium text-gray-600 hover:text-blue-600 dark:border-l-gray-600 dark:text-gray-300 dark:hover:text-blue-500"
 			>
-				{#if SuffixIcon}
-					<SuffixIcon />
-				{/if}
-				{#if SuffixIcon && suffix}
-					<span class="ml-1"></span>
+				{#if suffixIcon}
+					<Icon src={suffixIcon} class="h-4 w-4 {suffix ? 'ml-1' : ''}" />
 				{/if}
 				{#if suffix}
 					{suffix}

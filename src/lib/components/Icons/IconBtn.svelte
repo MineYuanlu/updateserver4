@@ -1,21 +1,33 @@
 <script lang="ts">
-	import type { Component, Snippet } from 'svelte';
+	import type { IconSource } from '@steeze-ui/simple-icons';
+	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
-	import { isSimpleIcon, type SimpleIcon } from './helpers';
-	import Si from './Si.svelte';
+	import { isSnippet } from '../SoC/soc';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
-	export let icon: Component<{ class: string }> | SimpleIcon | any;
-	export let iconClass: string = 'w-5 h-5';
-	export let disabled: boolean = false;
-	export let content: string | undefined = undefined;
-	export let onclick: MouseEventHandler<HTMLButtonElement> | null | undefined = undefined;
-	export let onmouseenter: MouseEventHandler<HTMLButtonElement> | null | undefined = undefined;
-	export let onmouseleave: MouseEventHandler<HTMLButtonElement> | null | undefined = undefined;
-	export let hoverIcon: Component<{ class: string }> | any | undefined = undefined;
-	export let hoverIconSnippet: Snippet<[string]> | undefined = undefined;
-	export let hoverIconClass: string = 'hover';
-
-	export let hover: boolean = false;
+	let {
+		icon,
+		iconClass = 'w-5 h-5',
+		disabled,
+		content,
+		onclick,
+		onmouseenter,
+		onmouseleave,
+		hoverIcon,
+		hoverIconClass = 'hover',
+		hover = $bindable(false),
+	}: {
+		icon: Snippet<[string]> | IconSource;
+		iconClass?: string;
+		disabled?: boolean;
+		content?: string;
+		onclick?: MouseEventHandler<HTMLButtonElement>;
+		onmouseenter?: MouseEventHandler<HTMLButtonElement>;
+		onmouseleave?: MouseEventHandler<HTMLButtonElement>;
+		hoverIcon?: Snippet<[string]> | IconSource;
+		hoverIconClass?: string;
+		hover?: boolean;
+	} = $props();
 </script>
 
 <!-- @component
@@ -53,13 +65,15 @@
 	{disabled}
 >
 	{#if hover && hoverIcon}
-		<svelte:component this={hoverIcon} class="{iconClass} {hoverIconClass}" />
-	{:else if hover && hoverIconSnippet}
-		{@render hoverIconSnippet(`${iconClass} ${hoverIconClass}`)}
-	{:else if isSimpleIcon(icon)}
-		<Si {icon} class={iconClass} />
+		{#if isSnippet(hoverIcon)}
+			{@render hoverIcon(hoverIconClass)}
+		{:else}
+			<Icon src={hoverIcon} class={hoverIconClass} />
+		{/if}
+	{:else if isSnippet(icon)}
+		{@render icon(iconClass)}
 	{:else}
-		<svelte:component this={icon} class={iconClass} />
+		<Icon src={icon} class={iconClass} />
 	{/if}
 	{#if content}
 		<span

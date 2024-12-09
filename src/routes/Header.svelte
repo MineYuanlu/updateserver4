@@ -1,13 +1,5 @@
 <script lang="ts">
 	import '../app.css';
-	import {
-		Moon as MoonIcon,
-		Sun as SunIcon,
-		Person as PersonIcon,
-		Exit as ExitIcon,
-		Gear as GearIcon,
-		Globe as GlobeIcon,
-	} from 'radix-icons-svelte';
 	import * as m from '$lib/paraglide/messages.js';
 	import IconBtn from '$lib/components/Icons/IconBtn.svelte';
 	import CombineIcon from '$lib/components/Icons/CombineIcon.svelte';
@@ -22,6 +14,8 @@
 	import { goto } from '$app/navigation';
 	import type { Settings } from '$lib/stores/common';
 	import type { ToggleFunc } from '$lib/components/base/Openable.svelte';
+	import { Exit, Gear, Globe, Moon, Person, Sun } from '@steeze-ui/radix-icons';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
 	let {
 		user,
@@ -74,30 +68,27 @@
 		<!-- 用户菜单 -->
 		<Menu>
 			{#snippet controls(toggleMenu: ToggleFunc)}
-				<IconBtn icon={PersonIcon} content={user?.name} onclick={() => toggleMenu()} />
+				<IconBtn icon={Person} content={user?.name} onclick={() => toggleMenu()} />
 			{/snippet}
 			<MenuPlain title>{m.header_user_title()}</MenuPlain>
 			{#if user?.id}
-				<MenuItem href="/user/{user.id}">
-					{#snippet icon()}<PersonIcon />{/snippet}
+				<MenuItem icon={Person} href="/user/{user.id}">
 					{m.header_user_center()}
 				</MenuItem>
 				<MenuItem
+					icon={Exit}
 					onclick={async () => {
 						await logoutUser();
 						goto('.', { invalidateAll: true });
 					}}
 				>
-					{#snippet icon()}<ExitIcon />{/snippet}
 					{m.header_user_logout()}
 				</MenuItem>
 			{:else}
-				<MenuItem href="/user/login">
-					{#snippet icon()}<PersonIcon />{/snippet}
+				<MenuItem icon={Person} href="/user/login">
 					{m.header_user_login()}
 				</MenuItem>
-				<MenuItem href="/user/register">
-					{#snippet icon()}<PersonIcon />{/snippet}
+				<MenuItem icon={Person} href="/user/register">
 					{m.header_user_register()}
 				</MenuItem>
 			{/if}
@@ -105,7 +96,7 @@
 		<!-- 设置菜单 -->
 		<Menu bind:open={settingMenuOpen}>
 			{#snippet controls(toggleMenu: ToggleFunc)}
-				<IconBtn icon={GearIcon} onclick={() => toggleMenu()} />
+				<IconBtn icon={Gear} onclick={() => toggleMenu()} />
 			{/snippet}
 			{#if settings}
 				{#each Object.values(settings) as setting}
@@ -118,26 +109,26 @@
 					{#if hover}
 						<CombineIcon
 							icons={[
-								[MoonIcon, 'rt'],
-								[SunIcon, 'lb'],
+								[Moon, 'rt'],
+								[Sun, 'lb'],
 							]}
 							padding={15}
 						/>
 					{:else if isDarkMode}
-						<MoonIcon />
+						<Icon src={Moon} />
 					{:else}
-						<SunIcon />
+						<Icon src={Sun} />
 					{/if}
 				{/snippet}
 				{m.header_settings_theme()}
 			</MenuItem>
 			<MenuItem
+				icon={Globe}
 				onclick={() => {
 					settingMenuOpen = false;
 					languageSelectOpen = true;
 				}}
 			>
-				{#snippet icon()}<GlobeIcon />{/snippet}
 				{m.header_settings_language({ language: m.messages() })}
 			</MenuItem>
 		</Menu>

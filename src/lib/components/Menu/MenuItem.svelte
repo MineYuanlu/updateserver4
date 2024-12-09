@@ -1,6 +1,8 @@
 <script lang="ts">
+	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
 	import type { Snippet } from 'svelte';
 	import type { MouseEventHandler } from 'svelte/elements';
+	import { isSnippet } from '../SoC/soc';
 
 	let {
 		icon,
@@ -13,7 +15,7 @@
 		hreflang,
 	}: {
 		/**左侧图标 icon(hover: boolean)*/
-		icon?: Snippet<[boolean]>;
+		icon?: Snippet<[boolean]> | IconSource;
 		/**菜单项内容 children()*/
 		children: Snippet;
 		onclick?: MouseEventHandler<HTMLButtonElement | HTMLAnchorElement> | undefined | null;
@@ -25,6 +27,21 @@
 		hreflang?: string;
 	} = $props();
 </script>
+
+{#snippet content()}
+	{#if icon}
+		<!-- 图标槽 -->
+		<span class="mr-2">
+			{#if isSnippet(icon)}
+				{@render icon(hover)}
+			{:else}
+				<Icon src={icon} />
+			{/if}
+		</span>
+	{/if}
+	<!-- 菜单项内容 -->
+	{@render children()}
+{/snippet}
 
 {#if href}
 	<a
@@ -41,14 +58,7 @@
 			if (onmouseleave) onmouseleave(e);
 		}}
 	>
-		{#if icon}
-			<!-- 图标槽 -->
-			<span class="mr-2">
-				{@render icon(hover)}
-			</span>
-		{/if}
-		<!-- 菜单项内容 -->
-		{@render children()}
+		{@render content()}
 	</a>
 {:else}
 	<button
@@ -63,13 +73,6 @@
 		}}
 		class="flex w-full items-center px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 focus:outline-none dark:bg-gray-900 dark:text-gray-100 dark:hover:bg-gray-800"
 	>
-		{#if icon}
-			<!-- 图标槽 -->
-			<span class="mr-2">
-				{@render icon(hover)}
-			</span>
-		{/if}
-		<!-- 菜单项内容 -->
-		{@render children()}
+		{@render content()}
 	</button>
 {/if}

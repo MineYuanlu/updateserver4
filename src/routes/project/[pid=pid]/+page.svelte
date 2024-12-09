@@ -11,7 +11,6 @@
 	import { browser } from '$app/environment';
 	import MultiTimeLine from '$lib/components/Charts/MultiTimeLine.svelte';
 	import Pie from '$lib/components/Charts/Pie.svelte';
-	import { ExternalLink, Gear, Link2, Person } from 'radix-icons-svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 	import * as m from '$lib/paraglide/messages';
 	import { getSlinkByProjectName } from '$lib/common/project';
@@ -21,6 +20,8 @@
 	import { setSettings } from '$lib/stores/common';
 	import type { ToggleFunc } from '$lib/components/base/Openable.svelte';
 	import Common from './Common.svelte';
+	import { ExternalLink, Gear, Person } from '@steeze-ui/radix-icons';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
 	const { data } = $props();
 	const project1 = data.project;
@@ -58,18 +59,8 @@
 
 {#snippet settings(toggleMenu: ToggleFunc)}
 	<MenuPlain title>项目</MenuPlain>
-	<MenuItem onclick={() => {}}>
-		{#snippet icon()}
-			<Person />
-		{/snippet}
-		人员管理
-	</MenuItem>
-	<MenuItem onclick={() => {}}>
-		{#snippet icon()}
-			<Person />
-		{/snippet}
-		人员管理
-	</MenuItem>
+	<MenuItem icon={Person} onclick={() => {}}>人员管理</MenuItem>
+	<MenuItem icon={Person} onclick={() => {}}>人员管理</MenuItem>
 {/snippet}
 
 <!-- <pre>{JSON.stringify(project1, null, 2)}</pre> -->
@@ -86,7 +77,7 @@
 					class="mb-4 mt-4 flex justify-between text-xl font-semibold text-gray-800 dark:text-gray-100"
 				>
 					<span>版本列表</span>
-					<ExternalLink class="h-5 w-5" />
+					<Icon src={ExternalLink} class="h-5 w-5" />
 				</h3>
 			</a>
 			<ul class="space-y-4 text-gray-600 dark:text-gray-300">
@@ -119,7 +110,7 @@
 				data-sveltekit-noscroll
 				class="absolute right-6 top-6"
 			>
-				<Gear class="h-6 w-6" />
+				<Icon src={Gear} class="h-5 w-5" />
 			</a>
 			<h3 class="mb-2 text-xl font-semibold text-gray-800 dark:text-gray-100">所有者</h3>
 			<p class="text-lg text-gray-600 dark:text-gray-300">

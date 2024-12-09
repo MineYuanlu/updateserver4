@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Input from '../Form/Input.svelte';
-	import { MagnifyingGlass } from 'radix-icons-svelte';
+	import { MagnifyingGlass } from '@steeze-ui/radix-icons';
 	import { fly, fade } from 'svelte/transition';
 	import KeyListener from '../Global/KeyListener.svelte';
 	import Openable, { type OpenableProps } from '../base/Openable.svelte';

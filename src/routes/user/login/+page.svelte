@@ -2,11 +2,10 @@
 	import { browser, dev } from '$app/environment';
 	import { goto } from '$app/navigation';
 	import { getOauthProviderList, loginOauth, loginUser, registerUser } from '$lib/api/user';
-	import { getIcon, OAuthProviderTypeNames } from '$lib/common/oauth';
+	import { getIcon } from '$lib/common/oauth';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Divider from '$lib/components/Form/Divider.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
-	import Si from '$lib/components/Icons/Si.svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 	import {
 		page_user_login__title as title,
@@ -22,6 +21,7 @@
 		page_user_login__register_success_title as register_success_title,
 		page_user_login__register_success_message as register_success_message,
 	} from '$lib/paraglide/messages';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
 	let username = $state('');
 	let password = $state('');
@@ -119,7 +119,7 @@
 								}}
 							>
 								{#if icon}
-									<Si {icon} class="mr-2 h-5 w-5" />
+									<Icon src={icon} class="mr-2 h-5 w-5" />
 								{/if}
 								<span>{name}</span>
 							</Button>

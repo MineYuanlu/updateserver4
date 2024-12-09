@@ -1,7 +1,7 @@
 <script lang="ts">
-	import type { Component } from 'svelte';
+	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
 	type Pos = 'lt' | 'rt' | 'lb' | 'rb';
-	type Icon<P extends Pos> = [Component<{ class: string }> | any, P];
+	type IconPos<P extends Pos> = [IconSource, P];
 	const {
 		class: className = 'w-[15px] h-[15px]',
 		icons,
@@ -12,17 +12,17 @@
 		class?: string;
 		/**图标及其组合方式*/
 		icons:
-			| [Icon<'lt'>, Icon<'rb'>]
-			| [Icon<'rt'>, Icon<'lb'>]
-			| [Icon<'lb'>, Icon<'rt'>]
-			| [Icon<'rb'>, Icon<'lt'>];
+			| [IconPos<'lt'>, IconPos<'rb'>]
+			| [IconPos<'rt'>, IconPos<'lb'>]
+			| [IconPos<'lb'>, IconPos<'rt'>]
+			| [IconPos<'rb'>, IconPos<'lt'>];
 		/** 图标间距 */
 		padding?: number;
 		/** 分割线宽度, 默认为 5; 0 表示不显示分割线 */
 		splitWidth?: number;
 	} = $props();
 
-	let splitLine: [number, number, number, number] = $derived.by(() => {
+	const splitLine: [number, number, number, number] = $derived.by(() => {
 		switch (icons[0][1]) {
 			case 'lt':
 			case 'rb':
@@ -60,8 +60,8 @@
  -->
 
 <div class={className}>
-	{#each icons as [Icon, pos]}
-		<Icon class="clip-icon {pos}" style="clip-path: {getPloy(pos, padding)};" />
+	{#each icons as [IconSrc, pos]}
+		<Icon src={IconSrc} class="clip-icon {pos}" style="clip-path: {getPloy(pos, padding)};" />
 	{/each}
 	{#if splitWidth > 0}
 		<svg class="split-line stroke-black dark:stroke-white" viewBox="0 0 100 100">

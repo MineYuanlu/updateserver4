@@ -4,7 +4,7 @@
 	import Create from './Create.svelte';
 	import Table from '$lib/components/Table/Table.svelte';
 	import { getIcon } from '$lib/common/oauth';
-	import Si from '$lib/components/Icons/Si.svelte';
+	import { Icon } from '@steeze-ui/svelte-icon';
 
 	let createModCount = $state(0);
 </script>
@@ -32,7 +32,7 @@
 						{@const icon = getIcon(data)}
 						<span class="flex items-center justify-center">
 							{#if icon}
-								<Si class="mr-2 h-5 w-5" {icon} />
+								<Icon src={icon} class="mr-2 h-5 w-5" />
 							{/if}
 							<span> {data}</span>
 						</span>
@@ -41,18 +41,6 @@
 					{:else}
 						{data}
 					{/if}
-					<!--
-				{:else if typeof data === 'string'}
-					{data}
-				{:else if typeof data === 'undefined'}
-					{data}
-				{:else if Array.isArray(data)}
-					{@const [name, logo] = data}
-					<span class="flex items-center justify-center">
-						<img src={logo} alt={name} class="mr-5 h-8 w-8" />
-						<span> {name}</span>
-					</span>
-				{/if} -->
 				</td>
 			{/snippet}
 		</Table>

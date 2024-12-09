@@ -6,7 +6,6 @@
 	import { getIcon, OAuthProviderTypeNames } from '$lib/common/oauth';
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
-	import Si from '$lib/components/Icons/Si.svelte';
 	import Modal from '$lib/components/Modal/Modal.svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
 	import {
@@ -28,6 +27,7 @@
 		page_admin_oauth__create_success_title as success_title,
 		page_admin_oauth__create_success_message as success_message,
 	} from '$lib/paraglide/messages';
+	import { Icon } from '@steeze-ui/svelte-icon';
 	import type { ReqData } from '../../api/user/oauth/providers/create/+server';
 
 	let { createModCount = $bindable() }: { createModCount: number } = $props();
@@ -97,7 +97,7 @@
 				{#snippet optionSnippet(option)}
 					{@const icon = getIcon(option)}
 					{#if icon}
-						<Si class="mr-2 h-5 w-5" {icon} />
+						<Icon src={icon} class="mr-2 h-5 w-5" />
 					{/if}
 					<span>{option}</span>
 				{/snippet}

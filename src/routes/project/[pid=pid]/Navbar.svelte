@@ -1,8 +1,6 @@
 <script lang="ts">
 	import { setNavBar } from '$lib/stores/common';
-	import { page } from '$app/stores'; // SvelteKit下可用，用于获取当前路径，若非SvelteKit可自行调整
-	import { Gear, Person, Reset, Rocket } from 'radix-icons-svelte';
-	import AnyIcon from '$lib/components/Icons/AnyIcon.svelte';
+	import { page } from '$app/stores';
 	import type { ProjId } from '$lib/common/project';
 	import {
 		page_project_detail__navbar_back as m_navbar_back,
@@ -13,8 +11,9 @@
 		page_project_detail__navbar_versions as m_navbar_versions,
 	} from '$lib/paraglide/messages';
 	import { getRealPath, type i18nMsgFunc } from '$lib/i18n';
-	import ChartPie from '$heroicons/hiChartPieOutline24';
-	import Lifebuoy from '$heroicons/hiLifebuoyOutline24';
+	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
+	import { Gear, Person, Reset, Rocket } from '@steeze-ui/radix-icons';
+	import { ChartPie, Lifebuoy } from '@steeze-ui/heroicons';
 
 	const { name, id }: { name: string; id: ProjId } = $props();
 
@@ -22,7 +21,7 @@
 
 	setNavBar(navbar);
 
-	const items: ({ name: i18nMsgFunc; href: string; icon: any } | null)[] = $derived([
+	const items: ({ name: i18nMsgFunc; href: string; icon: IconSource } | null)[] = $derived([
 		{ name: m_navbar_back, href: link, icon: Reset },
 		null,
 		{ name: m_navbar_settings, href: `${link}/settings`, icon: Gear },
@@ -63,7 +62,7 @@
 						class:dark:text-blue-400={isNow}
 						class:dark:bg-blue-900={isNow}
 					>
-						<AnyIcon {icon} class="h-5 w-5" />
+						<Icon src={icon} class="h-5 w-5" />
 						<span class="truncate">{name()}</span>
 					</a>
 				</li>

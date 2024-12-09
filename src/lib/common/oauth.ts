@@ -1,5 +1,5 @@
-import { siGithub, type SimpleIcon } from 'simple-icons';
 import type { JwtInfo } from './jwt';
+import { Github as siGithub, type IconSource } from '@steeze-ui/simple-icons';
 
 export type OAuthRegisterInfo = {
 	/** 第三方平台ID */
@@ -12,10 +12,10 @@ export type UserSession = JwtInfo<OAuthRegisterInfo, 'OAUTH_R'>;
 export const OAuthProviderTypeNames = ['GitHub'] as const;
 export type OAuthProviderTypeName = (typeof OAuthProviderTypeNames)[number];
 
-const icons: Readonly<Record<OAuthProviderTypeName, SimpleIcon>> = {
+const icons: Readonly<Record<OAuthProviderTypeName, IconSource>> = {
 	GitHub: siGithub,
 } as const;
 
-export function getIcon(provider: string): SimpleIcon | undefined {
+export function getIcon(provider: string): IconSource | undefined {
 	return icons[provider as OAuthProviderTypeName];
 }
