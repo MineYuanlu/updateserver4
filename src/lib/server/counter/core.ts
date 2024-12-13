@@ -114,6 +114,14 @@ async function flushCache() {
 	const cache = cntCache;
 	cntCache = Object.create(null);
 
+	if (
+		((obj) => {
+			for (const key in obj) if (Object.prototype.hasOwnProperty.call(obj, key)) return false;
+			return true;
+		})(cache)
+	)
+		return;
+
 	await db.transaction(async (trx) => {
 		for (const _time in cache) {
 			const time = parseInt(_time);

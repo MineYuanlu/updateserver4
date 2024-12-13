@@ -28,6 +28,7 @@
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/animejs": "^3.1.12",
 		"@types/better-sqlite3": "^7.6.11",
+		"@types/lodash": "^4.17.13",
 		"autoprefixer": "^10.4.20",
 		"drizzle-kit": "^0.28.1",
 		"eslint": "^9.7.0",
@@ -62,6 +63,7 @@
 		"echarts": "^5.5.1",
 		"exit-hook": "^4.0.0",
 		"jose": "^5.9.6",
+		"lodash": "^4.17.21",
 		"pino": "^9.5.0",
 		"protobufjs": "^7.4.0"
 	}

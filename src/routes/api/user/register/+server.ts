@@ -13,6 +13,7 @@ import { passwordCheckOpt } from '$lib/server/user/auth';
 import { generateId } from '$lib/server/common';
 import crypto from 'crypto';
 import { SqliteError } from 'better-sqlite3';
+import { isConflictError } from '$lib/server/db/err';
 
 export const POST: RequestHandler = async (req) => {
 	const { username, password } = await req.request.json();
@@ -33,11 +34,7 @@ export const POST: RequestHandler = async (req) => {
 			salt: passwordSalt,
 		});
 	} catch (e) {
-		if (e instanceof SqliteError) {
-			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') {
-				return failure(err_username_taken({ username }));
-			}
-		}
+		if (isConflictError(e)) return failure(err_username_taken({ username }));
 		throw e;
 	}
 	await userJwt.createJwtCookie(req, { id: userId, name: username, role: defaultWebRole });

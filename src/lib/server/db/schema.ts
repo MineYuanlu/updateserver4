@@ -12,6 +12,7 @@ import type { UserId, WebRole } from '$lib/common/user';
 import type { Visibility, ProjId, UserRole } from '$lib/common/project';
 import type { EnumVal } from '$lib/common/enum';
 import type { projCntTypes, CntDimFilter, CntValueFilter } from '$lib/common/cnts';
+import type { VersionCmpArgs } from '$lib/common/versions';
 
 /** 用户基本信息 */
 export const user = createTable('user', {
@@ -88,7 +89,8 @@ export const project = createTable(
 		visibility: integer('visibility') // 仓库可见性
 			.$type<EnumVal<typeof Visibility>>()
 			.notNull(),
-		versionCmp: text('version_cmp'), // 版本比较信息
+		versionCmp: text('version_cmp', { mode: 'json' }) // 版本比较信息
+			.$type<VersionCmpArgs>(),
 		version: text('version'), // 正在使用中的版本号ID
 		createdAt: integer('created_at').default(sql`(current_timestamp)`), // 创建时间
 		links: text('links', { mode: 'json' }) // 项目链接

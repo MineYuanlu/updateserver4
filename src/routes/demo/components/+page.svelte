@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
 	import Notification, { notiTypes } from '$lib/components/Notifications/Notification.svelte';
-	import Table from '$lib/components/Table/Table.svelte';
+	import TablePro from '$lib/components/Table/TablePro.svelte';
 	import {
 		Github as siGithub,
 		_2k as si2k,
@@ -15,6 +15,13 @@
 		removeNotification,
 	} from '$lib/components/Notifications/NotificationList.svelte';
 	import { demoMakeErrorResp } from '$lib/api/demo';
+	import EditTable from '$lib/components/Table/EditTable.svelte';
+
+	let __edit_table_data = $state([
+		['a', 'b'],
+		['c', 'd'],
+		['e', 'f'],
+	]);
 </script>
 
 <h1>This is a demo page</h1>
@@ -44,24 +51,32 @@
 
 <h3>Table</h3>
 <h6>Immediate</h6>
-<Table
+<TablePro
 	hover
 	striped
 	centering
-	headers={['Name', 'Age', 'Gender']}
+	headers={[
+		['name', 'Name'],
+		['age', 'Age'],
+		['gender', 'Gender'],
+	]}
 	data={Array.from({ length: 10 }).flatMap((_, i) => [
-		['John', i, 'Male'],
-		['Jane', i, 'Female'],
-		['Bob', i, 'Male'],
+		{ name: 'John', age: i, gender: 'Male' },
+		{ name: 'Jane', age: i, gender: 'Female' },
+		{ name: 'Bob', age: i, gender: 'Male' },
 	])}
 />
 <h6>Fetcher</h6>
 <Dark>
-	<Table
+	<TablePro
 		hover
 		striped
 		centering
-		headers={['Name', 'Age', 'Gender']}
+		headers={[
+			['name', 'Name'],
+			['age', 'Age'],
+			['gender', 'Gender'],
+		]}
 		data={async (off, len) => {
 			console.log('Fetching data', off, len);
 			await new Promise((resolve) => setTimeout(resolve, 1000 * 10));
@@ -69,12 +84,26 @@
 			const max = 45;
 			len = Math.min(len, max - off);
 			return {
-				data: Array.from({ length: len }).map((_, i) => ['John', off + i, 'Male']),
+				data: Array.from({ length: len }).map((_, i) => ({
+					name: 'John',
+					age: off + i,
+					gender: 'Male',
+				})),
 				total: max,
 			};
 		}}
 	/>
 </Dark>
+
+<h3>EditTable</h3>
+<div class="grid grid-cols-2 gap-4">
+	<EditTable
+		bind:data={__edit_table_data}
+		headers={['key', 'value']}
+		checkers={[(v) => !!v, (v) => !!v && !isNaN(Number(v))]}
+	/>
+	<EditTable bind:data={__edit_table_data} unique />
+</div>
 
 <h3>Notification</h3>
 
@@ -104,14 +133,14 @@
 				{#each [si1password, si2k, siGithub] as icon}
 					<Notification
 						title="Notification"
-						message="This is a notification for '{type}' and '{icon.title}'"
+						message="This is a notification for '{type}'"
 						{type}
 						{icon}
 						showClose
 						preClose={() => {
 							addNotification({
 								title: 'Demo禁止关闭',
-								message: `关闭事件生效了 ${type} ${icon.title}`,
+								message: `关闭事件生效了 ${type}`,
 								type,
 								icon,
 							});

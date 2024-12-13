@@ -1,14 +1,18 @@
 import type { ReqData as OauthProviderCreateReq } from '../../routes/api/user/oauth/providers/create/+server';
+import type { ReqData as OauthProviderEditReq } from '../../routes/api/user/oauth/providers/edit/+server';
 import type { ListResp as OauthProviderListResp } from '../../routes/api/user/oauth/providers/list/+server';
 import { apiReq2 } from './common';
 
 /** 获取oauth提供商列表 */
-export const getOauthProviderList = () =>
-	apiReq2<OauthProviderListResp>('/api/user/oauth/providers/list', []);
+export const getOauthProviderList = (admin: boolean = false) =>
+	apiReq2<OauthProviderListResp>('/api/user/oauth/providers/list', [], { data: { admin } });
 
 /** 创建oauth提供商 */
 export const createOauthProvider = (data: OauthProviderCreateReq) =>
 	apiReq2<boolean>('/api/user/oauth/providers/create', false, { method: 'POST', data });
+/** 编辑oauth提供商 */
+export const editOauthProvider = (data: OauthProviderEditReq) =>
+	apiReq2<boolean>(`/api/user/oauth/providers/edit`, false, { method: 'POST', data });
 
 /**
  * 登陆oauth提供商

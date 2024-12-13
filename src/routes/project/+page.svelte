@@ -38,7 +38,7 @@
 				['owner', '所有者'],
 				['version', '最新版本'],
 				['visibility', '可见性'],
-				['views', '访问量'],
+				['visits', '访问量'],
 			]}
 			data={browser ? listProjects : data.preData.data}
 		>
@@ -55,11 +55,25 @@
 					<td class="">
 						<a href="/user/{record.oid}" class="block h-full w-full px-4 py-2">{data}</a>
 					</td>
+				{:else if name === 'version'}
+					<!-- 最新版本 -->
+					<td class="px-4 py-2">
+						{#if data === null}
+							-
+						{:else}
+							<a
+								href="/project/{record.id}/version?version={data}"
+								class="block h-full w-full px-4 py-2"
+							>
+								{data}
+							</a>
+						{/if}
+					</td>
 				{:else if name === 'visibility'}
 					<!-- 可见性 -->
 					<td class="px-4 py-2"> {Visibility._toDesc(data)}</td>
 				{:else}
-					<td class="px-4 py-2"> {data}</td>
+					<td class="px-4 py-2"> {data} </td>
 				{/if}
 			{/snippet}
 		</TablePro>

@@ -21,7 +21,7 @@
 		/** 输入框是否无效 */
 		invalid?: boolean | null | undefined;
 		/** 输入框的校验器 (正则表达式或函数) */
-		checker?: RegExp | ((value: string) => boolean);
+		checker?: RegExp | ((value: string) => boolean) | null;
 		/** 输入框是否初始化时无错误 */
 		initNoErr?: boolean;
 		/** 输入框的提示信息 */
@@ -37,8 +37,11 @@
 		/** 后缀图标, 在suffix是Snippet时失效 */
 		suffixIcon?: IconSource;
 		/** 下拉列表选项 */
-		options?: readonly string[];
-		optionSnippet?: Snippet<[string]>;
+		options?: readonly (string | [string, string])[];
+		/** 自定义下拉列表选项, render(label:string, value:string) */
+		optionSnippet?: Snippet<[string, string]>;
+		/** 是否显示全部选项 */
+		showAllOptions?: boolean;
 		/** 输入框是否有焦点 (可绑定) */
 		focusing?: boolean;
 		/** 下拉列表是否显示 (可绑定) */
@@ -53,11 +56,13 @@
 		onmouseenter?: MouseEventHandler<HTMLDivElement> | null | undefined;
 		onmousemove?: MouseEventHandler<HTMLDivElement> | null | undefined;
 		onmouseleave?: MouseEventHandler<HTMLDivElement> | null | undefined;
+
+		input?: HTMLInputElement;
 	};
 </script>
 
 <script lang="ts">
-	import type { Component, Snippet } from 'svelte';
+	import type { Snippet } from 'svelte';
 	import type {
 		FocusEventHandler,
 		FormEventHandler,
@@ -78,7 +83,7 @@
 		label,
 		type = 'text',
 		placeholder,
-		value = $bindable(''),
+		value = $bindable(),
 		disabled,
 		required,
 		invalid = $bindable(false),
@@ -92,6 +97,7 @@
 		suffixIcon,
 		options,
 		optionSnippet,
+		showAllOptions = false,
 		focusing = $bindable(false),
 		showDropdown = $bindable(false),
 		onclick,
@@ -104,23 +110,40 @@
 		onmouseenter,
 		onmousemove,
 		onmouseleave,
+
+		input = $bindable(),
+
 		...props
 	}: Props = $props();
 
+	const searchMatch = (a: string, b: string | undefined): boolean => {
+		return !b || a.toLowerCase().includes(b.toLowerCase());
+	};
+
 	const filteredOptions = $derived(
-		options ? options.filter((option) => option.toLowerCase().includes(value.toLowerCase())) : [],
+		options
+			? showAllOptions
+				? [...options]
+				: options.filter((option) => {
+						if (typeof option === 'string') return searchMatch(option, value);
+						else return searchMatch(option[0], value) || searchMatch(option[1], value);
+					})
+			: [],
 	);
-	const checker = $derived(
+	const checker: ((value: string) => boolean) | null = $derived(
 		checkerLike
 			? typeof checkerLike == 'function'
 				? checkerLike
-				: () => checkerLike.test(value)
-			: null,
+				: (v) => checkerLike.test(v)
+			: options
+				? (v) => options.some((o) => (typeof o === 'string' ? o === v : o[0] === v))
+				: null,
 	);
 	let isInit = $state(true); // 是否是初始状态, 在首次失去焦点或有任意输入时变为 false
 	$effect(() => {
+		// if (outerInvalid !== null) return; // 外部强制指定
 		if (isInit && initNoErr) invalid = false;
-		else if (checker) invalid = !checker(value);
+		else if (checker) invalid = !checker(value ?? '');
 	});
 
 	let container: HTMLDivElement | undefined = $state();
@@ -133,7 +156,9 @@
 
 <div class="space-y-2 {className}">
 	<!-- 标题 -->
-	<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="input">{label}</label>
+	{#if label}
+		<label class="text-sm font-medium text-gray-700 dark:text-gray-300" for="input">{label}</label>
+	{/if}
 
 	<!-- 输入框容器 -->
 	<div
@@ -172,6 +197,7 @@
 		<input
 			{id}
 			{name}
+			bind:this={input}
 			oninput={(e) => {
 				isInit = false;
 				if (oninput) oninput(e);
@@ -227,18 +253,19 @@
 				transition:slide={{ duration: 80 }}
 			>
 				{#each filteredOptions as option}
+					{@const _value = typeof option === 'string' ? option : option[0]}
+					{@const _label = typeof option === 'string' ? option : option[1]}
 					<button
 						class="flex w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-blue-100 dark:text-white dark:hover:bg-blue-600"
 						onclick={() => {
-							console.log(option);
-							value = option;
+							value = _value;
 							showDropdown = false;
 						}}
 					>
 						{#if optionSnippet}
-							{@render optionSnippet(option)}
+							{@render optionSnippet(_label, _value)}
 						{:else}
-							{option}
+							{_label}
 						{/if}
 					</button>
 				{/each}

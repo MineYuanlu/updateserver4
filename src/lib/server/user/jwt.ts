@@ -1,10 +1,10 @@
 import type { JwtInfo, JwtTypes } from '$lib/common/jwt';
 import { jwtVerify, SignJWT } from 'jose';
 import { getSetting } from '../common';
-import type { RequestEvent } from '@sveltejs/kit';
 import { COOKIES, type COOKIE_VALUES } from '$lib/common/cookies';
 import type { UserInfo } from '$lib/common/user';
 import type { OAuthRegisterInfo } from '$lib/common/oauth';
+import type { Cookies } from '@sveltejs/kit';
 
 /**
  * 创建JWT
@@ -58,7 +58,7 @@ async function parseJwt<Data extends Record<string, unknown>, T extends JwtTypes
  * @param cookie cookie名称
  */
 async function createJwtCookie(
-	event: RequestEvent,
+	event: CookieData,
 	data: Record<string, unknown>,
 	type: JwtTypes,
 	cookie: COOKIE_VALUES,
@@ -81,7 +81,7 @@ async function createJwtCookie(
  * @returns 解析结果
  */
 async function getJwtCookie<Data extends Record<string, unknown>, T extends JwtTypes>(
-	event: RequestEvent,
+	event: CookieData,
 	type: T,
 	cookie: COOKIE_VALUES,
 ): Promise<JwtInfo<Data, T> | undefined> {
@@ -100,7 +100,7 @@ async function getJwtCookie<Data extends Record<string, unknown>, T extends JwtT
  * @param event 请求事件
  * @param cookie cookie名称
  */
-function deleteSessionTokenCookie(event: RequestEvent, cookie: COOKIE_VALUES) {
+function deleteSessionTokenCookie(event: CookieData, cookie: COOKIE_VALUES) {
 	event.cookies.delete(cookie, {
 		path: '/',
 	});
@@ -114,11 +114,11 @@ type JwtFuncs<Data extends Record<string, unknown>, T extends JwtTypes> = {
 };
 type JwtCookieFuncs<Data extends Record<string, unknown>, T extends JwtTypes> = {
 	/** 对`event`添加jwt cookie */
-	createJwtCookie: (event: RequestEvent, data: Data) => Promise<void>;
+	createJwtCookie: (event: CookieData, data: Data) => Promise<void>;
 	/** 校验并解析jwt cookie */
-	getJwtCookie: (event: RequestEvent) => Promise<JwtInfo<Data, T> | undefined>;
+	getJwtCookie: (event: CookieData) => Promise<JwtInfo<Data, T> | undefined>;
 	/** 删除jwt cookie */
-	deleteSessionTokenCookie: (event: RequestEvent) => void;
+	deleteSessionTokenCookie: (event: CookieData) => void;
 };
 
 function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>(
@@ -140,12 +140,12 @@ function generateFuncs<Data extends Record<string, unknown>, T extends JwtTypes>
 	if (!cookie) return funcs;
 	return {
 		...funcs,
-		createJwtCookie: (event: RequestEvent, data: Data) =>
-			createJwtCookie(event, data, type, cookie),
-		getJwtCookie: (event: RequestEvent) => getJwtCookie<Data, T>(event, type, cookie),
-		deleteSessionTokenCookie: (event: RequestEvent) => deleteSessionTokenCookie(event, cookie),
+		createJwtCookie: (event: CookieData, data: Data) => createJwtCookie(event, data, type, cookie),
+		getJwtCookie: (event: CookieData) => getJwtCookie<Data, T>(event, type, cookie),
+		deleteSessionTokenCookie: (event: CookieData) => deleteSessionTokenCookie(event, cookie),
 	} satisfies JwtFuncs<Data, T> & JwtCookieFuncs<Data, T>;
 }
 
 export const userJwt = generateFuncs<UserInfo, 'U'>('U', COOKIES.Session);
 export const oauthRegisterJwt = generateFuncs<OAuthRegisterInfo, 'OAUTH_R'>('OAUTH_R');
+type CookieData = { cookies: Cookies };

@@ -7,6 +7,8 @@ const settingsDefine: {
 	JWT_EXPIRATION: Setting<number>;
 	JWT_SECRET: Setting<Uint8Array>;
 	JWT_ALGORITHM: Setting<string>;
+
+	PROJ_TAG_LIMIT: Setting<number>; // 项目标签数量限制
 } = {
 	JWT_EXPIRATION: {
 		key: 'JWT_EXPIRATION',
@@ -22,6 +24,11 @@ const settingsDefine: {
 		key: 'JWT_ALGORITHM',
 		transform: (value) => value.toString(),
 		default: () => 'HS256',
+	},
+	PROJ_TAG_LIMIT: {
+		key: 'PROJ_TAG_LIMIT',
+		transform: (value) => parseInt(value.toString()),
+		default: '5',
 	},
 };
 type Setting<T> = {

@@ -1,4 +1,7 @@
-import { api__common_invalid_field } from '$lib/paraglide/messages';
+import {
+	api__common_invalid_field,
+	api__common_invalid_field_with_why,
+} from '$lib/paraglide/messages';
 import { languageTag, sourceLanguageTag, type availableLanguageTags } from '$lib/paraglide/runtime';
 import { error, json } from '@sveltejs/kit';
 
@@ -85,10 +88,20 @@ export function cache(resp: Response, seconds: number = 3600) {
 	return resp;
 }
 
+type Falsy = false | 0 | '' | null | undefined;
 /** 类型约束函数 */
 type TypeLint<T = any> = (value: unknown) => value is T;
 /** 错误回调函数 */
 type ErrorHandler<Key> = (field: Key, value: any) => never;
+type TransFunc<T, R> = (v: T) => R;
+type Checker<Key, T = any> =
+	| TypeLint<T>
+	| [TypeLint<T>, TransFunc<T, any>]
+	| [TypeLint<T>, TransFunc<T, any> | Falsy, ErrorHandler<Key>];
+type Checkers = {
+	[key in string]: Checker<key>;
+};
+
 /**
  * 检查请求参数是否符合要求, 仅会返回check中定义的字段
  * @param data 请求参数
@@ -96,33 +109,47 @@ type ErrorHandler<Key> = (field: Key, value: any) => never;
  * @param error 默认错误回调函数
  * @returns 被筛选的请求参数
  */
-export function checkRequestField<
-	Check extends {
-		[key in string]: TypeLint | [TypeLint, ErrorHandler<key>];
-	},
->(
-	data: Record<keyof Check, unknown>,
+export function checkRequestField<Check extends Checkers>(
+	data: Record<keyof Check, unknown> | URLSearchParams,
 	check: Check,
 	error: ErrorHandler<keyof Check> = failure_common_invalid_field,
 ): {
 	[key in keyof Check]: Check[key] extends TypeLint<infer T>
 		? T
-		: Check[key] extends [TypeLint<infer T>, ErrorHandler<key>]
-			? T
-			: never;
+		: Check[key] extends [TypeLint<infer T>, TransFunc<infer T, infer R>]
+			? R
+			: Check[key] extends [TypeLint<infer T>, TransFunc<infer T, infer R>, ErrorHandler<key>]
+				? R
+				: Check[key] extends [TypeLint<infer T>, Falsy, ErrorHandler<key>]
+					? T
+					: never;
 } {
 	const result: any = {};
 
-	for (const key in data) {
+	const get = data instanceof URLSearchParams ? data.get.bind(data) : (k: keyof Check) => data[k];
+
+	for (const key in check) {
 		const checkItem = check[key as keyof Check];
-		if (!checkItem) continue;
-		const [checkFunc, errorFunc] = Array.isArray(checkItem) ? checkItem : [checkItem, error];
-		if (checkFunc(data[key])) {
-			result[key] = data[key];
-		} else errorFunc(key, data[key]);
+		const _d = get(key);
+		let [checkFunc, trans, errorFunc] = Array.isArray(checkItem) ? checkItem : [checkItem];
+		if (typeof errorFunc !== 'function') errorFunc = error;
+		if (checkFunc(_d)) {
+			result[key] = trans ? trans(_d) : _d;
+		} else errorFunc(key, _d);
 	}
 
 	return result;
+}
+
+/**
+ * 创建一个带有详细原因说明的失败回调函数
+ * @param func 错误原因检查函数
+ * @returns 带有详细原因说明的失败回调函数
+ */
+export function failWhy(func: (v: unknown) => string | undefined): ErrorHandler<any> {
+	return (field, value) => {
+		failure(api__common_invalid_field_with_why({ field, why: func(value) ?? 'unknown' }));
+	};
 }
 
 /** URL语言前缀函数 */

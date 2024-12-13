@@ -1,26 +1,33 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, success } from '../../common';
+import { checkRequestField, failure, failWhy, success } from '../../common';
 import {
-	api_project__err_invalid_name as err_invalid_name,
 	api_project__err_name_taken as err_name_taken,
 	api_project__err_invalid_visibility as err_invalid_visibility,
 	api__need_login as err_need_login,
 } from '$lib/paraglide/messages';
 import { createProject } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
-import { maxProjectDescriptionLength, validateProjectName, Visibility } from '$lib/common/project';
+import {
+	validateProjectDesc,
+	validateProjectName,
+	Visibility,
+	whyInvalidProjectDesc,
+	whyInvalidProjectName,
+} from '$lib/common/project';
 import { generateId } from '$lib/server/common';
 import { SqliteError } from 'better-sqlite3';
+import { isConflictError } from '$lib/server/db/err';
 
 export const POST: RequestHandler = async (req) => {
 	const user = await userJwt.getJwtCookie(req);
 	if (!user) return failure(err_need_login());
 
 	const { name, desc, visibility } = checkRequestField(await req.request.json(), {
-		name: [validateProjectName, (_, name) => failure(err_invalid_name({ name }))],
-		desc: validateProjectDesc,
+		name: [validateProjectName, 0, failWhy(whyInvalidProjectName)],
+		desc: [validateProjectDesc, 0, failWhy(whyInvalidProjectDesc)],
 		visibility: [
-			Visibility._validateKey,
+			Visibility._validateKeyOrVal,
+			Visibility._toValue,
 			(_, visibility) => failure(err_invalid_visibility({ visibility })),
 		],
 	});
@@ -28,18 +35,10 @@ export const POST: RequestHandler = async (req) => {
 	const projId = generateId('p');
 
 	try {
-		await createProject(projId, name, user.id, desc, Visibility._toValue(visibility));
+		await createProject(projId, name, user.id, desc, visibility);
 	} catch (e) {
-		if (e instanceof SqliteError) {
-			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return failure(err_name_taken({ name }));
-		}
+		if (isConflictError(e)) return failure(err_name_taken({ name }));
 		throw e;
 	}
 	return success(projId);
 };
-
-function validateProjectDesc(desc: unknown): desc is string {
-	if (typeof desc !== 'string') return false;
-	if (desc.length > maxProjectDescriptionLength) return false;
-	return true;
-}

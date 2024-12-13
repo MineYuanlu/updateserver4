@@ -21,7 +21,7 @@ export type US4IDType = keyof typeof US4IdTypesDesc;
 /** UpdateServer4 统一 ID 类型: 以 type 开头的字符串 */
 export type US4ID<Type extends US4IDType> = `${Type}${string}`;
 
-export function isUS4ID<T extends US4IDType>(t: T, id: string): id is US4ID<T> {
+export function isUS4ID<T extends US4IDType>(t: T, id: unknown): id is US4ID<T> {
 	return typeof id === 'string' && id.length >= 2 && id.startsWith(t);
 }
 export function rawUS4ID<T extends US4IDType>(t: T, us4id: string): string | undefined;

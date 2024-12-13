@@ -11,28 +11,5 @@
 		transition:slide={{ duration: 100, axis: 'x' }}
 	>
 		{@render navbar()}
-		<!-- <ul class="space-y-4">
-        <li>
-            <a
-                href="#"
-                class="block text-gray-700 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
-                >导航 1</a
-            >
-        </li>
-        <li>
-            <a
-                href="#"
-                class="block text-gray-700 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
-                >导航 2</a
-            >
-        </li>
-        <li>
-            <a
-                href="#"
-                class="block text-gray-700 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
-                >导航 3</a
-            >
-        </li>
-    </ul> -->
 	</aside>
 {/if}

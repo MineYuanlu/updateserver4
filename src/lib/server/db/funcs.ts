@@ -1,4 +1,4 @@
-import { and, desc, eq, exists, gte, lt, ne, or } from 'drizzle-orm';
+import { and, desc, eq, exists, gte, lt, ne, or, sql } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
 import { defaultWebRole } from '$lib/common/user';
@@ -90,14 +90,47 @@ export async function createOAuthProvider(
 		})
 		.execute();
 }
+/** 修改OAuth提供商 */
+export async function editOAuthProvider(
+	oldName: string,
+	name: string,
+	desc: string,
+	type: string,
+	client_id: string,
+	client_secret: string | null,
+	redirect_uri: string,
+) {
+	return await db
+		.update(_t.oauthProvider)
+		.set({
+			name: name,
+			desc: desc,
+			type: type,
+			clientId: client_id,
+			...(client_secret !== null
+				? {
+						clientSecret: client_secret,
+					}
+				: {}),
+			redirectUri: redirect_uri,
+		})
+		.where(eq(_t.oauthProvider.name, oldName))
+		.execute();
+}
 
 /** 列出OAuth提供商名称和类型 */
-export async function listOAuthProviders() {
+export async function listOAuthProviders(admin: boolean = false) {
 	return await db
 		.select({
 			name: _t.oauthProvider.name,
 			type: _t.oauthProvider.type,
 			desc: _t.oauthProvider.desc,
+			...(admin
+				? {
+						client_id: _t.oauthProvider.clientId,
+						redirect_uri: _t.oauthProvider.redirectUri,
+					}
+				: {}),
 		})
 		.from(_t.oauthProvider)
 		.execute();
@@ -230,15 +263,68 @@ export async function listProjects(offset: number, limit: number) {
 			name: _t.project.name,
 			oid: _t.project.owner,
 			owner: _t.user.name,
+			version: _t.project.version,
 			desc: _t.project.desc,
 			visibility: _t.project.visibility,
+			visits: _t.timeCnts.value,
 		})
 		.from(_t.project)
 		.leftJoin(_t.user, eq(_t.project.owner, _t.user.id))
+		.leftJoin(
+			_t.timeCnts,
+			and(eq(sql`${_t.project.id}||'/v'`, _t.timeCnts.name), eq(_t.timeCnts.unit, -1)),
+		)
 		.orderBy(_t.project.nameKey)
 		.limit(limit)
 		.offset(offset)
 		.execute();
+}
+
+/**
+ * 修改项目基本信息
+ * @param id 项目ID
+ * @param edit 修改项, 允许:`name`, `desc`, `versionCmp`, `visibility`, `links`, `tag`
+ */
+export async function editProjectBasic(
+	id: _t.Project['id'],
+	edit: Partial<
+		Pick<_t.Project, 'name' | 'desc' | 'versionCmp' | 'visibility' | 'links'> & { tags: string[] }
+	>,
+) {
+	const edits = (
+		['name', 'desc', 'versionCmp', 'visibility', 'links'] satisfies (keyof _t.Project)[]
+	).filter((k) => k in edit && edit[k] !== undefined);
+
+	const data: Partial<_t.Project> = Object.fromEntries(edits.map((k) => [k, edit[k] as any]));
+	if (data.name) data.nameKey = data.name.trim().toLowerCase();
+
+	let editProj = edits.length > 0;
+
+	if (editProj) {
+		const ret = await db.update(_t.project).set(data).where(eq(_t.project.id, id)).execute();
+		editProj = ret.changes > 0;
+	}
+
+	const tags = Array.from(new Set(edit.tags));
+	let editTags = false;
+	if (tags.length > 0) {
+		editTags = await db.transaction(async (trx) => {
+			const ret = await trx
+				.select({ tag: _t.projectTag.tag })
+				.from(_t.projectTag)
+				.where(eq(_t.projectTag.pid, id))
+				.execute();
+			const olds = ret.map((t) => t.tag);
+			if (olds.length == tags.length && olds.every((t) => tags.includes(t))) return false;
+			await trx.delete(_t.projectTag).where(eq(_t.projectTag.pid, id)).execute();
+			await trx
+				.insert(_t.projectTag)
+				.values(tags.map((t) => ({ pid: id, tag: t })))
+				.execute();
+			return true;
+		});
+	}
+	return editProj || editTags;
 }
 
 const _proj_check_perm_public = eq(_t.project.visibility, Visibility.public.val);
@@ -416,6 +502,6 @@ export async function getSubCounts(key: string) {
 			t: _t.timeCnts.time,
 		})
 		.from(_t.timeCnts)
-		.where(and(eq(_t.timeCnts.name, key)))
+		.where(and(eq(_t.timeCnts.name, key), ne(_t.timeCnts.unit, -1)))
 		.execute();
 }

@@ -10,6 +10,7 @@ import type { RequestHandler } from './$types';
 import { failure, success } from '../../../common';
 import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
 import { SqliteError } from 'better-sqlite3';
+import { isConflictError } from '$lib/server/db/err';
 
 export const POST: RequestHandler = async (req) => {
 	const { username, jwt } = await req.request.json();
@@ -31,9 +32,7 @@ export const POST: RequestHandler = async (req) => {
 	try {
 		await linkOAuthToNewUser(userId, provider, id, username, defaultWebRole);
 	} catch (e) {
-		if (e instanceof SqliteError) {
-			if (e.code === 'SQLITE_CONSTRAINT_UNIQUE') return failure(err_username_taken({ username }));
-		}
+		if (isConflictError(e)) return failure(err_username_taken({ username }));
 		throw e;
 	}
 

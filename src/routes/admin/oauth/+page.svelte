@@ -2,33 +2,39 @@
 	import Button from '$lib/components/Form/Button.svelte';
 	import { getOauthProviderList } from '$lib/api/user';
 	import Create from './Create.svelte';
-	import Table from '$lib/components/Table/Table.svelte';
+	import TablePro from '$lib/components/Table/TablePro.svelte';
 	import { getIcon } from '$lib/common/oauth';
 	import { Icon } from '@steeze-ui/svelte-icon';
+	import Edit from './Edit.svelte';
 
-	let createModCount = $state(0);
+	let modCount = $state(0);
 </script>
 
 <div class="container mx-auto p-6">
 	<h1 class="mb-6 text-3xl font-bold text-gray-800 dark:text-gray-100">OAuth 管理</h1>
 
-	<Create bind:createModCount />
-	{#key createModCount}
-		<Table
-			headers={['名称', '描述', '类型', '操作']}
+	<Create bind:createModCount={modCount} />
+	{#key modCount}
+		<TablePro
+			headers={[
+				['name', '名称'],
+				['desc', '描述'],
+				['type', '类型'],
+				['action', '操作'],
+			]}
 			data={async () => {
-				const data = await getOauthProviderList();
+				const data = await getOauthProviderList(true);
 				return {
-					data: data.map((it) => [it.name, it.desc, it.type, undefined]),
+					data: data,
 					total: data.length,
 				};
 			}}
 		>
-			{#snippet cell(data, _row, col, tmp)}
+			{#snippet cell(name, data, _record, _row, _col, tmp)}
 				<td class="px-4 py-2 text-center">
-					{#if data === null && tmp}
+					{#if data === undefined && tmp}
 						&nbsp;
-					{:else if col === 2}
+					{:else if name === 'type'}
 						{@const icon = getIcon(data)}
 						<span class="flex items-center justify-center">
 							{#if icon}
@@ -36,13 +42,13 @@
 							{/if}
 							<span> {data}</span>
 						</span>
-					{:else if col === 3}
-						<Button>编辑</Button>
+					{:else if name === 'action'}
+						<Edit bind:editModCount={modCount} data={_record as any} />
 					{:else}
 						{data}
 					{/if}
 				</td>
 			{/snippet}
-		</Table>
+		</TablePro>
 	{/key}
 </div>

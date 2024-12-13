@@ -29,7 +29,19 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 	 * @param value 枚举值
 	 * @returns 键 / undefined
 	 */
+	_toKey(value: keyof Map | Map[keyof Map][0]): keyof Map;
+	/**
+	 * 获取枚举值对应的键
+	 * @param value 枚举值
+	 * @returns 键 / undefined
+	 */
 	_toKey(value: unknown): keyof Map | undefined;
+	/**
+	 * 获取枚举键对应的值
+	 * @param key 枚举键
+	 * @returns 值 / undefined
+	 */
+	_toValue(key: keyof Map | Map[keyof Map][0]): Map[keyof Map][0];
 	/**
 	 * 获取枚举键对应的值
 	 * @param key 枚举键
@@ -53,6 +65,13 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 	 * @returns 是否有效
 	 */
 	_validateKey(key: unknown): key is keyof Map;
+
+	/**
+	 * 验证键或值是否有效的枚举键或值
+	 * @param key 枚举键或值
+	 * @returns 是否有效
+	 */
+	_validateKeyOrVal(key: unknown): key is keyof Map | Map[keyof Map][0];
 
 	/** 枚举的所有键 */
 	_keys: readonly (keyof Map)[];
@@ -125,6 +144,15 @@ export function makeEnum<Map extends Record<string, [number, i18nMsgFunc]>>(
 		},
 		_validateKey(key): key is keyof Map {
 			return typeof key === 'string' && key in map;
+		},
+		_validateKeyOrVal(key): key is keyof Map | Map[keyof Map][0] {
+			if (typeof key === 'string') {
+				if (key in map) return true;
+				key = parseInt(key, 10);
+				if (isNaN(key as number)) return false;
+			}
+			if (typeof key === 'number' && key in valueToKey) return true;
+			return false;
 		},
 		_keys: keys_,
 		_values: values_,
