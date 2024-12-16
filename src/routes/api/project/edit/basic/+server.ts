@@ -13,12 +13,12 @@ import {
 	validateProjectDesc,
 	validateProjectLinks,
 	validateProjectName,
-	validateProjectTag,
+	validateProjectTags,
 	Visibility,
 	whyInvalidProjectDesc,
 	whyInvalidProjectLinks,
 	whyInvalidProjectName,
-	whyInvalidProjectTag,
+	whyInvalidProjectTags,
 } from '$lib/common/project';
 import {
 	transformVersionCmpArgs,
@@ -63,7 +63,7 @@ export const POST: RequestHandler = async ({ url, cookies, request }) => {
 			failWhy(whyInvalidVersionCmpArgs),
 		],
 		links: [okUn(validateProjectLinks), 0, failWhy(whyInvalidProjectLinks)],
-		tag: [okUn(validateProjectTag), 0, failWhy(whyInvalidProjectTag)],
+		tags: [okUn(validateProjectTags), 0, failWhy(whyInvalidProjectTags)],
 	});
 
 	let ok: boolean;

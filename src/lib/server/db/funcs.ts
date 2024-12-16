@@ -1,8 +1,9 @@
-import { and, desc, eq, exists, gte, lt, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, exists, gte, inArray, lt, ne, or, sql } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
 import { defaultWebRole } from '$lib/common/user';
 import { UserRole, Visibility } from '$lib/common/project';
+import { isEqualSet } from '$lib/utils/equal';
 
 /** 获取设置值(如果不存在则插入设置值并返回默认值) */
 export async function getSettingValue(
@@ -305,23 +306,31 @@ export async function editProjectBasic(
 		editProj = ret.changes > 0;
 	}
 
-	const tags = Array.from(new Set(edit.tags));
 	let editTags = false;
-	if (tags.length > 0) {
+	if (edit.tags) {
+		const tags = new Set(edit.tags);
 		editTags = await db.transaction(async (trx) => {
 			const ret = await trx
 				.select({ tag: _t.projectTag.tag })
 				.from(_t.projectTag)
 				.where(eq(_t.projectTag.pid, id))
 				.execute();
-			const olds = ret.map((t) => t.tag);
-			if (olds.length == tags.length && olds.every((t) => tags.includes(t))) return false;
-			await trx.delete(_t.projectTag).where(eq(_t.projectTag.pid, id)).execute();
-			await trx
-				.insert(_t.projectTag)
-				.values(tags.map((t) => ({ pid: id, tag: t })))
-				.execute();
-			return true;
+			const olds = new Set(ret.map((t) => t.tag));
+
+			const dels = Array.from(olds).filter((tag) => !tags.has(tag));
+			const adds = Array.from(tags).filter((tag) => !olds.has(tag));
+
+			if (dels.length > 0)
+				await trx
+					.delete(_t.projectTag)
+					.where(and(eq(_t.projectTag.pid, id), inArray(_t.projectTag.tag, dels)))
+					.execute();
+			if (adds.length > 0)
+				await trx
+					.insert(_t.projectTag)
+					.values(adds.map((t) => ({ pid: id, tag: t })))
+					.execute();
+			return dels.length > 0 || adds.length > 0;
 		});
 	}
 	return editProj || editTags;
@@ -471,6 +480,24 @@ export async function getProjectUserRole(id: _t.Project['id'], user: _t.User['id
 		.where(and(eq(_t.projectMember.uid, user), eq(_t.projectMember.pid, id)))
 		.execute();
 	return ret.at(0)?.role;
+}
+
+/**
+ * 列出项目成员
+ * @param id 项目ID
+ * @returns 项目成员列表
+ */
+export async function listProjectUsers(id: _t.Project['id']) {
+	return await db
+		.select({
+			uid: _t.projectMember.uid,
+			name: _t.user.name,
+			role: _t.projectMember.role,
+		})
+		.from(_t.projectMember)
+		.innerJoin(_t.user, eq(_t.projectMember.uid, _t.user.id))
+		.where(eq(_t.projectMember.pid, id))
+		.execute();
 }
 
 /**

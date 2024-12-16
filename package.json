@@ -59,6 +59,7 @@
 		"animejs": "^3.2.2",
 		"better-sqlite3": "^11.1.2",
 		"bitset": "^5.2.3",
+		"deepcopy": "^2.1.0",
 		"drizzle-orm": "^0.36.4",
 		"echarts": "^5.5.1",
 		"exit-hook": "^4.0.0",

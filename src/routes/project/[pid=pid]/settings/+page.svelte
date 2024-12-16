@@ -9,14 +9,14 @@
 	} from '$lib/common/project';
 	import EditInput from '$lib/components/Form/EditInput.svelte';
 	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
-	import lodash from 'lodash';
 	import type { EditData } from '../../../api/project/edit/basic/+server.js';
-	import { goto } from '$app/navigation';
+	import deepcopy from 'deepcopy';
 	import VersionCmpEdit from './VersionCmpEdit.svelte';
 	import LinksEdit from './LinksEdit.svelte';
+	import TagsEdit from './TagsEdit.svelte';
 
 	const { data } = $props();
-	const { proj, versions, tags } = data.project;
+	const { proj, tags } = data.project;
 
 	const defaultData: Required<EditData> = $state({
 		name: proj.name,
@@ -27,11 +27,11 @@
 		tags: tags,
 	});
 
-	let editData = $state({ ...defaultData });
+	let editData = $state(deepcopy(defaultData));
 
 	let submitting = $state(false);
 
-	async function submitField(field: keyof EditData) {
+	async function submit(field: keyof EditData) {
 		console.log('submitField', field, editData[field], defaultData[field]);
 		if (submitting) return;
 		if (editData[field] === defaultData[field]) return;
@@ -50,7 +50,7 @@
 				});
 			}
 			if (ret !== null) {
-				(defaultData as any)[field] = editData[field];
+				(defaultData as any)[field] = deepcopy(editData[field]);
 
 				if (field === 'name') {
 					// TODO: 找到一种方法, 刷新+layout.server.ts的数据, 以便于Navbar上的名字可以刷新
@@ -64,38 +64,12 @@
 			submitting = false;
 		}
 	}
-
-	async function submit() {
-		if (submitting) return;
-		const data = {} as EditData;
-		let edited = false;
-		for (const key in editData) {
-			if (!lodash.isEqual((editData as any)[key], (defaultData as any)[key])) {
-				data[key as keyof typeof editData] = (editData as any)[key];
-				edited = true;
-			}
-		}
-		submitting = true;
-		try {
-			if (edited && (await updateProject(proj.id, data))) {
-				addNotification({
-					title: '修改成功',
-					message: '修改项目信息成功',
-					type: 'success',
-					icon: true,
-				});
-			}
-		} finally {
-			submitting = false;
-		}
-	}
 </script>
 
-<section class="mx-auto flex h-[200vh] min-h-full max-w-3xl flex-col">
+<section class="mx-auto flex min-h-full max-w-4xl flex-col">
 	<h1 class="mb-4 text-3xl font-bold">{defaultData.name}</h1>
-	<hr />
-	<div class="mb-6 mt-4">
-		<h3 class="mb-4 text-xl font-bold">基础设置</h3>
+	<div class="mb-6 mt-6">
+		<h3 class="mb-4 text-2xl font-bold">基础设置</h3>
 		<div class="flex flex-col gap-6">
 			<EditInput
 				label="项目名称"
@@ -105,7 +79,7 @@
 				checker={validateProjectName}
 				errHint={whyInvalidProjectName(editData.name)}
 				editHint="修改项目名称将导致短链接'/p/{proj.name}'失效, 但id链接不变"
-				onclick={() => submitField('name')}
+				onclick={() => submit('name')}
 			/>
 
 			<EditInput
@@ -115,7 +89,7 @@
 				bind:value={editData.desc}
 				checker={validateProjectDesc}
 				errHint={whyInvalidProjectDesc(editData.desc)}
-				onclick={() => submitField('desc')}
+				onclick={() => submit('desc')}
 			/>
 
 			<EditInput
@@ -125,32 +99,51 @@
 				bind:value={editData.visibility}
 				options={Visibility._toOptions()}
 				showAllOptions
-				onclick={() => submitField('visibility')}
+				onclick={() => submit('visibility')}
 			/>
 		</div>
 	</div>
 
 	<hr />
-	<div class="mb-6 mt-4">
-		<h3 class="mb-4 text-xl font-bold">版本比较设置</h3>
+	<div class="mb-6 mt-6">
+		<h3 class="mb-4 text-2xl font-bold">版本比较设置</h3>
 		<div class="flex flex-col gap-6">
 			<VersionCmpEdit
 				default={defaultData.versionCmp}
 				bind:value={editData.versionCmp}
-				onclick={() => submitField('versionCmp')}
+				onclick={() => submit('versionCmp')}
 			/>
 		</div>
 	</div>
 
 	<hr />
-	<div class="mb-6 mt-4">
-		<h3 class="mb-4 text-xl font-bold">项目链接</h3>
+	<div class="mb-6 mt-6">
+		<h3 class="mb-4 text-2xl font-bold">项目链接</h3>
 		<div class="flex flex-col gap-6">
 			<LinksEdit
 				default={defaultData.links}
 				bind:value={editData.links}
-				onclick={() => submitField('links')}
+				onclick={() => submit('links')}
+			/>
+		</div>
+	</div>
+
+	<hr />
+	<div class="mb-6 mt-6">
+		<h3 class="mb-4 text-2xl font-bold">项目标签</h3>
+		<div class="flex flex-col gap-6">
+			<TagsEdit
+				default={defaultData.tags}
+				bind:value={editData.tags}
+				onclick={() => submit('tags')}
 			/>
 		</div>
 	</div>
 </section>
+
+<style>
+	hr {
+		margin-top: 2rem;
+		margin-bottom: 2rem;
+	}
+</style>

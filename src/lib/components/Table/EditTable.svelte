@@ -103,6 +103,7 @@
 							bind:value={data[i][j]}
 							invalid={(unique === j ? data.filter((v) => v[j] === col).length > 1 : false) ||
 								checkResults[i][j] === false}
+							initNoErr={false}
 						/>
 					</td>
 				{/each}

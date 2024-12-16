@@ -32,6 +32,8 @@
 	"api_user__err_invalid_password": "无效密码",
 	"api_user_login__err_no_password_login": "该用户未设置密码登录",
 	"api_user_login__err_invalid_credentials": "用户名或密码错误",
+	"api_project__err_bad_id": "无效项目 ID",
+	"api_project__not_found": "找不到项目",
 	"api_project__err_name_taken": "项目名称已被使用: {name}",
 	"api_project__err_invalid_visibility": "无效项目可见性: {visibility}",
 	"page_admin_oauth__create_btn": "创建",

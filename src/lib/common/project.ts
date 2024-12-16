@@ -149,14 +149,9 @@ export const maxProjectTagLength = 20;
  * @param tag 项目标签
  * @returns 是否合法
  */
-export function validateProjectTag(tag: unknown): tag is string[] {
-	if (typeof tag !== 'object' || tag === null) return false;
-	if (!Array.isArray(tag)) return false;
-	if (tag.length > maxProjectTagNumber) return false;
-	for (const t of tag) {
-		if (typeof t !== 'string') return false;
-		if (!t || t.length > maxProjectTagLength) return false;
-	}
+export function validateProjectTag(tag: unknown): tag is string {
+	if (typeof tag !== 'string') return false;
+	if (!tag || tag.length > maxProjectTagLength) return false;
 	return true;
 }
 
@@ -166,11 +161,38 @@ export function validateProjectTag(tag: unknown): tag is string[] {
  * @returns 失败原因
  */
 export function whyInvalidProjectTag(tag: unknown): string | undefined {
-	if (typeof tag !== 'object' || tag === null || !Array.isArray(tag))
+	if (typeof tag !== 'string') return check_project_tags__tag_not_string();
+	if (!tag || tag.length > maxProjectTagLength)
+		return check_project_tags__tag_too_long({ max: maxProjectTagLength });
+	return undefined;
+}
+/**
+ * 项目标签合法性检查
+ * @param tags 项目标签
+ * @returns 是否合法
+ */
+export function validateProjectTags(tags: unknown): tags is string[] {
+	if (typeof tags !== 'object' || tags === null) return false;
+	if (!Array.isArray(tags)) return false;
+	if (tags.length > maxProjectTagNumber) return false;
+	for (const t of tags) {
+		if (typeof t !== 'string') return false;
+		if (!t || t.length > maxProjectTagLength) return false;
+	}
+	return true;
+}
+
+/**
+ * 项目标签合法性检查失败原因
+ * @param tags 项目标签
+ * @returns 失败原因
+ */
+export function whyInvalidProjectTags(tags: unknown): string | undefined {
+	if (typeof tags !== 'object' || tags === null || !Array.isArray(tags))
 		return check_project_tags__not_array();
-	if (tag.length > maxProjectTagNumber)
+	if (tags.length > maxProjectTagNumber)
 		return check_project_tags__too_many_tags({ max: maxProjectTagNumber });
-	for (const t of tag) {
+	for (const t of tags) {
 		if (typeof t !== 'string') return check_project_tags__tag_not_string();
 		if (!t || t.length > maxProjectTagLength)
 			return check_project_tags__tag_too_long({ max: maxProjectTagLength });

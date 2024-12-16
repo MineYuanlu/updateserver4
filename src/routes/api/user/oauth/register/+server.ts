@@ -9,7 +9,6 @@ import {
 import type { RequestHandler } from './$types';
 import { failure, success } from '../../../common';
 import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
-import { SqliteError } from 'better-sqlite3';
 import { isConflictError } from '$lib/server/db/err';
 
 export const POST: RequestHandler = async (req) => {
