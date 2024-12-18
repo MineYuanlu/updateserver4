@@ -15,6 +15,11 @@ export const menus: Menu[] = [
 		match: '/admin',
 	},
 	{
+		name: m.menu_api,
+		path: '/swagger',
+		match: '/swagger',
+	},
+	{
 		name: m.name,
 		path: '/demo/components',
 		match: '/demo/components',

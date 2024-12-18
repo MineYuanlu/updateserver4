@@ -1,7 +1,7 @@
 import { AllCount } from '$lib/protos';
 import { countUnit, insertFakeData, modCount } from '$lib/server/counter/core';
 import { getSubCounts, getTotalCount } from '$lib/server/db/funcs';
-import { checkRequestField, success_proto } from '../common';
+import { checkRequestField, success_proto } from '../common.server';
 import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = async (req) => {

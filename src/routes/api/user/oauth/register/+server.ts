@@ -7,7 +7,7 @@ import {
 	api_user_oauth_register__invalid_token as err_invalid_token,
 } from '$lib/paraglide/messages';
 import type { RequestHandler } from './$types';
-import { failure, success } from '../../../common';
+import { failure, success } from '../../../common.server';
 import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
 import { isConflictError } from '$lib/server/db/err';
 

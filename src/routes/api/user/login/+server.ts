@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { failure, success } from '../../common';
+import { failure, success } from '../../common.server';
 import { validatePassword, validateUserName } from '$lib/common/user';
 import {
 	api_user__err_invalid_username as err_invalid_username,

@@ -65,7 +65,7 @@ export function success_proto(data: Uint8Array, header?: Record<string, string>)
  * @returns Response对象
  */
 export function failure(message: string, code = 1): never {
-	return error(400, { code, message });
+	return error(400, { code, message } as any);
 }
 
 /**

@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, failWhy, success } from '../../../common';
+import { checkRequestField, failure, failWhy, success } from '../../../common.server';
 import { checkPermByProjId, editProjectBasic } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
 import { error } from '@sveltejs/kit';

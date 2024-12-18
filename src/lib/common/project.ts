@@ -27,7 +27,7 @@ import {
 } from '$lib/paraglide/messages';
 import { isURL } from '$lib/utils/url';
 import { makeEnum } from './enum';
-import type { US4ID } from './id';
+import { zUS4ID, type US4ID } from './id';
 
 export const projectNameReservedWords = ['create'] as const;
 
@@ -200,7 +200,10 @@ export function whyInvalidProjectTags(tags: unknown): string | undefined {
 	return undefined;
 }
 
+/** 项目ID */
 export type ProjId = US4ID<'p'>;
+/** 项目ID zod */
+export const zProjId = zUS4ID('p');
 
 /** 项目可见性 */
 export const Visibility = makeEnum({

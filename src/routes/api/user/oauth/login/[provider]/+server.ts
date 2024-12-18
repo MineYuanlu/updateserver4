@@ -7,7 +7,7 @@ import {
 	api_user_oauth_login_provider__err_not_found as err_not_found,
 	api_user_oauth_login_provider__err_invalid_provider as err_invalid_provider,
 } from '$lib/paraglide/messages.js';
-import { failure, success } from '../../../../common';
+import { failure, success } from '../../../../common.server';
 import type { OAuthProviderTypeName } from '$lib/common/oauth';
 
 export const POST: RequestHandler = async (req) => {

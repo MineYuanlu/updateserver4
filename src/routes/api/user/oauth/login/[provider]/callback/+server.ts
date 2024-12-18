@@ -8,7 +8,7 @@ import {
 	api_user_oauth_login_provider_callback__err_bad_state as err_bad_state,
 } from '$lib/paraglide/messages.js';
 import { COOKIES } from '$lib/common/cookies';
-import { failure, success } from '../../../../../common';
+import { failure, success } from '../../../../../common.server';
 import { oauthRegisterJwt, userJwt } from '$lib/server/user/jwt';
 import type { OAuthProviderTypeName } from '$lib/common/oauth';
 

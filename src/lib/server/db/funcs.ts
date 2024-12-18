@@ -444,7 +444,7 @@ export async function getProjectDetailById(
 			version: _t.projectVersion.version,
 			desc: _t.projectVersion.desc,
 			time: _t.projectVersion.time,
-			size: _t.projectVersion.link,
+			link: _t.projectVersion.link,
 		})
 		.from(_t.projectVersion)
 		.where(eq(_t.projectVersion.pid, id))

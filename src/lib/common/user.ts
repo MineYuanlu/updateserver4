@@ -13,7 +13,7 @@ import {
 } from '$lib/paraglide/messages';
 import type { User } from '$lib/server/db/schema';
 import { makeEnum } from './enum';
-import type { US4ID } from './id';
+import { zUS4ID, type US4ID } from './id';
 import type { JwtInfo } from './jwt';
 
 export const userNameReservedWords = ['login', 'logout', 'register', 'oauth'] as const;
@@ -72,7 +72,10 @@ export function whyInvalidPassword(password: string): string | undefined {
 	return undefined;
 }
 
+/** 用户ID */
 export type UserId = US4ID<'u'>;
+/** 用户ID zod */
+export const zUserId = zUS4ID('u');
 /**
  * 网站用户角色, 仅代表整个网站的角色, 而不是某个项目的角色
  *

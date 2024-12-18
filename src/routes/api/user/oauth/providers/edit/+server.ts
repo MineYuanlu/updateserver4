@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { editOAuthProvider } from '$lib/server/db/funcs';
-import { checkRequestField, failure, success } from '../../../../common';
+import { checkRequestField, failure, success } from '../../../../common.server';
 import {
 	validateName,
 	validateDesc,

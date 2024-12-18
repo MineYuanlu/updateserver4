@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export const US4IdTypesDesc = {
 	u: 'user',
 	p: 'project',
@@ -32,4 +34,9 @@ export function rawUS4ID<T extends US4IDType>(t: T, us4id: string): string | und
 }
 export function toUS4ID<T extends US4IDType>(t: T, id: string): US4ID<T> {
 	return (t + id) as any;
+}
+export function zUS4ID<T extends US4IDType>(t: T) {
+	return z
+		.string()
+		.refine((id: string) => isUS4ID(t, id), { message: `Invalid ${US4IdTypesDesc[t]} ID` });
 }

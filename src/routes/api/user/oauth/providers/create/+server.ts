@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { createOAuthProvider } from '$lib/server/db/funcs';
-import { checkRequestField, failure, success } from '../../../../common';
+import { checkRequestField, failure, success } from '../../../../common.server';
 import { OAuthProviderTypeNames, type OAuthProviderTypeName } from '$lib/common/oauth';
 import { isWebAdmin } from '../../../../perm';
 import { error } from '@sveltejs/kit';

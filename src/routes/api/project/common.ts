@@ -4,7 +4,7 @@ import { UserRole, type ProjId } from '$lib/common/project';
 import type { UserId } from '$lib/common/user';
 import { api_project__err_bad_id, api_project__not_found } from '$lib/paraglide/messages';
 import { checkPermByProjId } from '$lib/server/db/funcs';
-import { checkRequestField, failure } from '../common';
+import { checkRequestField, failure } from '../common.server';
 
 /**
  * 从请求参数中获取项目id

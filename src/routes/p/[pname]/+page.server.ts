@@ -2,7 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { checkPermGetProjIdByName } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
-import { langPrefix } from '../../api/common';
+import { langPrefix } from '../../api/common.server';
 import { validateProjectName } from '$lib/common/project';
 
 /** /p/[pname] -> /project/[pid] */

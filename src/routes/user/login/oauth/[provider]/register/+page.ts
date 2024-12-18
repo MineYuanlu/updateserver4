@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageLoad } from './$types';
-import { langPrefix } from '../../../../../api/common';
+import { langPrefix } from '../../../../../api/common.server';
 
 export const load: PageLoad = ({ params, url }) => {
 	const jwt = url.searchParams.get('jwt');

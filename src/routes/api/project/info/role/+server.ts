@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, success } from '../../../common';
+import { checkRequestField, failure, success } from '../../../common.server';
 import { getProjectUserRole } from '$lib/server/db/funcs';
 import { isUS4ID } from '$lib/common/id';
 import { api__need_login, api_project__err_bad_id } from '$lib/paraglide/messages';

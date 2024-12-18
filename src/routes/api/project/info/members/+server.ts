@@ -1,5 +1,5 @@
 import type { RequestHandler } from './$types';
-import { success } from '../../../common';
+import { success } from '../../../common.server';
 import { listProjectUsers } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
 import { checkProjPerm, getProjId } from '../../common';

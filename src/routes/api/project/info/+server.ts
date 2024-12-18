@@ -1,17 +1,51 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, success } from '../../common';
-import { getProjectDetailById, listProjects } from '$lib/server/db/funcs';
-import { isUS4ID } from '$lib/common/id';
-import { api_project__err_bad_id, api_project__not_found } from '$lib/paraglide/messages';
+import { failure } from '../../common.server';
+import { getProjectDetailById } from '$lib/server/db/funcs';
+import { api_project__not_found } from '$lib/paraglide/messages';
 import { userJwt } from '$lib/server/user/jwt';
-import { getProjId } from '../common';
-export type ListResp = Awaited<ReturnType<typeof listProjects>>;
+import { createAPI } from '../../api.server';
+import { Visibility, zProjId } from '$lib/common/project';
+import { z } from 'zod';
+
+export const _GET = createAPI()
+	.summary('获取项目详情')
+	.query({
+		pid: zProjId,
+	})
+	.cookie({
+		user: userJwt.zod.optional,
+	})
+	.success<Awaited<ReturnType<typeof getProjectDetailById>>>(
+		z.object({
+			proj: z.object({
+				id: zProjId.describe('project ID'),
+				name: z.string().describe('project name'),
+				oid: z.string().describe('owner ID'),
+				owner: z.string().nullable().describe('owner name'),
+				desc: z.string().describe('project description'),
+				visibility: Visibility._z_value.describe('project visibility'),
+				version: z.string().nullable().describe('project using version'),
+				versionCmp: z.object({}),
+				createdAt: z.number().int().nullable().describe('project created time'),
+				links: z.record(z.string()).describe('project links'),
+			}),
+			versions: z.array(
+				z.object({
+					version: z.string().describe('version name'),
+					desc: z.string().nullable().describe('version description'),
+					time: z.number().int().describe('version created time'),
+					link: z.string().nullable().describe('version link'),
+				}),
+			),
+			tags: z.array(z.string()).describe('project tags'),
+		}),
+	)
+	.tag('project')
+	.flatArgs(true);
 
 /** 获取项目详情 */
-export const GET: RequestHandler = async ({ cookies, url }) => {
-	const pid = getProjId(url.searchParams);
-	const user = await userJwt.getJwtCookie({ cookies });
+export const GET: RequestHandler = _GET.handler(async (_, { pid, user }, success) => {
 	const project = await getProjectDetailById(pid, user?.id);
 	if (!project) return failure(api_project__not_found());
 	return success(project);
-};
+});
