@@ -6,17 +6,13 @@ import errorMap from '$lib/zod/error_map';
 import type { OpenAPIV3 } from 'openapi-types';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-type Change<T, R> = Omit<T, keyof R> & R;
 /**
  * 参数定义:
  * 1. `code_param_name - [type, http_param_name]`
  * 2. `name - type`
  */
 type Params = Record<string, z.ZodType | readonly [z.ZodType, string]>;
-type AddParam<T extends Record<string, any>, f extends keyof T & string, A> = Change<
-	T,
-	{ [k in f]: `${k}` extends keyof T ? T[k] & A : A }
->;
+type AddParam<T extends Record<string, any>, f extends keyof T & string, A> = T & { [P in f]: A };
 /** 成功响应结构定义 */
 type Success<D extends any = any, H extends Record<string, string> | undefined = any> = {
 	status: number;
@@ -87,35 +83,35 @@ class API<
 > {
 	private constructor(private _data: T) {}
 	/** 添加query查询参数 */
-	public query<Q extends Params>(q: Q) {
+	public query<Q extends Params>(q: Q): ReturnType<API<AddParam<T, 'query', Q>>['$flatten']> {
 		return new API<AddParam<T, 'query', Q>>({
 			...this._data,
 			query: { ...this._data.query, ...q },
 		});
 	}
 	/** 添加path路径参数 */
-	public path<P extends Params>(p: P) {
+	public path<P extends Params>(p: P): ReturnType<API<AddParam<T, 'path', P>>['$flatten']> {
 		return new API<AddParam<T, 'path', P>>({
 			...this._data,
 			path: { ...this._data.path, ...p },
 		});
 	}
 	/** 添加header头参数 */
-	public header<H extends Params>(h: H) {
+	public header<H extends Params>(h: H): ReturnType<API<AddParam<T, 'header', H>>['$flatten']> {
 		return new API<AddParam<T, 'header', H>>({
 			...this._data,
 			header: { ...this._data.header, ...h },
 		});
 	}
 	/** 添加cookie参数 */
-	public cookie<C extends Params>(c: C) {
+	public cookie<C extends Params>(c: C): ReturnType<API<AddParam<T, 'cookie', C>>['$flatten']> {
 		return new API<AddParam<T, 'cookie', C>>({
 			...this._data,
 			cookie: { ...this._data.cookie, ...c },
 		});
 	}
 	/** 添加body参数 */
-	public body<B extends Params>(b: B) {
+	public body<B extends Params>(b: B): ReturnType<API<AddParam<T, 'body', B>>['$flatten']> {
 		return new API<AddParam<T, 'body', B>>({
 			...this._data,
 			body: { ...this._data.body, ...b },
@@ -127,9 +123,9 @@ class API<
 		h?: H,
 		c = 0,
 		s = 200,
-	) {
+	): ReturnType<API<T & { success: Success<CommonSuccessResp<D>, H> }>['$flatten']> {
 		if ('success' in this._data) throw new Error('success already set');
-		return new API<Change<T, { success: Success<CommonSuccessResp<D>, H> }>>({
+		return new API<T & { success: Success<CommonSuccessResp<D>, H> }>({
 			...this._data,
 			success: {
 				header: h,
@@ -144,36 +140,42 @@ class API<
 	}
 	/** 添加标签 */
 	public tag(t: string | string[]) {
-		return new API<Change<T, { tag: string[] }>>({
+		return new API<T>({
 			...this._data,
 			tag: [...(this._data.tag ?? []), ...(Array.isArray(t) ? t : [t])],
 		});
 	}
 	/** 添加摘要 */
-	public summary<S extends string>(s: S) {
-		return new API<Change<T, { summary: S }>>({
+	public summary<S extends string>(s: S): ReturnType<API<AddParam<T, 'summary', S>>['$flatten']> {
+		return new API<T & { summary: S }>({
 			...this._data,
 			summary: s,
 		});
 	}
 	/** 添加描述 */
-	public description<D extends string>(d: D) {
-		return new API<Change<T, { description: D }>>({
+	public description<D extends string>(
+		d: D,
+	): ReturnType<API<AddParam<T, 'description', D>>['$flatten']> {
+		return new API<T & { description: D }>({
 			...this._data,
 			description: d,
 		});
 	}
 	/** 标记为废弃 */
-	public deprecated<B extends boolean>(b: B) {
-		return new API<Change<T, { deprecated: B }>>({
+	public deprecated<B extends boolean>(
+		b: B,
+	): ReturnType<API<AddParam<T, 'deprecated', B>>['$flatten']> {
+		return new API<T & { deprecated: B }>({
 			...this._data,
 			deprecated: b,
 		});
 	}
 
 	/** 设置是否在客户端和服务端都以扁平化参数形式传递参数 */
-	public flatArgs<B extends boolean>(b: B) {
-		return new API<Change<T, { flatArgs: B }>>({
+	public flatArgs<B extends boolean>(
+		b: B,
+	): ReturnType<API<AddParam<T, 'flatArgs', B>>['$flatten']> {
+		return new API<T & { flatArgs: B }>({
 			...this._data,
 			flatArgs: b,
 		});
@@ -377,6 +379,9 @@ class API<
 			? T['success']['data']
 			: never
 		: never {
+		throw new Error('type only');
+	}
+	public $flatten(): API<{ [K in keyof T]: T[K] }> {
 		throw new Error('type only');
 	}
 }

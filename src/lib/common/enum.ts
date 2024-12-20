@@ -93,6 +93,7 @@ type EnumFuncs<Map extends EnumRaw> = {
 type EnumZods<Map extends EnumRaw> = {
 	/** 键约束, (`string`)`key`的枚举 */
 	_z_key: z.ZodEffects<z.ZodString, Extract<keyof Map | `${Map[keyof Map][0]}`, string>, string>;
+
 	/** 值约束, (`number`)`value`的枚举 */
 	_z_value: z.ZodEffects<z.ZodNumber, Map[keyof Map][0], number>;
 	/** 键值约束, (`string`)`key`或(`number`)`value`的枚举 */
@@ -126,7 +127,17 @@ type EnumZods<Map extends EnumRaw> = {
 	>;
 
 	/** zod枚举 */
-	_z_enum: z.ZodNativeEnum<{ [K in keyof Map]: Map[K][0] } & Record<number, never>>;
+	_z_enum: z.ZodNativeEnum<
+		{ [K in keyof Map]: Map[K][0] } & {
+			[V in Map[keyof Map][0]]: Extract<keyof Map, string> extends infer Keys
+				? Keys extends string
+					? Map[Keys][0] extends V
+						? Keys
+						: never
+					: never
+				: never;
+		}
+	>;
 };
 
 /**
@@ -229,6 +240,7 @@ export function makeEnum<Map extends EnumRaw>(
 		_keys: keys_,
 		_values: values_,
 	};
+	z.literal('');
 	const z_key = z
 		.string()
 		.refine<Extract<keyof Map, string> | `${Map[keyof Map][0]}`>(funcs._validateKeyOrVal, {
@@ -240,11 +252,12 @@ export function makeEnum<Map extends EnumRaw>(
 	const z_kv = z.union([z_key, z_value]);
 	const z_toKey = z_kv.transform<Extract<keyof Map, string>>(funcs._toKey);
 	const z_toValue = z_kv.transform<Map[keyof Map][0]>(funcs._toValue);
-	const z_enum = z.nativeEnum<
-		{
-			[K in keyof Map]: Map[K][0];
-		} & Record<number, never>
-	>(Object.fromEntries(Object.entries(map).map(([k, [v]]) => [k, v])) as any);
+	const z_enum_item: any = {};
+	for (const key in map) {
+		z_enum_item[key] = map[key as keyof Map][0];
+		z_enum_item[map[key as keyof Map][0]] = key;
+	}
+	const z_enum = z.nativeEnum<any>(z_enum_item);
 
 	const zod: EnumZods<Map> = {
 		_z_key: z_key,

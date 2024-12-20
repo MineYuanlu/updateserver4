@@ -23,7 +23,7 @@ export const _GET = createAPI()
 				oid: z.string().describe('owner ID'),
 				owner: z.string().nullable().describe('owner name'),
 				desc: z.string().describe('project description'),
-				visibility: Visibility._z_value.describe('project visibility'),
+				visibility: Visibility._z_enum.describe('project visibility'),
 				version: z.string().nullable().describe('project using version'),
 				versionCmp: z.object({}),
 				createdAt: z.number().int().nullable().describe('project created time'),

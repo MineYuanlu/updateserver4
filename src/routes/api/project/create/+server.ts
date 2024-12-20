@@ -32,6 +32,7 @@ export const _POST = createAPI()
 		desc: z.string().refine(validateProjectDesc, (t) => ({ message: whyInvalidProjectDesc(t) })),
 		visibility: Visibility._z_toValue,
 	})
+	.tag('project')
 	.success<ProjId>(zProjId)
 	.flatArgs(true);
 
@@ -47,28 +48,3 @@ export const POST: RequestHandler = _POST.handler(
 		return success(projId);
 	},
 );
-
-// export const POST: RequestHandler = async (req) => {
-// 	const user = await userJwt.getJwtCookie(req);
-// 	if (!user) return failure(err_need_login());
-
-// 	const { name, desc, visibility } = checkRequestField(await req.request.json(), {
-// 		name: [validateProjectName, 0, failWhy(whyInvalidProjectName)],
-// 		desc: [validateProjectDesc, 0, failWhy(whyInvalidProjectDesc)],
-// 		visibility: [
-// 			Visibility._validateKeyOrVal,
-// 			Visibility._toValue,
-// 			(_, visibility) => failure(err_invalid_visibility({ visibility })),
-// 		],
-// 	});
-
-// 	const projId = generateId('p');
-
-// 	try {
-// 		await createProject(projId, name, user.id, desc, visibility);
-// 	} catch (e) {
-// 		if (isConflictError(e)) return failure(err_name_taken({ name }));
-// 		throw e;
-// 	}
-// 	return success(projId);
-// };
