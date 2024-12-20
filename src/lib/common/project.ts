@@ -26,6 +26,7 @@ import {
 	check_project_tags__tag_too_long,
 } from '$lib/paraglide/messages';
 import { isURL } from '$lib/utils/url';
+import { z } from 'zod';
 import { makeEnum } from './enum';
 import { zUS4ID, type US4ID } from './id';
 
@@ -61,6 +62,9 @@ export function whyInvalidProjectName(name: unknown): string | undefined {
 	if (!projectNameRegex.test(name)) return check_project_name__bad_char();
 	return undefined;
 }
+export const zProjectName = z
+	.string()
+	.refine(validateProjectName, (t) => ({ message: whyInvalidProjectName(t) }));
 
 /** 项目描述最大长度 */
 export const maxProjectDescriptionLength = 200;
@@ -87,6 +91,10 @@ export function whyInvalidProjectDesc(desc: unknown): string | undefined {
 		return check_project_desc__too_long({ max: maxProjectDescriptionLength });
 	return undefined;
 }
+
+export const zProjectDesc = z
+	.string()
+	.refine(validateProjectDesc, (t) => ({ message: whyInvalidProjectDesc(t) }));
 
 /** 项目链接最大数量 */
 export const maxProjectLinksNumber = 10;
@@ -139,6 +147,10 @@ export function whyInvalidProjectLinks(links: unknown): string | undefined {
 	return undefined;
 }
 
+export const zProjectLinks = z
+	.record(z.string())
+	.refine(validateProjectLinks, (t) => ({ message: whyInvalidProjectLinks(t) }));
+
 /** 项目标签最大数量 */
 export const maxProjectTagNumber = 20;
 /** 项目标签最大长度 */
@@ -166,6 +178,11 @@ export function whyInvalidProjectTag(tag: unknown): string | undefined {
 		return check_project_tags__tag_too_long({ max: maxProjectTagLength });
 	return undefined;
 }
+
+export const zProjectTag = z
+	.string()
+	.refine(validateProjectTag, (t) => ({ message: whyInvalidProjectTag(t) }));
+
 /**
  * 项目标签合法性检查
  * @param tags 项目标签
@@ -199,6 +216,10 @@ export function whyInvalidProjectTags(tags: unknown): string | undefined {
 	}
 	return undefined;
 }
+
+export const zProjectTags = z
+	.array(zProjectTag)
+	.refine(validateProjectTags, (t) => ({ message: whyInvalidProjectTags(t) }));
 
 /** 项目ID */
 export type ProjId = US4ID<'p'>;

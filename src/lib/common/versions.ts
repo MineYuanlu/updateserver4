@@ -20,6 +20,7 @@ import {
 	check_version_cmp_args__s_value_out_of_range,
 } from '$lib/paraglide/messages';
 import { isEqualSet } from '$lib/utils/equal';
+import { z } from 'zod';
 import { makeEnum, type EnumItem, type EnumVal } from './enum';
 
 export const maxVersionLength = 32;
@@ -63,8 +64,8 @@ export type VersionCmpResultVal = EnumVal<typeof VersionCmpResult>;
  * - `string`=`{d:string}`
  */
 export type VersionCmpArgs = {
-	delimiters?: string;
-	specials?: Record<string, number>;
+	d?: string;
+	s?: Record<string, number>;
 };
 
 export const maxDelimitersLength = 16;
@@ -120,11 +121,8 @@ export function validateVersionCmpArgs(args: unknown): args is string | object {
 	if (typeof args === 'string') return validateVersionCmpArgsDelimiters(args);
 
 	if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
-		const d = (args as any)['d'] ?? (args as any)['delimiters'];
-		if (!validateVersionCmpArgsDelimiters(d)) return false;
-
-		const s = (args as any)['s'] ?? (args as any)['specials'];
-		if (!validateVersionCmpArgsSpecials(s)) return false;
+		if (!validateVersionCmpArgsDelimiters((args as any)['d'])) return false;
+		if (!validateVersionCmpArgsSpecials((args as any)['s'])) return false;
 		return true;
 	}
 	return false;
@@ -183,12 +181,9 @@ export function whyInvalidVersionCmpArgs(args: unknown): string | undefined {
 	if (args === undefined || args === null) return undefined;
 	if (typeof args === 'string') return whyInvalidVersionCmpArgsDelimiters(args);
 	if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
-		const d = (args as any)['d'] ?? (args as any)['delimiters'];
-		const whyD = whyInvalidVersionCmpArgsDelimiters(d);
+		const whyD = whyInvalidVersionCmpArgsDelimiters((args as any)['d']);
 		if (whyD !== undefined) return whyD;
-
-		const s = (args as any)['s'] ?? (args as any)['specials'];
-		const whyS = whyInvalidVersionCmpArgsSpecials(s);
+		const whyS = whyInvalidVersionCmpArgsSpecials((args as any)['s']);
 		if (whyS !== undefined) return whyS;
 		return undefined;
 	}
@@ -203,19 +198,42 @@ export function whyInvalidVersionCmpArgs(args: unknown): string | undefined {
  */
 export function transformVersionCmpArgs(args: unknown): VersionCmpArgs {
 	if (args === undefined || args === null) return {};
-	if (typeof args === 'string') return { delimiters: args };
+	if (typeof args === 'string') return { d: args };
 
 	if (typeof args === 'object' && args !== null && !Array.isArray(args)) {
 		const ret: VersionCmpArgs = {};
-		const d = (args as any)['d'] ?? (args as any)['delimiters'];
-		if (typeof d === 'string') ret.delimiters = d;
+		const d = (args as any)['d'];
+		if (typeof d === 'string') ret.d = d;
 
-		const s = (args as any)['s'] ?? (args as any)['specials'];
-		if (typeof s === 'object') ret.specials = s as any;
+		const s = (args as any)['s'];
+		if (typeof s === 'object') ret.s = s as any;
 		return ret;
 	}
 	return {};
 }
+
+export const zVersionCmpArgsDelimiter = z
+	.string()
+	.refine(validateVersionCmpArgsDelimiters, (t) => ({
+		message: whyInvalidVersionCmpArgsDelimiters(t),
+	}));
+export const zVersionCmpArgsSpecials = z
+	.record(z.number())
+	.refine(validateVersionCmpArgsSpecials, (t) => ({
+		message: whyInvalidVersionCmpArgsSpecials(t),
+	}));
+export const zVersionCmpArgs = z
+	.union([
+		zVersionCmpArgsDelimiter,
+		z.object({
+			d: zVersionCmpArgsDelimiter.optional(),
+			s: zVersionCmpArgsSpecials.optional(),
+		}),
+	])
+	.refine(validateVersionCmpArgs, (t) => ({
+		message: whyInvalidVersionCmpArgs(t),
+	}))
+	.transform(transformVersionCmpArgs);
 
 /**
  * 规范化版本号比较参数
@@ -231,14 +249,13 @@ export function normVersionCmpArgs(
 	const hasS = s !== undefined && (Array.isArray(s) ? s.length > 0 : Object.keys(s).length > 0);
 	if (!hasD && !hasS) return null;
 	const args: VersionCmpArgs = {};
-	if (hasD) args.delimiters = d;
-	if (hasS)
-		args.specials = Array.isArray(s) ? Object.fromEntries(s.map(([k, v]) => [k, Number(v)])) : s;
+	if (hasD) args.d = d;
+	if (hasS) args.s = Array.isArray(s) ? Object.fromEntries(s.map(([k, v]) => [k, Number(v)])) : s;
 	return args;
 }
 
 export function argsToCmp(args: VersionCmpArgs | null | undefined): VersionCmp {
-	return new VersionCmp((args ?? {}).delimiters ?? defaultDelimiters, (args ?? {}).specials ?? {});
+	return new VersionCmp((args ?? {}).d ?? defaultDelimiters, (args ?? {}).s ?? {});
 }
 
 /**

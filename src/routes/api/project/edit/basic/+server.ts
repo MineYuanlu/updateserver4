@@ -19,78 +19,64 @@ import {
 	whyInvalidProjectLinks,
 	whyInvalidProjectName,
 	whyInvalidProjectTags,
+	zProjectDesc,
+	zProjectLinks,
+	zProjectName,
+	zProjectTags,
+	zProjId,
 } from '$lib/common/project';
 import {
 	transformVersionCmpArgs,
 	validateVersionCmpArgs,
 	whyInvalidVersionCmpArgs,
+	zVersionCmpArgs,
 } from '$lib/common/versions';
 import { isConflictError } from '$lib/server/db/err';
-import { WebRole } from '$lib/common/user';
+import { WebRole, zUserId } from '$lib/common/user';
 import type { EnumKey } from '$lib/common/enum';
+import { createAPI } from '../../../api.server';
+import { z } from 'zod';
 
 export type EditData = Omit<Parameters<typeof editProjectBasic>[1], 'visibility'> & {
 	visibility?: EnumKey<typeof Visibility> | undefined;
 };
 
-export const POST: RequestHandler = async ({ url, cookies, request }) => {
-	const user = await userJwt.getJwtCookie({ cookies });
-	if (!user) error(403);
-
-	const req = await request.json();
-
-	const { id } = checkRequestField(req, {
-		id: (v) => isUS4ID('p', v),
-	});
-
-	if (
-		user.role !== WebRole.admin.val &&
-		!(await checkPermByProjId(id, user.id, UserRole.developer.val))
+export const _POST = createAPI()
+	.summary('Edit project basic information')
+	.description(
+		'Edit project basic information, such as name, description, visibility, links, tags, etc.',
 	)
-		error(403);
+	.cookie({
+		user: userJwt.zod,
+	})
+	.body({
+		id: zProjId,
+		name: zProjectName.optional(),
+		desc: zProjectDesc.optional(),
+		visibility: Visibility._z_toValue.optional(),
+		versionCmp: zVersionCmpArgs.optional(),
+		links: zProjectLinks.optional(),
+		tags: zProjectTags.optional(),
+	})
+	.success<boolean>(z.boolean())
+	.tag('project');
 
-	const data = checkRequestField(req, {
-		name: [okUn(validateProjectName), 0, failWhy(whyInvalidProjectName)],
-		desc: [okUn(validateProjectDesc), 0, failWhy(whyInvalidProjectDesc)],
-		visibility: [
-			okUn(Visibility._validateKeyOrVal),
-			tUn(Visibility._toValue),
-			(_, visibility) => failure(err_invalid_visibility({ visibility })),
-		],
-		versionCmp: [
-			okUn(validateVersionCmpArgs),
-			tUn(transformVersionCmpArgs),
-			failWhy(whyInvalidVersionCmpArgs),
-		],
-		links: [okUn(validateProjectLinks), 0, failWhy(whyInvalidProjectLinks)],
-		tags: [okUn(validateProjectTags), 0, failWhy(whyInvalidProjectTags)],
-	});
+export const POST: RequestHandler = _POST.handler(
+	async (_, { cookie: { user }, body: { id, ...data } }, success) => {
+		if (
+			user.role !== WebRole.admin.val &&
+			!(await checkPermByProjId(id, user.id, UserRole.developer.val))
+		)
+			error(403);
 
-	let ok: boolean;
-	try {
-		ok = await editProjectBasic(id, data);
-	} catch (e) {
-		if (isConflictError(e)) failure(err_name_taken({ name: data.name ?? '?' }));
-		throw e;
-	}
+		let ok: boolean;
+		try {
+			ok = await editProjectBasic(id, data);
+		} catch (e) {
+			if (isConflictError(e)) failure(err_name_taken({ name: data.name ?? '?' }));
+			throw e;
+		}
 
-	return success(ok);
-};
-
-/**
- * 允许 undefined 的字段
- * @param func 原始的校验函数
- * @returns 校验函数，允许 undefined 的字段
- */
-const okUn = <T>(func: (v: unknown) => v is T) => {
-	return (v: unknown): v is T | undefined => {
-		if (v === undefined) return true;
-		return func(v);
-	};
-};
-const tUn = <T>(func: (v: unknown) => T) => {
-	return (v: unknown): T | undefined => {
-		if (v === undefined) return undefined;
-		return func(v);
-	};
-};
+		return success(ok);
+	},
+);

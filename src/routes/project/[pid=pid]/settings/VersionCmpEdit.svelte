@@ -33,9 +33,9 @@
 	} = $props();
 
 	// ========== 编辑数据 ==========
-	let delimiter: string = $state(args?.delimiters || defaultDelimiters);
+	let delimiter: string = $state(args?.d || defaultDelimiters);
 	let specials: [string, string][] = $state(
-		Object.entries(args?.specials || {}).map(([k, v]) => [k, String(v)]),
+		Object.entries(args?.s || {}).map(([k, v]) => [k, String(v)]),
 	);
 	$effect(() => {
 		args = normVersionCmpArgs(delimiter, specials);
@@ -46,12 +46,12 @@
 
 	const hasChanges = $derived.by(() => {
 		const a = args;
-		const b = normVersionCmpArgs(defaultArgs?.delimiters, defaultArgs?.specials);
+		const b = normVersionCmpArgs(defaultArgs?.d, defaultArgs?.s);
 		if (!a && !b) return false;
 		if (!a || !b) return true;
 
-		if (!isEqualSet(a.delimiters, b.delimiters)) return true;
-		if (!isEqualRecord(a.specials, b.specials)) return true;
+		if (!isEqualSet(a.d, b.d)) return true;
+		if (!isEqualRecord(a.s, b.s)) return true;
 		return false;
 	});
 
@@ -86,7 +86,7 @@
 		color="blue"
 		disabled={new Set(specials.map((s) => s[0])).size !== specials.length ||
 			delimiterInvalid ||
-			!validateVersionCmpArgsSpecials(args?.specials || {})}
+			!validateVersionCmpArgsSpecials(args?.s || {})}
 		onclick={onsave}>保存</Button
 	>
 {/if}
