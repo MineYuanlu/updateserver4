@@ -92,39 +92,29 @@ type EnumFuncs<Map extends EnumRaw> = {
 };
 type EnumZods<Map extends EnumRaw> = {
 	/** 键约束, (`string`)`key`的枚举 */
-	_z_key: z.ZodEffects<z.ZodString, Extract<keyof Map | `${Map[keyof Map][0]}`, string>, string>;
+	_z_key: UnionToZodUnion<UnionToZodLiteral<keyof Map>>;
 
 	/** 值约束, (`number`)`value`的枚举 */
-	_z_value: z.ZodEffects<z.ZodNumber, Map[keyof Map][0], number>;
+	_z_value: UnionToZodUnion<UnionToZodLiteral<Map[keyof Map][0]>>;
+
+	/** 值约束, (`string`)`value`的枚举 */
+	_z_svalue: UnionToZodUnion<
+		UnionToZodLiteral<Map[keyof Map][0]> | UnionToZodLiteral<`${Map[keyof Map][0]}`>
+	>;
+
 	/** 键值约束, (`string`)`key`或(`number`)`value`的枚举 */
-	_z_kv: z.ZodUnion<
-		[
-			z.ZodEffects<z.ZodString, Extract<keyof Map | `${Map[keyof Map][0]}`, string>, string>,
-			z.ZodEffects<z.ZodNumber, Map[keyof Map][0], number>,
-		]
+	_z_kv: UnionToZodUnion<UnionToZodLiteral<keyof Map> | UnionToZodLiteral<Map[keyof Map][0]>>;
+
+	/** 键值约束, (`string`)`key`或(`number`)`value`的枚举 */
+	_z_kvsv: UnionToZodUnion<
+		| UnionToZodLiteral<keyof Map>
+		| UnionToZodLiteral<Map[keyof Map][0]>
+		| UnionToZodLiteral<`${Map[keyof Map][0]}`>
 	>;
 	/** 转换为`key`的键值约束, 输入(`string`)`key`或(`number`)`value`, 输出(`string`)`key` */
-	_z_toKey: z.ZodEffects<
-		z.ZodUnion<
-			[
-				z.ZodEffects<z.ZodString, Extract<keyof Map | `${Map[keyof Map][0]}`, string>, string>,
-				z.ZodEffects<z.ZodNumber, Map[keyof Map][0], number>,
-			]
-		>,
-		Extract<keyof Map, string>,
-		string | number
-	>;
+	_z_toKey: z.ZodEffects<EnumZods<Map>['_z_kvsv'], Extract<keyof Map, string>>;
 	/** 转换为`value`的键值约束, 输入(`string`)`key`或(`number`)`value`, 输出(`number`)`value` */
-	_z_toValue: z.ZodEffects<
-		z.ZodUnion<
-			[
-				z.ZodEffects<z.ZodString, Extract<keyof Map | `${Map[keyof Map][0]}`, string>, string>,
-				z.ZodEffects<z.ZodNumber, Map[keyof Map][0], number>,
-			]
-		>,
-		Map[keyof Map][0],
-		string | number
-	>;
+	_z_toValue: z.ZodEffects<EnumZods<Map>['_z_kvsv'], Map[keyof Map][0]>;
 
 	/** zod枚举 */
 	_z_enum: z.ZodNativeEnum<
@@ -240,18 +230,24 @@ export function makeEnum<Map extends EnumRaw>(
 		_keys: keys_,
 		_values: values_,
 	};
-	z.literal('');
-	const z_key = z
-		.string()
-		.refine<Extract<keyof Map, string> | `${Map[keyof Map][0]}`>(funcs._validateKeyOrVal, {
-			message: `Invalid enum key, must be one of: ${keys_} / ${values_}`,
-		});
-	const z_value = z.number().refine<Map[keyof Map][0]>(funcs._validateValue, {
-		message: `Invalid enum value, must be one of: ${values_}`,
-	});
-	const z_kv = z.union([z_key, z_value]);
-	const z_toKey = z_kv.transform<Extract<keyof Map, string>>(funcs._toKey);
-	const z_toValue = z_kv.transform<Map[keyof Map][0]>(funcs._toValue);
+
+	const z_key = z.union(keys_.map((key) => z.literal(key)) as any);
+	const z_value = z.union(values_.map((value) => z.literal(value)) as any);
+	const z_svalue = z.union([
+		...values_.map((value) => z.literal(value)),
+		...values_.map((value) => z.literal(`${value}`)),
+	] as any);
+	const z_kv = z.union([
+		...keys_.map((key) => z.literal(key)),
+		...values_.map((value) => z.literal(value)),
+	] as any);
+	const z_kvsv = z.union([
+		...keys_.map((key) => z.literal(key)),
+		...values_.map((value) => z.literal(value)),
+		...values_.map((value) => z.literal(`${value}`)),
+	] as any);
+	const z_toKey = z_kvsv.transform<Extract<keyof Map, string>>(funcs._toKey);
+	const z_toValue = z_kvsv.transform<Map[keyof Map][0]>(funcs._toValue);
 	const z_enum_item: any = {};
 	for (const key in map) {
 		z_enum_item[key] = map[key as keyof Map][0];
@@ -260,11 +256,13 @@ export function makeEnum<Map extends EnumRaw>(
 	const z_enum = z.nativeEnum<any>(z_enum_item);
 
 	const zod: EnumZods<Map> = {
-		_z_key: z_key,
-		_z_value: z_value,
-		_z_kv: z_kv,
-		_z_toKey: z_toKey,
-		_z_toValue: z_toValue,
+		_z_key: z_key as any,
+		_z_value: z_value as any,
+		_z_svalue: z_svalue as any,
+		_z_kv: z_kv as any,
+		_z_kvsv: z_kvsv as any,
+		_z_toKey: z_toKey as any,
+		_z_toValue: z_toValue as any,
 		_z_enum: z_enum,
 	};
 	return {
@@ -281,3 +279,41 @@ export type EnumItem<T extends Record<string, any>> = {
 }[keyof T];
 export type EnumKey<T extends { _keys: readonly string[] }> = T['_keys'][number];
 export type EnumVal<T extends { _values: readonly unknown[] }> = T['_values'][number];
+
+/**
+ * 将联合类型转换为交叉类型
+ * 例如: string | number -> string & number
+ */
+type UnionToIntersection<U> = (U extends never ? never : (arg: U) => never) extends (
+	arg: infer I,
+) => void
+	? I
+	: never;
+
+/**
+ * 将联合类型转换为元组类型
+ * 例如: 'a' | 'b' | 'c' -> ['a', 'b', 'c']
+ */
+type UnionToTuple<T> =
+	UnionToIntersection<T extends never ? never : (t: T) => T> extends (_: never) => infer W
+		? [...UnionToTuple<Exclude<T, W>>, W]
+		: [];
+
+/**
+ * 将联合类型转换为 Zod 字面量类型的联合
+ * 例如: 'a' | 'b' -> z.ZodLiteral<'a'> | z.ZodLiteral<'b'>
+ */
+type UnionToZodLiteral<T extends string | number | symbol> = { [k in T]: z.ZodLiteral<k> }[T];
+
+/**
+ * 将 Zod 字面量类型的联合转换为 Zod 联合类型
+ * 例如: z.ZodLiteral<'a'> | z.ZodLiteral<'b'> -> z.ZodUnion<[z.ZodLiteral<'a'>, z.ZodLiteral<'b'>]>
+ */
+type UnionToZodUnion<T extends z.ZodLiteral<any>> =
+	UnionToTuple<T> extends [infer First, ...infer Rest]
+		? First extends z.ZodTypeAny
+			? Rest extends any[]
+				? z.ZodUnion<[First, ...Rest]>
+				: never
+			: never
+		: never;

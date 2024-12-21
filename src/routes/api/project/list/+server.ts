@@ -33,7 +33,7 @@ export const _GET = createAPI()
 				owner: z.string().nullable().describe('owner name'),
 				version: z.string().nullable().describe('project using version'),
 				desc: z.string().describe('project description'),
-				visibility: Visibility._z_enum.describe('project visibility'),
+				visibility: Visibility._z_value.describe('project visibility'),
 				visits: z.number().int().nullable().describe('number of visits'),
 			}),
 		),
