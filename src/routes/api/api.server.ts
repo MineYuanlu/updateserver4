@@ -6,6 +6,7 @@ import errorMap from '$lib/zod/error_map';
 import type { OpenAPIV3 } from 'openapi-types';
 // import { zodToJsonSchema } from 'zod-to-json-schema';
 import { generateSchema } from '@anatine/zod-openapi';
+import type { COOKIE_VALUES } from '$lib/common/cookies';
 
 /**
  * 参数定义:
@@ -14,6 +15,17 @@ import { generateSchema } from '@anatine/zod-openapi';
  */
 type Params = Record<string, z.ZodType | readonly [z.ZodType, string]>;
 type AddParam<T extends Record<string, any>, f extends keyof T & string, A> = T & { [P in f]: A };
+type Flat<T extends { $flatten: () => any }> = ReturnType<T['$flatten']>;
+type APIResp<T, D extends RespDef<any>> = Flat<
+	API<
+		Omit<T, 'resps'> & {
+			resps: [
+				...('resps' extends keyof T ? (T['resps'] extends RespDef<any>[] ? T['resps'] : []) : []),
+				D,
+			];
+		}
+	>
+>;
 /** 成功响应结构定义 */
 type Success<D extends any = any, H extends Record<string, string> | undefined = any> = {
 	status: number;
@@ -70,6 +82,7 @@ class API<
 		cookie?: Params;
 		body?: Params;
 		success?: Success;
+		resps?: RespDef<any>[];
 		tag?: string[];
 		summary?: string;
 		description?: string;
@@ -117,6 +130,92 @@ class API<
 			...this._data,
 			body: { ...this._data.body, ...b },
 		});
+	}
+	/** 添加一个响应类型 */
+	public resp<D extends RespDef<any>>(data: D): APIResp<T, D> {
+		return new API({
+			...this._data,
+			resps: [...(this._data.resps ?? []), data],
+		}) as any;
+	}
+	/** 添加一个标准的成功响应, code默认为0 */
+	public resp1<D extends any>(
+		data: z.ZodType<D>,
+	): APIResp<
+		T,
+		RespDef<{
+			mime: 'application/json';
+			status: 200;
+			body: z.ZodType<{
+				data: D;
+				code: 0;
+			}>;
+			commonResp: true;
+		}>
+	>;
+	/** 添加一个标准的成功响应 */
+	public resp1<D extends any, C extends number>(
+		data: z.ZodType<D>,
+		code: C,
+	): APIResp<
+		T,
+		RespDef<{
+			mime: 'application/json';
+			status: 200;
+			body: z.ZodType<{
+				data: D;
+				code: C;
+			}>;
+			commonResp: true;
+		}>
+	>;
+	/** 添加一个标准的成功响应 */
+	public resp1<D extends any>(data: z.ZodType<D>, code: number = 0) {
+		return new API({
+			...this._data,
+			resps: [...(this._data.resps ?? []), RespDef.create().success<D, number>(data, code)],
+		}) as any;
+	}
+	/** 添加一个标准的失败响应, code默认为1 */
+	public resp2<D extends string>(
+		message: z.ZodType<D>,
+	): APIResp<
+		T,
+		RespDef<{
+			mime: 'application/json';
+			status: 400;
+			body: z.ZodType<{
+				message: D;
+				code: 1;
+			}>;
+			commonResp: true;
+		}>
+	>;
+	/** 添加一个标准的失败响应 */
+	public resp2<D extends string, C extends number>(
+		message: z.ZodType<D>,
+		code: C,
+	): APIResp<
+		T,
+		RespDef<{
+			mime: 'application/json';
+			status: 400;
+			body: z.ZodType<{
+				message: D;
+				code: C;
+			}>;
+			commonResp: true;
+		}>
+	>;
+	/** 添加一个标准的失败响应 */
+	public resp2<D extends string>(message: z.ZodType<D>, code: number = 1) {
+		return new API({
+			...this._data,
+			resps: [
+				...(this._data.resps ?? []),
+				RespDef.create().status(400).failure<D, number>(message, code),
+			],
+		}) as any;
 	}
 	/** 设置成功响应 */
 	public success<D extends any, H extends Record<string, string> | undefined = undefined>(
@@ -396,55 +495,133 @@ export type ApiType<T extends API<any>, field extends keyof API & `$${string}`> 
 
 export const createAPI = API.create;
 
-type Flat<T extends { $flatten: () => any }> = ReturnType<T['$flatten']>;
+/**
+ * 定义API的响应
+ */
 class RespDef<
 	T extends {
-		body?: any;
+		/** 响应体 */
+		body?: z.ZodType;
+		/** 状态码 */
 		status?: number;
+		/** 响应类型 */
 		mime?: string;
-		headers?: Record<string, string>;
+		/** 响应头 */
+		headers?: [string, z.ZodType][];
+		/** 是否为通用响应 */
+		commonResp?: boolean;
 	},
 > {
 	private constructor(private _data: T) {}
+	/**
+	 * 创造一个默认的响应定义, 响应类型为`application/json`, 状态码为`200`
+	 */
 	public static create() {
 		return new RespDef({}).mime('application/json').status(200);
 	}
-	public body<B extends any>(body: z.ZodSchema<B>): Flat<RespDef<T & { body: z.ZodSchema<B> }>> {
+	/**设置响应体*/
+	public body<B extends any>(
+		body: z.ZodType<B>,
+	): Flat<RespDef<Omit<T, 'body'> & { body: z.ZodType<B> }>> {
 		return new RespDef({
 			...this._data,
 			body,
-		});
+		}) as any;
 	}
-	public status<S extends number>(status: S): Flat<RespDef<T & { status: S }>> {
+	/**设置状态码*/
+	public status<S extends number>(status: S): Flat<RespDef<Omit<T, 'status'> & { status: S }>> {
 		return new RespDef({
 			...this._data,
 			status: status,
-		});
+		}) as any;
 	}
-	public mime<M extends string>(mime: M): Flat<RespDef<T & { mime: M }>> {
+	/**设置响应类型*/
+	public mime<M extends string>(mime: M): Flat<RespDef<Omit<T, 'mime'> & { mime: M }>> {
 		return new RespDef({
 			...this._data,
 			mime,
-		});
+		}) as any;
 	}
-	public headers<H extends Record<string, string>>(
+	/**添加响应头*/
+	public headers<H extends [string, z.ZodType][]>(
 		h: H,
-	): Flat<RespDef<Omit<T, 'headers'> & { headers: H }>> {
+	): Flat<
+		RespDef<
+			Omit<T, 'headers'> & {
+				headers: [
+					...('headers' extends keyof T
+						? T['headers'] extends [string, z.ZodType][]
+							? T['headers']
+							: []
+						: []),
+					...H,
+				];
+			}
+		>
+	> {
 		return new RespDef({
 			...this._data,
-			headers: h,
-		});
+			headers: [...(this._data.headers ?? []), ...h],
+		}) as any;
 	}
-	public header<V extends string, K extends string>(
+	/**添加响应头*/
+	public header<V extends z.ZodType, K extends string>(
 		k: K,
 		v: V,
 	): Flat<
 		RespDef<
 			Omit<T, 'headers'> & {
-				headers: ReturnType<RespDef<T & { headers: { [P in K]: V } }>['$headers']>;
+				headers: [
+					...('headers' extends keyof T
+						? T['headers'] extends [string, z.ZodType][]
+							? T['headers']
+							: []
+						: []),
+					[K, V],
+				];
+			}
+		>
+	>;
+	/**添加响应头*/
+	public header<V extends z.ZodType, K extends string>(
+		k: [K, V],
+	): Flat<
+		RespDef<
+			Omit<T, 'headers'> & {
+				headers: [
+					...('headers' extends keyof T
+						? T['headers'] extends [string, z.ZodType][]
+							? T['headers']
+							: []
+						: []),
+					[K, V],
+				];
+			}
+		>
+	>;
+	/**添加响应头*/
+	public header<V extends z.ZodType, K extends string>(
+		k: K | [K, V],
+		v?: V,
+	): Flat<
+		RespDef<
+			Omit<T, 'headers'> & {
+				headers: [
+					...('headers' extends keyof T
+						? T['headers'] extends [string, z.ZodType][]
+							? T['headers']
+							: []
+						: []),
+					[K, V],
+				];
 			}
 		>
 	> {
+		if (Array.isArray(k)) {
+			v = k[1];
+			k = k[0];
+		}
+
 		return new RespDef({
 			...this._data,
 			headers: {
@@ -453,19 +630,93 @@ class RespDef<
 			},
 		}) as any;
 	}
-	public success<D extends any>(data: z.ZodSchema<D>, code: number = 0) {
-		return this.body<{ data: D; code: number }>(
-			z.object({
+	/**
+	 * 添加响应Cookie
+	 * @see header
+	 */
+	public cookie<Type extends COOKIE_VALUES>(type: Type) {
+		return this.header('set-cookie', z.string());
+	}
+	/**
+	 * 设置标准成功响应, 响应状态码为`0`
+	 * @param data 响应数据
+	 */
+	public success<D extends any>(
+		data: z.ZodSchema<D>,
+	): Flat<RespDef<T & { body: z.ZodType<{ data: D; code: 0 }>; commonResp: true }>>;
+	/**
+	 * 设置标准成功响应
+	 * @param data 响应数据
+	 * @param code 响应状态码
+	 */
+	public success<D extends any, C extends number>(
+		data: z.ZodSchema<D>,
+		code: C,
+	): Flat<RespDef<T & { body: z.ZodType<{ data: D; code: C }>; commonResp: true }>>;
+	/**
+	 * 设置标准成功响应
+	 * @param data 响应数据
+	 * @param code 响应状态码, 默认为`0`
+	 * @returns
+	 */
+	public success<D extends any>(
+		data: z.ZodSchema<D>,
+		code: number = 0,
+	): Flat<RespDef<T & { body: z.ZodType<{ data: D; code: 0 }>; commonResp: true }>> {
+		return new RespDef({
+			...this._data,
+			body: z.object({
 				data,
 				code: z.literal(code),
-			}) as z.ZodType<{ data: D; code: number }>,
-		);
+			}) as z.ZodType<{ data: D; code: typeof code }>,
+			commonResp: true,
+		});
 	}
-	public $headers(): 'headers' extends keyof T
-		? {
-				[P in keyof T['headers']]: T['headers'][P];
-			}
-		: never {
+	/**
+	 * 设置标准失败响应, 响应状态码为`1`
+	 * @param message 响应消息
+	 */
+	public failure<M extends string>(
+		message: z.ZodSchema<M>,
+	): Flat<RespDef<T & { body: z.ZodType<{ message: M; code: 1 }>; commonResp: true }>>;
+	/**
+	 * 设置标准失败响应
+	 * @param message 响应消息
+	 * @param code 响应状态码
+	 */
+	public failure<M extends string, C extends number>(
+		message: z.ZodSchema<M>,
+		code: C,
+	): Flat<RespDef<T & { body: z.ZodType<{ message: M; code: C }>; commonResp: true }>>;
+	/**
+	 * 设置标准失败响应
+	 * @param message 响应消息
+	 * @param code 响应状态码, 默认为`1`
+	 * @returns
+	 */
+	public failure<M extends string>(message: z.ZodSchema<M>, code: number = 1) {
+		return new RespDef({
+			...this._data,
+			body: z.object({
+				message,
+				code: z.literal(code),
+			}) as z.ZodType<{ message: M; code: typeof code }>,
+			commonResp: true,
+		});
+	}
+	public $T(): T {
+		throw new Error('type only');
+	}
+	public $body(): 'body' extends keyof T ? T['body'] : never {
+		throw new Error('type only');
+	}
+	public $status(): 'status' extends keyof T ? T['status'] : never {
+		throw new Error('type only');
+	}
+	public $mime(): 'mime' extends keyof T ? T['mime'] : never {
+		throw new Error('type only');
+	}
+	public $headers(): 'headers' extends keyof T ? T['headers'] : never {
 		throw new Error('type only');
 	}
 	public $flatten(): RespDef<{ [K in keyof T]: T[K] }> {
@@ -473,10 +724,6 @@ class RespDef<
 	}
 }
 
-const xxx = RespDef.create()
-	.header('x-powered-by', 'Kit')
-	.header('content-type', 'application/json')
-	.header('cache-control', 'no-cache')
-	.body(z.object({}));
+export const createResp = RespDef.create;
 
-type yyy = ReturnType<typeof xxx.$headers>;
+createResp().success(z.string(), 1);
