@@ -6,11 +6,8 @@
 	import Button from '$lib/components/Form/Button.svelte';
 	import Input from '$lib/components/Form/Input.svelte';
 	import TablePro from '$lib/components/Table/TablePro.svelte';
-	import { name } from '$lib/paraglide/messages';
 
 	let value = $state('');
-
-	type DataType = Awaited<ReturnType<typeof listProjects>>[number];
 
 	const { data } = $props();
 </script>

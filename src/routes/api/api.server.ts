@@ -396,12 +396,87 @@ export type ApiType<T extends API<any>, field extends keyof API & `$${string}`> 
 
 export const createAPI = API.create;
 
-// API.create()
-// 	.query({
-// 		offset: z.number().int().nonnegative(),
-// 	})
-// 	.query({
-// 		limit: z.number().int().min(1).max(1000),
-// 	})
-// 	.success(z.array(z.string()), undefined, 1, 200)
-// 	.$success();
+type Flat<T extends { $flatten: () => any }> = ReturnType<T['$flatten']>;
+class RespDef<
+	T extends {
+		body?: any;
+		status?: number;
+		mime?: string;
+		headers?: Record<string, string>;
+	},
+> {
+	private constructor(private _data: T) {}
+	public static create() {
+		return new RespDef({}).mime('application/json').status(200);
+	}
+	public body<B extends any>(body: z.ZodSchema<B>): Flat<RespDef<T & { body: z.ZodSchema<B> }>> {
+		return new RespDef({
+			...this._data,
+			body,
+		});
+	}
+	public status<S extends number>(status: S): Flat<RespDef<T & { status: S }>> {
+		return new RespDef({
+			...this._data,
+			status: status,
+		});
+	}
+	public mime<M extends string>(mime: M): Flat<RespDef<T & { mime: M }>> {
+		return new RespDef({
+			...this._data,
+			mime,
+		});
+	}
+	public headers<H extends Record<string, string>>(
+		h: H,
+	): Flat<RespDef<Omit<T, 'headers'> & { headers: H }>> {
+		return new RespDef({
+			...this._data,
+			headers: h,
+		});
+	}
+	public header<V extends string, K extends string>(
+		k: K,
+		v: V,
+	): Flat<
+		RespDef<
+			Omit<T, 'headers'> & {
+				headers: ReturnType<RespDef<T & { headers: { [P in K]: V } }>['$headers']>;
+			}
+		>
+	> {
+		return new RespDef({
+			...this._data,
+			headers: {
+				...this._data.headers,
+				[k]: v,
+			},
+		}) as any;
+	}
+	public success<D extends any>(data: z.ZodSchema<D>, code: number = 0) {
+		return this.body<{ data: D; code: number }>(
+			z.object({
+				data,
+				code: z.literal(code),
+			}) as z.ZodType<{ data: D; code: number }>,
+		);
+	}
+	public $headers(): 'headers' extends keyof T
+		? {
+				[P in keyof T['headers']]: T['headers'][P];
+			}
+		: never {
+		throw new Error('type only');
+	}
+	public $flatten(): RespDef<{ [K in keyof T]: T[K] }> {
+		throw new Error('type only');
+	}
+}
+
+const xxx = RespDef.create()
+	.header('x-powered-by', 'Kit')
+	.header('content-type', 'application/json')
+	.header('cache-control', 'no-cache')
+	.body(z.object({}));
+
+type yyy = ReturnType<typeof xxx.$headers>;

@@ -22,7 +22,8 @@ export const _POST = createAPI()
 	})
 	.success<true, { 'US4-Session': any }>(z.literal(true), {
 		'US4-Session': z.string(),
-	});
+	})
+	.tag('user');
 
 export const POST: RequestHandler = async (req) => {
 	const { username, password } = await req.request.json();

@@ -213,20 +213,24 @@ export function transformVersionCmpArgs(args: unknown): VersionCmpArgs {
 }
 
 export const zVersionCmpArgsDelimiter = z.custom<string>(validateVersionCmpArgsDelimiters, (t) => ({
-	message: whyInvalidVersionCmpArgsDelimiters(t)
+	message: whyInvalidVersionCmpArgsDelimiters(t),
 }));
-export const zVersionCmpArgsSpecials = z.custom<Record<string, number>>(validateVersionCmpArgsSpecials, (t) => ({
-	message: whyInvalidVersionCmpArgsSpecials(t)
-}));
-export const zVersionCmpArgs = z.union([
-	zVersionCmpArgsDelimiter,
-	z.object({
-		d: zVersionCmpArgsDelimiter.optional(),
-		s: zVersionCmpArgsSpecials.optional(),
-	})
-])
+export const zVersionCmpArgsSpecials = z.custom<Record<string, number>>(
+	validateVersionCmpArgsSpecials,
+	(t) => ({
+		message: whyInvalidVersionCmpArgsSpecials(t),
+	}),
+);
+export const zVersionCmpArgs = z
+	.union([
+		zVersionCmpArgsDelimiter,
+		z.object({
+			d: zVersionCmpArgsDelimiter.optional(),
+			s: zVersionCmpArgsSpecials.optional(),
+		}),
+	])
 	.refine(validateVersionCmpArgs, (t) => ({
-		message: whyInvalidVersionCmpArgs(t)
+		message: whyInvalidVersionCmpArgs(t),
 	}))
 	.transform(transformVersionCmpArgs);
 

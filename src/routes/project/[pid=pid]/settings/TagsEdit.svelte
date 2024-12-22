@@ -1,18 +1,7 @@
 <script lang="ts">
-	import {
-		maxProjectLinkKeyLength,
-		maxProjectLinkValueLength,
-		maxProjectTagLength,
-		validateProjectLinks,
-		validateProjectTags,
-		validateProjectTag,
-		whyInvalidProjectTags,
-	} from '$lib/common/project';
-	import Button from '$lib/components/Form/Button.svelte';
+	import { validateProjectTags, validateProjectTag } from '$lib/common/project';
 	import Input from '$lib/components/Form/Input.svelte';
-	import EditTable from '$lib/components/Table/EditTable.svelte';
-	import { isEqualRecord, isEqualSet } from '$lib/utils/equal';
-	import { isURL } from '$lib/utils/url';
+	import { isEqualSet } from '$lib/utils/equal';
 	import Tag from '../Tag.svelte';
 
 	let {

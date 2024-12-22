@@ -1,9 +1,5 @@
 <script lang="ts">
-	import {
-		maxProjectLinkKeyLength,
-		maxProjectLinkValueLength,
-		validateProjectLinks,
-	} from '$lib/common/project';
+	import { maxProjectLinkKeyLength, maxProjectLinkValueLength } from '$lib/common/project';
 	import Button from '$lib/components/Form/Button.svelte';
 	import EditTable from '$lib/components/Table/EditTable.svelte';
 	import { isEqualRecord } from '$lib/utils/equal';

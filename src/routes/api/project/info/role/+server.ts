@@ -1,10 +1,6 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, success } from '../../../common.server';
 import { getProjectUserRole } from '$lib/server/db/funcs';
-import { isUS4ID } from '$lib/common/id';
-import { api__need_login, api_project__err_bad_id } from '$lib/paraglide/messages';
 import { userJwt } from '$lib/server/user/jwt';
-import { getProjId } from '../../common';
 import { createAPI } from '../../../api.server';
 import { UserRole, zProjId } from '$lib/common/project';
 

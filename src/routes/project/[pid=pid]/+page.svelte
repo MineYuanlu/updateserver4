@@ -11,10 +11,7 @@
 	import { browser } from '$app/environment';
 	import MultiTimeLine from '$lib/components/Charts/MultiTimeLine.svelte';
 	import Pie from '$lib/components/Charts/Pie.svelte';
-	import { addNotification } from '$lib/components/Notifications/NotificationList.svelte';
-	import * as m from '$lib/paraglide/messages';
-	import { getClinkByProjectId, getSlinkByProjectName } from '$lib/common/project';
-	import { copyToClipboard } from '$lib/components/Global/clipboard';
+	import { getClinkByProjectId } from '$lib/common/project';
 	import MenuPlain from '$lib/components/Menu/MenuPlain.svelte';
 	import MenuItem from '$lib/components/Menu/MenuItem.svelte';
 	import { setSettings } from '$lib/stores/common';

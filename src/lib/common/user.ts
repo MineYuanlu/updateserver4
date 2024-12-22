@@ -51,7 +51,7 @@ export function whyInvalidUserName(name: string): string | undefined {
 }
 
 export const zUserName = z.custom<string>(validateUserName, (t) => ({
-	message: whyInvalidUserName(t)
+	message: whyInvalidUserName(t),
 }));
 
 /**
@@ -79,7 +79,7 @@ export function whyInvalidPassword(password: string): string | undefined {
 }
 
 export const zPassword = z.custom<string>(validatePassword, (t) => ({
-	message: whyInvalidPassword(t)
+	message: whyInvalidPassword(t),
 }));
 
 /** 用户ID */

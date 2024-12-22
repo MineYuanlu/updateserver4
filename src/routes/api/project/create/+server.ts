@@ -1,10 +1,6 @@
 import type { RequestHandler } from './$types';
-import { checkRequestField, failure, failWhy, success } from '../../common.server';
-import {
-	api_project__err_name_taken as err_name_taken,
-	api_project__err_invalid_visibility as err_invalid_visibility,
-	api__need_login as err_need_login,
-} from '$lib/paraglide/messages';
+import { failure } from '../../common.server';
+import { api_project__err_name_taken as err_name_taken } from '$lib/paraglide/messages';
 import { createProject } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
 import {
