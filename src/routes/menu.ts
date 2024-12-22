@@ -16,8 +16,8 @@ export const menus: Menu[] = [
 	},
 	{
 		name: m.menu_api,
-		path: '/swagger',
-		match: '/swagger',
+		path: '/openAPI',
+		match: '/openAPI',
 	},
 	{
 		name: m.name,

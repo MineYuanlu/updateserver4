@@ -212,26 +212,21 @@ export function transformVersionCmpArgs(args: unknown): VersionCmpArgs {
 	return {};
 }
 
-export const zVersionCmpArgsDelimiter = z
-	.string()
-	.refine(validateVersionCmpArgsDelimiters, (t) => ({
-		message: whyInvalidVersionCmpArgsDelimiters(t),
-	}));
-export const zVersionCmpArgsSpecials = z
-	.record(z.number())
-	.refine(validateVersionCmpArgsSpecials, (t) => ({
-		message: whyInvalidVersionCmpArgsSpecials(t),
-	}));
-export const zVersionCmpArgs = z
-	.union([
-		zVersionCmpArgsDelimiter,
-		z.object({
-			d: zVersionCmpArgsDelimiter.optional(),
-			s: zVersionCmpArgsSpecials.optional(),
-		}),
-	])
+export const zVersionCmpArgsDelimiter = z.custom<string>(validateVersionCmpArgsDelimiters, (t) => ({
+	message: whyInvalidVersionCmpArgsDelimiters(t)
+}));
+export const zVersionCmpArgsSpecials = z.custom<Record<string, number>>(validateVersionCmpArgsSpecials, (t) => ({
+	message: whyInvalidVersionCmpArgsSpecials(t)
+}));
+export const zVersionCmpArgs = z.union([
+	zVersionCmpArgsDelimiter,
+	z.object({
+		d: zVersionCmpArgsDelimiter.optional(),
+		s: zVersionCmpArgsSpecials.optional(),
+	})
+])
 	.refine(validateVersionCmpArgs, (t) => ({
-		message: whyInvalidVersionCmpArgs(t),
+		message: whyInvalidVersionCmpArgs(t)
 	}))
 	.transform(transformVersionCmpArgs);
 
@@ -280,7 +275,7 @@ export class VersionCmp {
 	}
 
 	/**
-	 * 比较两个版本号字符串
+	 * 比较两个版本��字符串
 	 *
 	 * 1. 按照分隔符分割，默认为-./_~|，分割后逐一比较，数字越大的越新。
 	 * 2. 分割后越靠前认为是越主要版本，靠前的不一致则忽略后续的比较。

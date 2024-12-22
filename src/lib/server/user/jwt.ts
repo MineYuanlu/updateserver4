@@ -143,6 +143,12 @@ type JwtFuncs<Data extends Record<string, unknown>, T extends JwtTypes> = {
 	/** 校验并解析jwt */
 	parseJwt: (token: string) => Promise<JwtInfo<Data, T>>;
 };
+type ZodExtra<T extends z.ZodType, CookieName extends COOKIE_VALUES> = readonly [T, CookieName] & {
+	describe(description: string): [T, CookieName];
+	optional(): [z.ZodOptional<T>, CookieName];
+	nullable(): [z.ZodNullable<T>, CookieName];
+	nullish(): [z.ZodOptional<z.ZodNullable<T>>, CookieName];
+};
 type JwtCookieFuncs<
 	Data extends Record<string, unknown>,
 	T extends JwtTypes,
@@ -155,9 +161,7 @@ type JwtCookieFuncs<
 	/** 删除jwt cookie */
 	deleteSessionTokenCookie: (event: CookieData) => void;
 
-	zod: readonly [z.ZodType<Data, z.ZodTypeDef, string>, CookieName] & {
-		optional: readonly [z.ZodOptional<z.ZodType<Data, z.ZodTypeDef, string>>, CookieName];
-	};
+	zod: ZodExtra<z.ZodType<Data, z.ZodTypeDef, string>, CookieName>;
 };
 
 function generateFuncs<
@@ -198,7 +202,10 @@ function generateFuncs<
 		)
 		.transform((v) => v.r);
 	const zod: any = [zt, cookie];
-	zod.optional = [zt.optional(), cookie];
+	zod.describe = (desc: string) => [zt.describe(desc), cookie];
+	zod.nullable = () => [zt.nullable(), cookie];
+	zod.nullish = () => [zt.nullish(), cookie];
+	zod.optional = () => [zt.optional(), cookie];
 	return {
 		...funcs,
 		createJwtCookie: (event: CookieData, data: Data) => createJwtCookie(event, data, type, cookie),

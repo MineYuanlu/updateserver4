@@ -62,9 +62,9 @@ export function whyInvalidProjectName(name: unknown): string | undefined {
 	if (!projectNameRegex.test(name)) return check_project_name__bad_char();
 	return undefined;
 }
-export const zProjectName = z
-	.string()
-	.refine(validateProjectName, (t) => ({ message: whyInvalidProjectName(t) }));
+export const zProjectName = z.custom<string>(validateProjectName, (t) => ({
+	message: whyInvalidProjectName(t),
+}));
 
 /** 项目描述最大长度 */
 export const maxProjectDescriptionLength = 200;
@@ -92,9 +92,9 @@ export function whyInvalidProjectDesc(desc: unknown): string | undefined {
 	return undefined;
 }
 
-export const zProjectDesc = z
-	.string()
-	.refine(validateProjectDesc, (t) => ({ message: whyInvalidProjectDesc(t) }));
+export const zProjectDesc = z.custom<string>(validateProjectDesc, (t) => ({
+	message: whyInvalidProjectDesc(t),
+}));
 
 /** 项目链接最大数量 */
 export const maxProjectLinksNumber = 10;
@@ -147,9 +147,9 @@ export function whyInvalidProjectLinks(links: unknown): string | undefined {
 	return undefined;
 }
 
-export const zProjectLinks = z
-	.record(z.string())
-	.refine(validateProjectLinks, (t) => ({ message: whyInvalidProjectLinks(t) }));
+export const zProjectLinks = z.custom<Record<string, string>>(validateProjectLinks, (t) => ({
+	message: whyInvalidProjectLinks(t),
+}));
 
 /** 项目标签最大数量 */
 export const maxProjectTagNumber = 20;
@@ -179,9 +179,9 @@ export function whyInvalidProjectTag(tag: unknown): string | undefined {
 	return undefined;
 }
 
-export const zProjectTag = z
-	.string()
-	.refine(validateProjectTag, (t) => ({ message: whyInvalidProjectTag(t) }));
+export const zProjectTag = z.custom<string>(validateProjectTag, (t) => ({
+	message: whyInvalidProjectTag(t),
+}));
 
 /**
  * 项目标签合法性检查
@@ -217,9 +217,9 @@ export function whyInvalidProjectTags(tags: unknown): string | undefined {
 	return undefined;
 }
 
-export const zProjectTags = z
-	.array(zProjectTag)
-	.refine(validateProjectTags, (t) => ({ message: whyInvalidProjectTags(t) }));
+export const zProjectTags = z.custom<string[]>(validateProjectTags, (t) => ({
+	message: whyInvalidProjectTags(t),
+}));
 
 /** 项目ID */
 export type ProjId = US4ID<'p'>;

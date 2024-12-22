@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { failure, success } from '../../common.server';
-import { validatePassword, validateUserName } from '$lib/common/user';
+import { validatePassword, validateUserName, zPassword, zUserName } from '$lib/common/user';
 import {
 	api_user__err_invalid_username as err_invalid_username,
 	api_user__err_invalid_password as err_invalid_password,
@@ -11,6 +11,18 @@ import { getUserAllByName } from '$lib/server/db/funcs';
 import { verify } from '@node-rs/argon2';
 import { userJwt } from '$lib/server/user/jwt';
 import { passwordCheckOpt } from '$lib/server/user/auth';
+import { createAPI } from '../../api.server';
+import { z } from 'zod';
+
+export const _POST = createAPI()
+	.summary('Login with username and password')
+	.body({
+		username: zUserName,
+		password: zPassword,
+	})
+	.success<true, { 'US4-Session': any }>(z.literal(true), {
+		'US4-Session': z.string(),
+	});
 
 export const POST: RequestHandler = async (req) => {
 	const { username, password } = await req.request.json();

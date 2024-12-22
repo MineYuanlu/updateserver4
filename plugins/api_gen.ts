@@ -6,7 +6,7 @@ import { parse } from '@babel/parser';
 const ROOT_DIR = process.cwd();
 const ROUTES_DIR = path.join(ROOT_DIR, 'src', 'routes', 'api');
 
-const OPENAPI_FILE = path.join(ROOT_DIR, 'src', 'routes', 'api', 'swagger', 'paths.ts');
+const OPENAPI_FILE = path.join(ROOT_DIR, 'src', 'routes', 'api', 'openAPI', 'paths.ts');
 const CLIENT_FILE = path.join(ROOT_DIR, 'src', 'lib', 'apis.ts');
 
 function isApiRoute(file: string) {
@@ -92,10 +92,10 @@ async function apply(apiClients: ApiInfo[]) {
 			openAPI.map((c) => c[0]).join('\n'),
 			"import type { OpenAPIV3 } from 'openapi-types';",
 			'',
-			'export const OpenAPI: OpenAPIV3.PathsObject = {};',
+			'export const paths: OpenAPIV3.PathsObject = {};',
 			'function addOpenAPI(api: OpenAPIV3.OperationObject, path: string, method: string) {',
 			"    api.operationId = `${path.replace('/', '_')}_${method}`;",
-			"	(OpenAPI[`/api/${path}`] || (OpenAPI[`/api/${path}`] = {}))[method.toLowerCase() as 'get'] = api;",
+			"	(paths[`/api/${path}`] || (paths[`/api/${path}`] = {}))[method.toLowerCase() as 'get'] = api;",
 			'}',
 			'',
 			openAPI.map((c) => c[1]).join('\n'),

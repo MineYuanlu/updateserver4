@@ -6,6 +6,7 @@ import { userJwt } from '$lib/server/user/jwt';
 import { createAPI } from '../../api.server';
 import { Visibility, zProjId } from '$lib/common/project';
 import { z } from 'zod';
+import { zUserId } from '$lib/common/user';
 
 export const _GET = createAPI()
 	.summary('获取项目详情')
@@ -13,14 +14,14 @@ export const _GET = createAPI()
 		pid: zProjId,
 	})
 	.cookie({
-		user: userJwt.zod.optional,
+		user: userJwt.zod.optional(),
 	})
 	.success<Awaited<ReturnType<typeof getProjectDetailById>>>(
 		z.object({
 			proj: z.object({
 				id: zProjId.describe('project ID'),
 				name: z.string().describe('project name'),
-				oid: z.string().describe('owner ID'),
+				oid: zUserId.describe('owner ID'),
 				owner: z.string().nullable().describe('owner name'),
 				desc: z.string().describe('project description'),
 				visibility: Visibility._z_value.describe('project visibility'),

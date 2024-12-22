@@ -12,6 +12,7 @@ import {
 	enum_user__web_role_admin,
 } from '$lib/paraglide/messages';
 import type { User } from '$lib/server/db/schema';
+import { z } from 'zod';
 import { makeEnum } from './enum';
 import { zUS4ID, type US4ID } from './id';
 import type { JwtInfo } from './jwt';
@@ -48,6 +49,11 @@ export function whyInvalidUserName(name: string): string | undefined {
 	if (!userNameRegex.test(name)) return check_user_name__bad_char();
 	return undefined;
 }
+
+export const zUserName = z.custom<string>(validateUserName, (t) => ({
+	message: whyInvalidUserName(t)
+}));
+
 /**
  * 密码合法性检查
  *
@@ -71,6 +77,10 @@ export function whyInvalidPassword(password: string): string | undefined {
 	if (password.length > 255) return check_user_password__too_long();
 	return undefined;
 }
+
+export const zPassword = z.custom<string>(validatePassword, (t) => ({
+	message: whyInvalidPassword(t)
+}));
 
 /** 用户ID */
 export type UserId = US4ID<'u'>;

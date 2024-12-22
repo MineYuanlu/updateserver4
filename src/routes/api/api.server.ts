@@ -4,7 +4,8 @@ import Cookie from 'cookie';
 import { apiResp, failure } from './common.server';
 import errorMap from '$lib/zod/error_map';
 import type { OpenAPIV3 } from 'openapi-types';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+// import { zodToJsonSchema } from 'zod-to-json-schema';
+import { generateSchema } from '@anatine/zod-openapi';
 
 /**
  * 参数定义:
@@ -119,7 +120,7 @@ class API<
 	}
 	/** 设置成功响应 */
 	public success<D extends any, H extends Record<string, string> | undefined = undefined>(
-		d: z.ZodSchema,
+		d: z.ZodSchema<D>,
 		h?: H,
 		c = 0,
 		s = 200,
@@ -267,14 +268,17 @@ class API<
 		): OpenAPIV3.ParameterObject[] => {
 			if (!params) return [];
 			return Object.entries(params).map(([name, param]) => {
-				const type = Array.isArray(param) ? param[0] : param;
+				const type: z.ZodType = Array.isArray(param) ? param[0] : param;
 				name = Array.isArray(param) ? param[1] : name;
+				if (!(type instanceof z.ZodType)) {
+					console.warn(`Invalid type for ${name} in ${pos}`, type);
+				}
 				return {
 					name,
 					in: pos,
 					description: type.description,
 					required: type.isOptional() ? false : true,
-					schema: zodToJsonSchema(type) as any,
+					schema: generateSchema(type) as any,
 				};
 			});
 		};
@@ -294,7 +298,7 @@ class API<
 						required: true,
 						content: {
 							'application/json': {
-								schema: zodToJsonSchema(
+								schema: generateSchema(
 									z.object(
 										Object.fromEntries(
 											Object.entries(this._data.body).map(([name, param]) => [
@@ -316,7 +320,7 @@ class API<
 						description: (this._data.success.data as z.ZodObject<any>).description ?? '',
 						content: {
 							'application/json': {
-								schema: zodToJsonSchema(this._data.success.data) as any,
+								schema: generateSchema(this._data.success.data) as any,
 							},
 						},
 					};
@@ -332,7 +336,7 @@ class API<
 					description: '',
 					content: {
 						'application/json': {
-							schema: zodToJsonSchema(
+							schema: generateSchema(
 								z.object({
 									code: z.number().int().positive().or(z.number().int().negative()).default(1),
 									message: z.string(),
