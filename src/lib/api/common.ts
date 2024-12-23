@@ -2,6 +2,21 @@ import { addNotification } from '$lib/components/Notifications/NotificationList.
 import { api__request_failed_title } from '$lib/paraglide/messages';
 import * as protobuf from 'protobufjs/minimal';
 
+export const HttpMethods = [
+	'GET',
+	'POST',
+	'PUT',
+	'DELETE',
+	'PATCH',
+	'HEAD',
+	'OPTIONS',
+	'TRACE',
+] as const;
+export type HttpMethod = (typeof HttpMethods)[number];
+export type HttpMethodsLower = Lowercase<HttpMethod>;
+export const toLowerHttpMethod = <T extends HttpMethod>(method: T) =>
+	method.toLowerCase() as Lowercase<T>;
+
 function error(path: string, msg: string, data: any, showErr: number) {
 	console.error('API Error:', path, msg, data);
 	if (showErr > 0)

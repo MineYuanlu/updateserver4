@@ -65,8 +65,6 @@ type PlainParsedData<T extends Record<string, any>> = UnionToIntersection<
 	Exclude<ParsedData<T>[keyof ParsedData<T>], never>
 >;
 
-type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
-
 /**
  * API描述信息, 描述了一个API的请求参数, 响应参数, 成功响应, 标签, 摘要, 描述, 废弃等信息, 可以做:
  * 1. 通过`handler`方法获取到规范化的API处理器

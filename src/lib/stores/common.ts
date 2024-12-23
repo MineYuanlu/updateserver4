@@ -1,11 +1,14 @@
 import { onMount, type Snippet } from 'svelte';
+import type { HTMLAttributes } from 'svelte/elements';
 import { writable, type Writable } from 'svelte/store';
 
-export const navbar = writable<Snippet | undefined>(undefined);
+export const navbar = writable<[Snippet, HTMLAttributes<HTMLElement> | undefined] | undefined>(
+	undefined,
+);
 
-export const setNavBar = (_navbar: Snippet) => {
+export const setNavBar = (_navbar: Snippet, attr?: HTMLAttributes<HTMLElement>) => {
 	onMount(() => {
-		navbar.set(_navbar);
+		navbar.set([_navbar, attr]);
 		return () => navbar.set(undefined);
 	});
 };

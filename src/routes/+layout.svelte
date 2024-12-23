@@ -22,7 +22,7 @@
 			<!-- 主体内容部分 -->
 			<div class="flex flex-grow">
 				<!-- 左侧 Navbar -->
-				<Navbar navbar={$navbar} />
+				<Navbar />
 
 				<!-- 主体内容 -->
 				<main class="flex-grow bg-gray-50 p-6 dark:bg-gray-900 dark:text-gray-100">

@@ -89,6 +89,11 @@ async function apply(apiClients: ApiInfo[]) {
 		const openAPI = apiClients.map((api) => api[2].openapi).filter((v) => !!v);
 
 		const code = [
+			'// @prettier-ignore',
+			'// @ts-nocheck',
+			'/* prettier-ignore-start */',
+			'/* eslint-disable */',
+			'',
 			openAPI.map((c) => c[0]).join('\n'),
 			"import type { OpenAPIV3 } from 'openapi-types';",
 			'',
@@ -99,6 +104,10 @@ async function apply(apiClients: ApiInfo[]) {
 			'}',
 			'',
 			openAPI.map((c) => c[1]).join('\n'),
+			'',
+			'/* prettier-ignore-end */',
+			'/* eslint-enable */',
+			'',
 		].join('\n');
 		await fs.promises.writeFile(OPENAPI_FILE, code, 'utf-8');
 	}
