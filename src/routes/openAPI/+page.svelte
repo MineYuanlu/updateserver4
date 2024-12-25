@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { HttpMethod } from '$lib/api/common';
 	import BindValue from '$lib/components/BindValue/BindValue.svelte';
+	import { resolveOpenAPI } from '$lib/components/openapi/utils';
 	import { setNavBar } from '$lib/stores/common.js';
-	import Op from './Op.svelte';
-	import OpList from './OpList.svelte';
+	import Op from '$lib/components/openapi/Op.svelte';
+	import OpList from '$lib/components/openapi/OpList.svelte';
 
 	const { data } = $props();
 	setNavBar(navbar, {
@@ -11,13 +12,15 @@
 	});
 
 	let display: [string, HttpMethod] | undefined = $state(undefined);
+
+	const openAPI = $derived(resolveOpenAPI(data.openAPI));
 </script>
 
 {#snippet navbar()}
-	<OpList data={data.openAPI} bind:display />
+	<OpList data={openAPI} bind:display />
 {/snippet}
 {#if display}
-	<Op data={data.openAPI} {display} />
+	<Op data={openAPI} {display} />
 {/if}
 
 <BindValue

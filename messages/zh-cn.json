@@ -130,6 +130,11 @@
 	"component_charts_time_line__legend": "每{unit}统计",
 	"component_form_edit_input__btn": "保存",
 
+	"component_openapi_schemas_schema__default": "默认值",
+	"component_openapi_schemas_schema__example_noname": "无名样例",
+	"component_openapi_schemas_schema__fill": "填充",
+	"component_openapi_schemas_schema__param_detail": "详情",
+
 	"enum_cnts__project_cnt_type_simple_pie": "简单饼图",
 	"enum_cnts__project_cnt_type_drilldown_pie": "下钻饼图",
 	"enum_cnts__project_cnt_type_single_line": "单线图",

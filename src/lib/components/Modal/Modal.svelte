@@ -112,7 +112,7 @@
 </script>
 
 <Openable bind:open {controls} {preOpen} {postOpen} {preClose} {postClose}>
-	<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+	<div class="contents" aria-labelledby="modal-title" role="dialog" aria-modal="true">
 		<!--
       Background backdrop, show/hide based on modal state.
   

@@ -5,12 +5,15 @@
 	import * as m from '$lib/paraglide/messages.js';
 	import { navbar, settings } from '$lib/stores/common';
 	import Header from './Header.svelte';
-	import Navbar from './Navbar.svelte';
 	import NotificationList from '$lib/components/Notifications/NotificationList.svelte';
+	import { slide } from 'svelte/transition';
 
 	let { children, data } = $props();
 
 	let theme = $state(data?.theme || 'light');
+
+	const nav = $derived($navbar ? $navbar[0] : undefined);
+	const { class: nav_class, ...nav_attr } = $derived(($navbar ? $navbar[1] : undefined) ?? {});
 </script>
 
 <div class:dark={theme === 'dark'}>
@@ -22,10 +25,20 @@
 			<!-- 主体内容部分 -->
 			<div class="flex flex-grow">
 				<!-- 左侧 Navbar -->
-				<Navbar />
+				{#if nav}
+					<aside
+						class="w-64 shrink-0 overflow-y-auto border-r bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 sm:block {nav_class}"
+						{...nav_attr}
+						transition:slide={{ duration: 100, axis: 'x' }}
+					>
+						{@render nav()}
+					</aside>
+				{/if}
 
 				<!-- 主体内容 -->
-				<main class="flex-grow bg-gray-50 p-6 dark:bg-gray-900 dark:text-gray-100">
+				<main
+					class="min-h-0 w-0 flex-grow overflow-hidden bg-gray-50 p-6 dark:bg-gray-900 dark:text-gray-100"
+				>
 					{@render children()}
 				</main>
 			</div>

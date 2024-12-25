@@ -1,9 +1,10 @@
 <script lang="ts">
 	import type { OpenAPIObject, PathsObject, OperationObject } from 'openapi3-ts/oas30';
-	import type { ApiParseCfg } from './apis';
-	import { HttpMethods, type HttpMethod } from '$lib/api/common';
+	import type { ApiParseCfg } from './utils';
+	import { HttpMethods, toLowerHttpMethod, type HttpMethod } from '$lib/api/common';
 	import { Icon } from '@steeze-ui/svelte-icon';
 	import { ChevronDown } from '@steeze-ui/radix-icons';
+	import { methodToColor, methodToShort } from './methods';
 	let {
 		data,
 		cfg = {},
@@ -21,7 +22,7 @@
 		for (const path in paths) {
 			const item = paths[path];
 			for (const method of HttpMethods) {
-				let op = item[method.toLocaleLowerCase() as 'get'];
+				let op = item[toLowerHttpMethod(method)];
 				if (!op) continue;
 				op = {
 					summary: item.summary,
@@ -36,19 +37,9 @@
 		}
 		return Object.entries(tagsToOps);
 	}
-	const opList = $derived(getOpList(data.paths));
+	if (!data) console.log('data', data);
+	const opList = $derived(data ? getOpList(data.paths) : []);
 	const opTagHide: Record<string, boolean> = $state({});
-
-	const methodToColor: Record<HttpMethod, string> = {
-		HEAD: 'text-gray-600 dark:text-gray-400', // 灰色
-		GET: 'text-green-600 dark:text-green-400', // 绿色
-		POST: 'text-blue-600 dark:text-blue-400', // 蓝色
-		PUT: 'text-amber-600 dark:text-amber-400', // 琥珀色
-		DELETE: 'text-red-600 dark:text-red-400', // 红色
-		PATCH: 'text-purple-600 dark:text-purple-400', // 紫色
-		OPTIONS: 'text-gray-500 dark:text-gray-300', // 浅灰色
-		TRACE: 'text-gray-400 dark:text-gray-600', // 更浅的灰色
-	};
 </script>
 
 {#snippet opItem(op: OperationObject, path: string, method: HttpMethod)}
@@ -73,13 +64,13 @@
 		<div
 			class="absolute right-0 top-0 flex h-full items-center font-mono text-xl uppercase {methodToColor[
 				method
-			]}"
+			].t}"
 		>
 			<div
 				class="h-full w-4 bg-gradient-to-r from-gray-50/0 to-gray-50 dark:from-gray-800/0 dark:to-gray-800"
 			></div>
 			<div class="flex h-full items-center bg-gray-50 pr-4 dark:bg-gray-800">
-				{method}
+				{methodToShort[method]}
 			</div>
 		</div>
 	</button>
@@ -112,7 +103,7 @@
 	</div>
 {/snippet}
 
-<div class="absolute left-0 top-0 h-full w-80 overflow-y-auto">
+<div class="absolute left-0 top-0 h-full w-full overflow-y-auto">
 	{#each opList as [tag, ops]}
 		{@render opTag(tag, ops)}
 	{/each}
