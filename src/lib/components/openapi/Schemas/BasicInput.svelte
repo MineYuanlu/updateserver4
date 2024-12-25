@@ -37,4 +37,3 @@
 	options={schema.enum}
 	showAllOptions={enums ? enums.size < 10 : false}
 />
-<pre>{JSON.stringify(schema, null, 2)}</pre>

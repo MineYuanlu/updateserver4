@@ -20,6 +20,8 @@
 		component_openapi_schemas_schema__param_detail as m_param_detail,
 	} from '$lib/paraglide/messages';
 	import Modal from '$lib/components/Modal/Modal.svelte';
+	import CodeMirror6 from '../CodeMirror6.svelte';
+	import { basicSetup } from 'codemirror';
 
 	let {
 		param,
@@ -115,15 +117,15 @@
 					[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_fill()}&nbsp;]
 				</button>
 			</span>
-			<span>
-				<button
-					class="font-mono font-medium text-black dark:text-white"
-					onclick={() => (detailModalOpen = true)}
-				>
-					[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_param_detail()}&nbsp;]
-				</button>
-			</span>
 		{/if}
+		<span>
+			<button
+				class="font-mono font-medium text-black dark:text-white"
+				onclick={() => (detailModalOpen = true)}
+			>
+				[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_param_detail()}&nbsp;]
+			</button>
+		</span>
 	{/snippet}
 	{#key type}
 		{#if t_basic.includes(type as any)}
@@ -135,6 +137,11 @@
 			/>
 		{:else}
 			123
+			<CodeMirror6
+				doc={JSON.stringify(value, null, 2)}
+				extensions={basicSetup}
+				bind:docStore={value}
+			/>
 		{/if}
 	{/key}
 </Box>
