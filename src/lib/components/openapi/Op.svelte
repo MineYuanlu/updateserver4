@@ -1,12 +1,13 @@
 <script lang="ts">
-	import type { OpenAPIObject, PathsObject, OperationObject } from 'openapi3-ts/oas30';
+	import type { OpenAPIObject } from 'openapi3-ts/oas30';
 	import { notRef, type ApiParseCfg } from './utils';
 	import { toLowerHttpMethod, type HttpMethod } from '$lib/api/common';
 	import { methodToColor } from './methods';
-	import Box from './Schemas/Box.svelte';
 	import Schema from './Schemas/Schema.svelte';
-	import { runeDesc, runes, runeTypes, type RuneTypes } from './param_rune';
+	import { runeDesc, runeTypes, type RuneTypes } from './param_rune';
 	import Rune from './Rune.svelte';
+	import CodeMirror from 'svelte-codemirror-editor';
+	import { json } from '@codemirror/lang-json';
 	let {
 		data,
 		cfg = {},
@@ -68,6 +69,7 @@
 							{/if}
 						{/each}
 					{/if}
+					{#if op.requestBody}{/if}
 				</div>
 			{/if}
 			<div class="w-[1px] bg-gray-200 dark:bg-gray-700"></div>
@@ -82,6 +84,7 @@
 <pre>
 	{JSON.stringify(display, null, 2)}
 </pre>
-<pre>
+<!-- <pre>
 	{JSON.stringify(op, null, 2)}
-</pre>
+</pre> -->
+<CodeMirror value={JSON.stringify(op, null, 2)} readonly lang={json()} />

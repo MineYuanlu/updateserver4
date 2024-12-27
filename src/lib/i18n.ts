@@ -24,3 +24,9 @@ export function getRealPath(path: string) {
 	if (!path.startsWith('/')) path = `/${path}`;
 	return path;
 }
+
+/** URL语言前缀函数 */
+export const langPrefix = (): `/${(typeof runtime.availableLanguageTags)[number]}` | '' => {
+	const tag = runtime.languageTag();
+	return tag === runtime.sourceLanguageTag ? '' : `/${tag}`;
+};

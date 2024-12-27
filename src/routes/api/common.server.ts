@@ -2,7 +2,6 @@ import {
 	api__common_invalid_field,
 	api__common_invalid_field_with_why,
 } from '$lib/paraglide/messages';
-import { languageTag, sourceLanguageTag, type availableLanguageTags } from '$lib/paraglide/runtime';
 import { error, json } from '@sveltejs/kit';
 
 /**
@@ -151,9 +150,3 @@ export function failWhy(func: (v: unknown) => string | undefined): ErrorHandler<
 		failure(api__common_invalid_field_with_why({ field, why: func(value) ?? 'unknown' }));
 	};
 }
-
-/** URL语言前缀函数 */
-export const langPrefix = (): `/${(typeof availableLanguageTags)[number]}` | '' => {
-	const tag = languageTag();
-	return tag === sourceLanguageTag ? '' : `/${tag}`;
-};

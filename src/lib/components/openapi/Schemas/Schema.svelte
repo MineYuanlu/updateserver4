@@ -5,14 +5,12 @@
 
 <script lang="ts">
 	import {
-		isSchemaObject,
 		type ParameterObject,
 		type SchemaObject,
 		type SchemaObjectType,
 	} from 'openapi3-ts/oas30';
 	import Box from './Box.svelte';
 	import { remRef } from '../utils';
-	import BasicInput from './BasicInput.svelte';
 	import {
 		component_openapi_schemas_schema__default as m_default,
 		component_openapi_schemas_schema__example_noname as m_example_noname,
@@ -20,8 +18,14 @@
 		component_openapi_schemas_schema__param_detail as m_param_detail,
 	} from '$lib/paraglide/messages';
 	import Modal from '$lib/components/Modal/Modal.svelte';
-	import CodeMirror6 from '../CodeMirror6.svelte';
-	import { basicSetup } from 'codemirror';
+	import InputJson from './InputJson.svelte';
+
+	import CodeMirror from 'svelte-codemirror-editor';
+	import { json as CodeMirrorJson } from '@codemirror/lang-json';
+	import { oneDark as CodeMirrorOneDark } from '@codemirror/theme-one-dark';
+	import { theme } from '$lib/stores/theme';
+	import InputString from './InputString.svelte';
+	import type { JSONSchema7 } from 'json-schema';
 
 	let {
 		param,
@@ -128,20 +132,11 @@
 		</span>
 	{/snippet}
 	{#key type}
-		{#if t_basic.includes(type as any)}
-			<BasicInput
-				{param}
-				type={type as (typeof t_basic)[number]}
-				bind:value
-				schema={schema as SchemaObject}
-			/>
+		{#if type === 'string'}
+			<InputString {param} bind:value schema={schema as SchemaObject} />
 		{:else}
-			123
-			<CodeMirror6
-				doc={JSON.stringify(value, null, 2)}
-				extensions={basicSetup}
-				bind:docStore={value}
-			/>
+			<InputJson {param} schema={schema as JSONSchema7} {type} bind:value />
+			<pre>{JSON.stringify(value, null, 2)}</pre>
 		{/if}
 	{/key}
 </Box>
@@ -173,20 +168,30 @@
 				{/each}
 			</div>
 
-			<div class="max-h-96 overflow-auto rounded bg-gray-100 p-4 dark:bg-gray-900">
-				<pre class="whitespace-pre-wrap font-mono text-sm">
-					{JSON.stringify(defaults[fillSelectedIndex][1], null, 2)}
-				</pre>
+			<div class="max-h-96 overflow-auto rounded p-4">
+				<CodeMirror
+					value={JSON.stringify(defaults[fillSelectedIndex][1], null, 2)}
+					lang={CodeMirrorJson()}
+					theme={$theme === 'dark' ? CodeMirrorOneDark : undefined}
+					readonly
+					editable={false}
+				/>
 			</div>
 		</div>
 	{/snippet}
 </Modal>
 
 <!-- 参数详情 -->
-<Modal bind:open={detailModalOpen} title="参数详情">
+<Modal bind:open={detailModalOpen} title="参数详情" btns={['关闭']}>
 	{#snippet content()}
 		<div class="p-4">
-			<pre>{JSON.stringify(param, null, 2)}</pre>
+			<CodeMirror
+				value={JSON.stringify(param, null, 2)}
+				lang={CodeMirrorJson()}
+				theme={$theme === 'dark' ? CodeMirrorOneDark : undefined}
+				readonly
+				editable={false}
+			/>
 		</div>
 	{/snippet}
 </Modal>

@@ -16,10 +16,13 @@
 	import type { ToggleFunc } from '$lib/components/base/Openable.svelte';
 	import { Exit, Gear, Globe, Moon, Person, Sun } from '@steeze-ui/radix-icons';
 	import { Icon } from '@steeze-ui/svelte-icon';
+	import cookie from 'cookie';
+	import { theme } from '$lib/stores/theme';
+	import { browser } from '$app/environment';
 
 	let {
 		user,
-		theme = $bindable(),
+		theme: initTheme,
 		settings,
 	}: {
 		user?: UserSession | null;
@@ -27,14 +30,14 @@
 		settings: Settings;
 	} = $props();
 
-	let isDarkMode = $state(theme === 'dark');
+	let isDarkMode = $state(initTheme === 'dark');
 
 	const toggleTheme = () => {
 		isDarkMode = !isDarkMode;
 	};
 	$effect(() => {
-		theme = isDarkMode ? 'dark' : 'light';
-		document.cookie = `${COOKIES.Theme}=${theme}; path=/; max-age=31536000`;
+		$theme = isDarkMode ? 'dark' : 'light';
+		if (browser) document.cookie = `${COOKIES.Theme}=${$theme}; path=/; max-age=31536000`;
 	});
 
 	let settingMenuOpen = $state(false);
@@ -43,6 +46,7 @@
 	const toggleSettingMenu = (v?: boolean) => {
 		settingMenuOpen = v ?? !settingMenuOpen;
 	};
+	cookie;
 </script>
 
 <header

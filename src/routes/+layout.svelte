@@ -7,20 +7,19 @@
 	import Header from './Header.svelte';
 	import NotificationList from '$lib/components/Notifications/NotificationList.svelte';
 	import { slide } from 'svelte/transition';
+	import { theme } from '$lib/stores/theme';
 
 	let { children, data } = $props();
-
-	let theme = $state(data?.theme || 'light');
 
 	const nav = $derived($navbar ? $navbar[0] : undefined);
 	const { class: nav_class, ...nav_attr } = $derived(($navbar ? $navbar[1] : undefined) ?? {});
 </script>
 
-<div class:dark={theme === 'dark'}>
+<div class:dark={$theme === 'dark'}>
 	<ParaglideJS {i18n}>
 		<div class="flex h-screen flex-col">
 			<!-- Header -->
-			<Header user={data?.user} bind:theme settings={$settings} />
+			<Header user={data?.user} theme={data?.theme} settings={$settings} />
 
 			<!-- 主体内容部分 -->
 			<div class="flex flex-grow">

@@ -4,18 +4,33 @@
 
 	let {
 		param,
+		schema,
+		value = $bindable(),
 		invalid = $bindable(false),
-		value = $bindable(''),
 	}: {
 		param: ParameterObject;
-		invalid?: boolean;
+		schema: SchemaObject;
 		value: string;
+		invalid?: boolean;
 	} = $props();
+
+	const enums = $derived(Array.isArray(schema.enum) ? new Set(schema.enum) : undefined);
 
 	// 处理输入验证
 	function checker(val: any) {
+		if (typeof schema.minLength === 'number' && val.length < schema.minLength) return false;
+		if (typeof schema.maxLength === 'number' && val.length > schema.maxLength) return false;
+		if (typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(val)) return false;
+		if (enums && !enums.has(val)) return false;
 		return true;
 	}
 </script>
 
-<Input name={param.name} bind:value bind:invalid {checker} />
+<Input
+	name={param.name}
+	bind:value
+	bind:invalid
+	{checker}
+	options={schema.enum}
+	showAllOptions={enums ? enums.size < 10 : false}
+/>

@@ -16,4 +16,19 @@ export default defineConfig({
 	test: {
 		include: ['src/**/*.{test,spec}.{js,ts}'],
 	},
+
+	optimizeDeps: {
+		exclude: [
+			'@codemirror/commands',
+			'@codemirror/lang-json',
+			'@codemirror/language',
+			'@codemirror/lint',
+			'@codemirror/state',
+			'@codemirror/theme-one-dark',
+			'@codemirror/view',
+			'codemirror',
+			'codemirror-json-schema',
+			'svelte-codemirror-editor',
+		],
+	},
 });
