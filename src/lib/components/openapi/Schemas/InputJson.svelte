@@ -12,13 +12,15 @@
 		schema,
 		type,
 		value = $bindable(),
-		invalid = $bindable(false),
+		noValue = $bindable(false),
+		setInvalid,
 	}: {
 		param: ParameterObject;
 		schema: JSONSchema7;
 		type: JSONSchema7TypeName | 'unknown';
 		value: any;
-		invalid?: boolean;
+		noValue?: boolean;
+		setInvalid?: (invalid: boolean) => void;
 	} = $props();
 
 	const validate = $derived(ajv.compile(schema));
@@ -26,16 +28,18 @@
 	let innerValue: string = $state('');
 	let isInnerUpdate = $state(false);
 	$effect(() => {
+		console.log('effect1');
 		try {
 			isInnerUpdate = true;
 			value = JSON.parse(innerValue);
-			invalid = !validate(value);
+			setInvalid?.(!validate(untrack(() => value)));
 		} catch (e) {
 			value = undefined;
-			invalid = true;
+			setInvalid?.(true);
 		}
 	});
 	$effect(() => {
+		console.log('effect2');
 		if (untrack(() => isInnerUpdate)) isInnerUpdate = false;
 		else innerValue = JSON.stringify(value, null, 2);
 	});

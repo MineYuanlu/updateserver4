@@ -1,3 +1,15 @@
+<script module lang="ts">
+	const resizeArr = <T,>(v: T[], len: number, fill: T) => {
+		if (v.length > len) {
+			v.length = len;
+		} else if (v.length < len) {
+			v.length = len;
+			v.fill(fill, v.length - len);
+		}
+		return v;
+	};
+</script>
+
 <script lang="ts">
 	import type { OpenAPIObject } from 'openapi3-ts/oas30';
 	import { notRef, type ApiParseCfg } from './utils';
@@ -8,6 +20,8 @@
 	import Rune from './Rune.svelte';
 	import CodeMirror from 'svelte-codemirror-editor';
 	import { json } from '@codemirror/lang-json';
+	import Submit from './Submit.svelte';
+	import { dev } from '$app/environment';
 	let {
 		data,
 		cfg = {},
@@ -27,6 +41,19 @@
 		if (op.parameters) op.parameters.filter(notRef).forEach((p) => ins.add(p.in));
 		if (op.requestBody) ins.add('body');
 		return ins as Set<RuneTypes>;
+	});
+
+	const paramLen = $derived(op.parameters?.length ?? 0);
+	const bodyLen = $derived(op.requestBody ? 1 : 0);
+	const pbLen = $derived(paramLen + bodyLen);
+
+	const values: any[] = $state([]);
+	const noValues: boolean[] = $state([]);
+	const invalid: boolean[] = $state([]);
+	$effect(() => {
+		resizeArr(values, pbLen, undefined);
+		resizeArr(noValues, pbLen, false);
+		resizeArr(invalid, pbLen, false);
 	});
 </script>
 
@@ -61,30 +88,42 @@
 						{#each runeTypes as type}{@render paramT(type)}{/each}
 					</h4>
 					{#if op.parameters}
-						{#each op.parameters as param}
-							{#if notRef(param)}
+						{#each op.parameters as param, idx}
+							{#if notRef(param) && values.length > idx && noValues.length > idx && invalid.length > idx}
 								{#key param}
-									<Schema {param} />
+									<Schema
+										{param}
+										bind:value={values[idx]}
+										bind:noValue={noValues[idx]}
+										setInvalid={(v) => (invalid[idx] = v)}
+									/>
 								{/key}
 							{/if}
 						{/each}
 					{/if}
-					{#if op.requestBody}{/if}
+					{#if op.requestBody}
+						TODO:BODY
+					{/if}
 				</div>
 			{/if}
 			<div class="w-[1px] bg-gray-200 dark:bg-gray-700"></div>
 			<div class="flex w-full flex-col gap-2">
-				<!-- TODO: 发起请求 -->
-				<button class="btn btn-primary">发起请求</button>
+				<Submit {op} {values} {noValues} {invalid} {path} {method} {color} />
 			</div>
 		</div>
 	</div>
 </div>
-
-<pre>
+{#if dev}
+	<span class="text-blue-500">display:</span>
+	<pre>
 	{JSON.stringify(display, null, 2)}
 </pre>
-<!-- <pre>
-	{JSON.stringify(op, null, 2)}
-</pre> -->
-<CodeMirror value={JSON.stringify(op, null, 2)} readonly lang={json()} />
+	<span class="text-blue-500">values:</span>
+	<pre>{JSON.stringify(values)}</pre>
+	<span class="text-blue-500">noValues:</span>
+	<pre>{JSON.stringify(noValues)}</pre>
+	<span class="text-blue-500">invalid:</span>
+	<pre>{JSON.stringify(invalid)}</pre>
+	<span class="text-blue-500">op:</span>
+	<CodeMirror value={JSON.stringify(op, null, 2)} readonly lang={json()} />
+{/if}

@@ -30,9 +30,13 @@
 	let {
 		param,
 		value = $bindable(),
+		noValue = $bindable(false),
+		setInvalid,
 	}: {
 		param: ParameterObject;
 		value?: any;
+		noValue?: boolean;
+		setInvalid?: (invalid: boolean) => void;
 	} = $props();
 
 	const schema = $derived(remRef(param.schema));
@@ -77,6 +81,7 @@
 	});
 	// svelte-ignore state_referenced_locally
 	if (value === undefined && defaults.length > 0) value = defaults[0][1];
+	else noValue = true;
 
 	let fillModalOpen = $state(false);
 	let fillSelectedIndex = $state<number>(0);
@@ -133,9 +138,16 @@
 	{/snippet}
 	{#key type}
 		{#if type === 'string'}
-			<InputString {param} bind:value schema={schema as SchemaObject} />
+			<InputString {param} schema={schema as SchemaObject} bind:value bind:noValue {setInvalid} />
 		{:else}
-			<InputJson {param} schema={schema as JSONSchema7} {type} bind:value />
+			<InputJson
+				{param}
+				schema={schema as JSONSchema7}
+				{type}
+				bind:value
+				bind:noValue
+				{setInvalid}
+			/>
 			<pre>{JSON.stringify(value, null, 2)}</pre>
 		{/if}
 	{/key}

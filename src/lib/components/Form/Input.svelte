@@ -132,6 +132,8 @@
 	import { isSnippet } from '../SoC/soc';
 	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
 	import { slide } from 'svelte/transition';
+	import KeyListener from '../Global/KeyListener.svelte';
+	import ClickListener from '../Global/ClickListener.svelte';
 
 	let {
 		class: className,
@@ -221,6 +223,11 @@
 		showAllOptions ? options : doSearch(options, value),
 	);
 </script>
+
+{#if options}
+	<KeyListener handler={() => (showDropdown = false)} key="Escape" />
+	<ClickListener handler={() => (showDropdown = false)} exclude={container} />
+{/if}
 
 <div class="space-y-2 {className}">
 	<!-- 标题 -->

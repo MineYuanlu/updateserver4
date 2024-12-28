@@ -40,9 +40,3 @@
 		}
 	}}
 />
-
-<style>
-	:global(.redoc-wrap) {
-		margin: 0;
-	}
-</style>
