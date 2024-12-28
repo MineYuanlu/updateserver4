@@ -1,8 +1,3 @@
-<script module lang="ts">
-	import Ajv from 'ajv';
-	const ajv = new Ajv();
-</script>
-
 <script lang="ts">
 	import type { ParameterObject } from 'openapi3-ts/oas30';
 	import CodeMirror from 'svelte-codemirror-editor';
@@ -11,6 +6,7 @@
 	import { theme } from '$lib/stores/theme';
 	import { untrack } from 'svelte';
 	import type { JSONSchema7, JSONSchema7TypeName } from 'json-schema';
+	import { ajv } from './common';
 	let {
 		param,
 		schema,

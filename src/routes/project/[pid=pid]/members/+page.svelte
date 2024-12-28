@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { UserRole } from '$lib/common/project';
-	import Input from '$lib/components/Form/Input.svelte';
 	import TablePro from '$lib/components/Table/TablePro.svelte';
-	import { ChevronDown } from '@steeze-ui/radix-icons';
-	import Navbar from '../Navbar.svelte';
+	import Input from '$lib/components/Form/Input.svelte';
 	const { data } = $props();
 	const { proj, versions, tags } = data.project;
 	const members: {

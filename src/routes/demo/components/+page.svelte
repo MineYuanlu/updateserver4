@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { colorPackNames } from '$lib/components/color';
 	import Button from '$lib/components/Form/Button.svelte';
-	import Input from '$lib/components/Form/Input.svelte';
+	import Input, { type Opt } from '$lib/components/Form/Input.svelte';
 	import Notification, { notiTypes } from '$lib/components/Notifications/Notification.svelte';
 	import TablePro from '$lib/components/Table/TablePro.svelte';
 	import {
@@ -22,6 +22,8 @@
 		['c', 'd'],
 		['e', 'f'],
 	]);
+
+	let __edit_select_data: Opt | undefined = $state();
 </script>
 
 <h1>This is a demo page</h1>
@@ -40,7 +42,7 @@
 <h3>Input</h3>
 <h6>Default</h6>
 <Input />
-<h6>Dropdown</h6>
+<h6>Select</h6>
 <Input
 	options={colorPackNames.flatMap((c, i) =>
 		Array(i)
@@ -48,6 +50,28 @@
 			.map((_, j) => `${c}-${j + 1}`),
 	)}
 />
+<h6>Show all options</h6>
+<Input
+	options={colorPackNames.flatMap((c, i) =>
+		Array(i)
+			.fill(c)
+			.map((_, j) => `${c}-${j + 1}`),
+	)}
+	showAllOptions
+/>
+<h6>label and value</h6>
+<Input
+	options={[
+		['value1', 'label1'],
+		['value2', 'label2'],
+		['value3', 'label3'],
+	]}
+	showAllOptions
+	bind:selectedOpt={__edit_select_data}
+/>
+<div class="flex">
+	Selected value: <pre>{JSON.stringify(__edit_select_data)}</pre>
+</div>
 
 <h3>Table</h3>
 <h6>Immediate</h6>
@@ -184,3 +208,21 @@
 >
 	API报错
 </Button>
+
+<style>
+	h1 {
+		font-size: 2rem;
+		font-weight: bold;
+		margin-top: 2rem;
+	}
+	h3 {
+		font-size: 1.5rem;
+		font-weight: bold;
+		margin-top: 2rem;
+	}
+	h6 {
+		font-size: 1.2rem;
+		font-weight: bold;
+		margin-top: 1rem;
+	}
+</style>

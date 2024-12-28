@@ -1,5 +1,3 @@
-<!-- name, desc, type, client_id, client_secret, redirect_uri  -->
-
 <script lang="ts">
 	import { dev } from '$app/environment';
 	import { createOauthProvider } from '$lib/api/user';

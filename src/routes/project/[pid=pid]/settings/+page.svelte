@@ -14,6 +14,7 @@
 	import VersionCmpEdit from './VersionCmpEdit.svelte';
 	import LinksEdit from './LinksEdit.svelte';
 	import TagsEdit from './TagsEdit.svelte';
+	import EditSelect from '$lib/components/Form/EditSelect.svelte';
 
 	const { data } = $props();
 	const { proj, tags } = data.project;
@@ -92,11 +93,11 @@
 				onclick={() => submit('desc')}
 			/>
 
-			<EditInput
+			<EditSelect
 				label="项目可见性"
 				placeholder="请输入项目可见性"
-				default={Visibility._toKey(defaultData.visibility)}
-				bind:value={editData.visibility}
+				default={Visibility._toDesc(defaultData.visibility)}
+				bind:selectedValue={editData.visibility}
 				options={Visibility._toOptions()}
 				showAllOptions
 				onclick={() => submit('visibility')}

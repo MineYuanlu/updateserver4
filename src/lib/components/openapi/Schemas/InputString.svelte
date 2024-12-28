@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ParameterObject, SchemaObject } from 'openapi3-ts/oas30';
 	import Input from '$lib/components/Form/Input.svelte';
+	import { ajv } from './common';
 
 	let {
 		param,
@@ -16,14 +17,7 @@
 
 	const enums = $derived(Array.isArray(schema.enum) ? new Set(schema.enum) : undefined);
 
-	// 处理输入验证
-	function checker(val: any) {
-		if (typeof schema.minLength === 'number' && val.length < schema.minLength) return false;
-		if (typeof schema.maxLength === 'number' && val.length > schema.maxLength) return false;
-		if (typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(val)) return false;
-		if (enums && !enums.has(val)) return false;
-		return true;
-	}
+	const checker = $derived(ajv.compile(schema));
 </script>
 
 <Input

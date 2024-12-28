@@ -201,7 +201,7 @@
 						"name": "name",
 						"in": "query",
 						"description": "Name of pet that needs to be updated",
-						"schema": { "type": "string" }
+						"schema": { "type": "string", "maxLength": 5 }
 					},
 					{
 						"name": "status",

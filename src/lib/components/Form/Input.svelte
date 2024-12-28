@@ -1,5 +1,5 @@
 <script module lang="ts">
-	export type Props = {
+	export type BasicProps = {
 		/** 最外层容器的类名 */
 		class?: string;
 		/** 输入框的 id */
@@ -36,16 +36,10 @@
 		suffix?: string | Snippet;
 		/** 后缀图标, 在suffix是Snippet时失效 */
 		suffixIcon?: IconSource;
-		/** 下拉列表选项 */
-		options?: readonly (string | [string, string])[];
-		/** 自定义下拉列表选项, render(label:string, value:string) */
-		optionSnippet?: Snippet<[string, string]>;
-		/** 是否显示全部选项 */
-		showAllOptions?: boolean;
+		/** 额外内容 */
+		extras?: Snippet;
 		/** 输入框是否有焦点 (可绑定) */
 		focusing?: boolean;
-		/** 下拉列表是否显示 (可绑定) */
-		showDropdown?: boolean;
 		onclick?: MouseEventHandler<HTMLButtonElement> | null | undefined;
 		oninput?: FormEventHandler<HTMLInputElement> | null | undefined;
 		onfocus?: FocusEventHandler<HTMLInputElement> | null | undefined;
@@ -58,7 +52,72 @@
 		onmouseleave?: MouseEventHandler<HTMLDivElement> | null | undefined;
 
 		input?: HTMLInputElement;
+		container?: HTMLDivElement;
 	};
+
+	export type OptValue = any;
+	export type OptLabel = string;
+	/** 下拉列表选项 */
+	export type Opt = [OptValue, OptLabel];
+	/**
+	 * 下拉列表选项输入
+	 *
+	 * 支持三种格式:
+	 * 1. [id, value, label], 此时id不能重复
+	 * 2. [value, label], 此时id为label
+	 * 3. label, 此时id为label, value为label
+	 */
+	export type OptInput = [OptValue, OptLabel] | [OptLabel] | OptLabel;
+
+	export type OptProps = {
+		/** 下拉列表选项 */
+		options?: readonly OptInput[];
+		/** 自定义下拉列表选项, render(value:OptValue, label:OptLabel) */
+		optionSnippet?: Snippet<Opt>;
+		/**
+		 * 默认下拉菜单搜索时是否搜索value
+		 * true: 一定搜索, false: 不搜索, auto: 值为str/num等基础值时搜索
+		 */
+		searchValue?: boolean | 'auto';
+		/**
+		 * 执行搜索
+		 * @param opts 全部数据项
+		 * @param value 被搜索的文字
+		 */
+		doSearch?: (opts: readonly Opt[], value: string | undefined) => readonly Opt[];
+		/** 是否显示全部选项 */
+		showAllOptions?: boolean;
+
+		/** 下拉列表是否显示 (可绑定) */
+		showDropdown?: boolean;
+
+		/** 选中的值 (可绑定) */
+		selectedOpt?: Opt | undefined;
+		/** 选中的value (仅输出) */
+		selectedValue?: OptValue | undefined;
+	};
+
+	export type Props = BasicProps & OptProps;
+
+	const searchMatch = (a: string, b: string | undefined): boolean => {
+		return !b || a.toLowerCase().includes(b.toLowerCase());
+	};
+	const basicTypes = new Set(['boolean', 'number', 'bigint', 'string']);
+	const defaultSearch = (
+		opts: readonly Opt[],
+		value: string | undefined,
+		searchValue: boolean | 'auto' = 'auto',
+	): readonly Opt[] =>
+		opts.filter(([_value, _label]) => {
+			if (searchMatch(_label, value)) return true;
+			if (
+				searchValue === true ||
+				(searchValue === 'auto' &&
+					(_value === undefined || _value === null || basicTypes.has(typeof _value)))
+			)
+				if (searchMatch(`${_value}`, value)) return true;
+			return false;
+		});
 </script>
 
 <script lang="ts">
@@ -70,11 +129,9 @@
 		KeyboardEventHandler,
 		MouseEventHandler,
 	} from 'svelte/elements';
-	import { slide } from 'svelte/transition';
-	import KeyListener from '../Global/KeyListener.svelte';
-	import ClickListener from '../Global/ClickListener.svelte';
 	import { isSnippet } from '../SoC/soc';
 	import { Icon, type IconSource } from '@steeze-ui/svelte-icon';
+	import { slide } from 'svelte/transition';
 
 	let {
 		class: className,
@@ -95,11 +152,8 @@
 		prefixIcon,
 		suffix,
 		suffixIcon,
-		options,
-		optionSnippet,
-		showAllOptions = false,
+		extras,
 		focusing = $bindable(false),
-		showDropdown = $bindable(false),
 		onclick,
 		oninput,
 		onfocus,
@@ -112,33 +166,40 @@
 		onmouseleave,
 
 		input = $bindable(),
+		container = $bindable(),
+
+		options: outerOptions,
+		optionSnippet,
+		searchValue = 'auto',
+		doSearch = (o, v) => defaultSearch(o, v, searchValue),
+		showAllOptions,
+		showDropdown = $bindable(),
+		selectedOpt = $bindable(),
+		selectedValue = $bindable(),
 
 		...props
-	}: Props = $props();
+	}: BasicProps & OptProps = $props();
 
-	const searchMatch = (a: string, b: string | undefined): boolean => {
-		return !b || a.toLowerCase().includes(b.toLowerCase());
-	};
-
-	const filteredOptions = $derived(
-		options
-			? showAllOptions
-				? [...options]
-				: options.filter((option) => {
-						if (typeof option === 'string') return searchMatch(option, value);
-						else return searchMatch(option[0], value) || searchMatch(option[1], value);
-					})
-			: [],
+	// 下拉列表
+	const options: readonly Opt[] = $derived(
+		(outerOptions ?? []).map((v) => {
+			if (Array.isArray(v)) {
+				if (v.length === 2) return v;
+				else return [v[0], v[0]];
+			} else return [v, v];
+		}),
 	);
+
 	const checker: ((value: string) => boolean) | null = $derived(
 		checkerLike
 			? typeof checkerLike == 'function'
 				? checkerLike
 				: (v) => checkerLike.test(v)
-			: options
-				? (v) => options.some((o) => (typeof o === 'string' ? o === v : o[0] === v))
+			: outerOptions
+				? (v) => options.some((o) => o[1] === v)
 				: null,
 	);
+
 	let isInit = $state(true); // 是否是初始状态, 在首次失去焦点或有任意输入时变为 false
 	$effect(() => {
 		// if (outerInvalid !== null) return; // 外部强制指定
@@ -146,13 +207,20 @@
 		else if (checker) invalid = !checker(value ?? '');
 	});
 
-	let container: HTMLDivElement | undefined = $state();
-</script>
+	$effect(() => {
+		if (value === undefined && selectedOpt === undefined) return;
+		if (value === selectedOpt?.[1]) return;
+		if (value !== undefined) selectedOpt = options.find((o) => o[1] === value);
+		if (selectedOpt !== undefined) value = selectedOpt[1];
+	});
+	$effect(() => {
+		if (selectedOpt) selectedValue = selectedOpt[0];
+	});
 
-{#if options}
-	<KeyListener handler={() => (showDropdown = false)} key="Escape" />
-	<ClickListener handler={() => (showDropdown = false)} exclude={container} />
-{/if}
+	const filteredOptions: readonly Opt[] = $derived(
+		showAllOptions ? options : doSearch(options, value),
+	);
+</script>
 
 <div class="space-y-2 {className}">
 	<!-- 标题 -->
@@ -205,7 +273,7 @@
 			{type}
 			onfocus={(e) => {
 				focusing = true;
-				if (options) showDropdown = true;
+				showDropdown = true;
 				if (onfocus) onfocus(e);
 			}}
 			onblur={(e) => {
@@ -246,30 +314,32 @@
 			</button>
 		{/if}
 
-		<!-- 下拉列表 -->
 		{#if showDropdown && filteredOptions.length > 0}
 			<ul
 				class="absolute right-0 top-8 z-50 mt-2 max-h-60 w-full origin-top-right overflow-y-auto rounded-md bg-white p-2 shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-900 dark:text-gray-100 dark:ring-gray-700"
 				transition:slide={{ duration: 80 }}
 			>
-				{#each filteredOptions as option}
-					{@const _value = typeof option === 'string' ? option : option[0]}
-					{@const _label = typeof option === 'string' ? option : option[1]}
+				{#each filteredOptions as [_value, _label]}
 					<button
 						class="flex w-full cursor-pointer px-3 py-2 text-left text-sm hover:bg-blue-100 dark:text-white dark:hover:bg-blue-600"
 						onclick={() => {
-							value = _value;
 							showDropdown = false;
+							value = _label;
+							selectedOpt = [_value, _label];
 						}}
 					>
 						{#if optionSnippet}
-							{@render optionSnippet(_label, _value)}
+							{@render optionSnippet(_value, _label)}
 						{:else}
 							{_label}
 						{/if}
 					</button>
 				{/each}
 			</ul>
+		{/if}
+
+		{#if extras}
+			{@render extras()}
 		{/if}
 	</div>
 	{#if isSnippet(hint)}
