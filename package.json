@@ -19,6 +19,7 @@
 		"test": "npm run test:unit -- --run"
 	},
 	"devDependencies": {
+		"@babel/parser": "^7.26.3",
 		"@steeze-ui/heroicons": "^2.4.2",
 		"@steeze-ui/material-design-icons": "^1.1.2",
 		"@steeze-ui/radix-icons": "^1.1.2",
