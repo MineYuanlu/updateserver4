@@ -70,6 +70,7 @@
 		"@tailwindcss/typography": "^0.5.15",
 		"@types/json-schema": "^7.0.15",
 		"ajv": "^8.17.1",
+		"ajv-formats": "^3.0.1",
 		"animejs": "^3.2.2",
 		"better-sqlite3": "^11.1.2",
 		"bitset": "^5.2.3",

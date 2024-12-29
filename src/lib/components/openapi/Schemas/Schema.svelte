@@ -16,6 +16,7 @@
 		component_openapi_schemas_schema__example_noname as m_example_noname,
 		component_openapi_schemas_schema__fill as m_fill,
 		component_openapi_schemas_schema__param_detail as m_param_detail,
+		component_openapi_schemas_schema__param_unset as m_param_unset,
 	} from '$lib/paraglide/messages';
 	import Modal from '$lib/components/Modal/Modal.svelte';
 	import InputJson from './InputJson.svelte';
@@ -127,14 +128,24 @@
 				</button>
 			</span>
 		{/if}
-		<span>
+		<button
+			class="font-mono font-medium text-black dark:text-white"
+			onclick={() => (detailModalOpen = true)}
+		>
+			[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_param_detail()}&nbsp;]
+		</button>
+		{#if !noValue}
 			<button
 				class="font-mono font-medium text-black dark:text-white"
-				onclick={() => (detailModalOpen = true)}
+				onclick={() => {
+					value = undefined;
+					noValue = true;
+					setInvalid?.(!!param.required);
+				}}
 			>
-				[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_param_detail()}&nbsp;]
+				[&nbsp;{m_param_unset()}&nbsp;]
 			</button>
-		</span>
+		{/if}
 	{/snippet}
 	{#key type}
 		{#if type === 'string'}

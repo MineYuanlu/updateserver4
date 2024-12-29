@@ -31,13 +31,11 @@
 		const params = ((op.parameters as ParameterObject[]) ?? []).map(
 			(p, idx) =>
 				[p.in, p.name, values[idx], noValues[idx]] satisfies [string, string, any, boolean],
-		); //[in,name,value]
-		// 先找出所有需要替换的路径参数
-		const pathParams = params.filter(([type]) => type === 'path');
+		); //[in,name,value,noValue]
 
 		url.pathname = makePath(
 			path,
-			pathParams
+			params
 				.filter(([type, _n, _v]) => type === 'path')
 				.map(([_, name, value, noValue]) => [name, noValue ? '' : value]),
 		);

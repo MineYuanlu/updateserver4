@@ -28,18 +28,32 @@
 	let innerValue: string = $state('');
 	let isInnerUpdate = $state(false);
 	$effect(() => {
-		console.log('effect1');
+		noValue = untrack(() => value) === undefined;
 		try {
-			isInnerUpdate = true;
 			value = JSON.parse(innerValue);
-			setInvalid?.(!validate(untrack(() => value)));
+			isInnerUpdate = true;
 		} catch (e) {
 			value = undefined;
 			setInvalid?.(true);
+			return;
+		}
+		try {
+			setInvalid?.(!validate(untrack(() => value)));
+		} catch (e) {
+			setInvalid?.(true);
+			console.error(
+				'Failed to validate',
+				e,
+				'schema',
+				untrack(() => schema),
+				'value',
+				untrack(() => value),
+			);
+			return;
 		}
 	});
 	$effect(() => {
-		console.log('effect2');
+		value; // trigger update
 		if (untrack(() => isInnerUpdate)) isInnerUpdate = false;
 		else innerValue = JSON.stringify(value, null, 2);
 	});

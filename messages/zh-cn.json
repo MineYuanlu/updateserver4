@@ -134,6 +134,7 @@
 	"component_openapi_schemas_schema__example_noname": "无名样例",
 	"component_openapi_schemas_schema__fill": "填充",
 	"component_openapi_schemas_schema__param_detail": "详情",
+	"component_openapi_schemas_schema__param_unset": "清空",
 
 	"enum_cnts__project_cnt_type_simple_pie": "简单饼图",
 	"enum_cnts__project_cnt_type_drilldown_pie": "下钻饼图",
