@@ -15,13 +15,15 @@
 		noValue = $bindable(false),
 		setInvalid,
 	}: {
-		param: ParameterObject;
+		param: Omit<ParameterObject, 'in'>;
 		schema: JSONSchema7;
 		type: JSONSchema7TypeName | 'unknown';
 		value: any;
 		noValue?: boolean;
 		setInvalid?: (invalid: boolean) => void;
 	} = $props();
+
+	console.log('schema', schema);
 
 	const validate = $derived(ajv.compile(schema));
 

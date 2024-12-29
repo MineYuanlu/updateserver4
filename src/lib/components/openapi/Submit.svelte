@@ -109,8 +109,10 @@
 	</div>
 </div>
 <div class="flex items-center gap-2">
-	<Button color="secondary">填充必填参数</Button>
-	<Button color="secondary">填充所有参数</Button>
+	{#if op.parameters || op.requestBody}
+		<Button color="secondary">填充必填参数</Button>
+		<Button color="secondary">填充所有参数</Button>
+	{/if}
 	<Button color="secondary">生成代码</Button>
 	<Button color="white" disabled={!isShiftDown && invalid.some((v) => v)}
 		>&nbsp;发送请求&nbsp;</Button

@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import type { OpenAPIObject } from 'openapi3-ts/oas30';
+	import type { OpenAPIObject, RequestBodyObject } from 'openapi3-ts/oas30';
 	import { notRef, type ApiParseCfg } from './utils';
 	import { toLowerHttpMethod, type HttpMethod } from '$lib/api/common';
 	import { methodToColor } from './methods';
@@ -22,6 +22,7 @@
 	import { json } from '@codemirror/lang-json';
 	import Submit from './Submit.svelte';
 	import { dev } from '$app/environment';
+	import TxtBtn from './TxtBtn.svelte';
 	let {
 		data,
 		cfg = {},
@@ -36,24 +37,36 @@
 	const op = $derived(data.paths[path][toLowerHttpMethod(method)]!);
 	const color = $derived(methodToColor[method]);
 
-	const paramIns = $derived.by(() => {
+	/** 参数所在位置的集合 */
+	const [paramIns, medias] = $derived.by(() => {
 		const ins = new Set<string>(); // 'query' | 'header' | 'path' | 'cookie' | 'body'
-		if (op.parameters) op.parameters.filter(notRef).forEach((p) => ins.add(p.in));
-		if (op.requestBody) ins.add('body');
-		return ins as Set<RuneTypes>;
+		const ms = new Set<string>();
+		if (op.parameters)
+			op.parameters.filter(notRef).forEach((p) => {
+				ins.add(p.in);
+				if (p.content) Object.keys(p.content).forEach((m) => ms.add(m));
+			});
+
+		if (op.requestBody) {
+			ins.add('body');
+			const c = (op.requestBody as RequestBodyObject).content;
+			if (c) Object.keys(c).forEach((m) => ms.add(m));
+		}
+
+		return [ins as Set<RuneTypes>, ms];
 	});
 
-	const paramLen = $derived(op.parameters?.length ?? 0);
-	const bodyLen = $derived(op.requestBody ? 1 : 0);
-	const pbLen = $derived(paramLen + bodyLen);
+	let media: string | undefined = $state(undefined);
 
-	const values: any[] = $state([]);
-	const noValues: boolean[] = $state([]);
-	const invalid: boolean[] = $state([]);
+	const values: any[] = $state([]); // 参数值
+	const noValues: boolean[] = $state([]); // 是否未输入
+	const invalid: boolean[] = $state([]); // 是否无效
 	$effect(() => {
-		resizeArr(values, pbLen, undefined);
-		resizeArr(noValues, pbLen, false);
-		resizeArr(invalid, pbLen, false);
+		// 修改数组长度对齐参数数量
+		const len = (op.parameters?.length ?? 0) + (op.requestBody ? 1 : 0);
+		resizeArr(values, len, undefined);
+		resizeArr(noValues, len, false);
+		resizeArr(invalid, len, false);
 	});
 </script>
 
@@ -87,11 +100,22 @@
 						<span class="mr-2 {color.t}">请求参数</span>
 						{#each runeTypes as type}{@render paramT(type)}{/each}
 					</h4>
+					{#if medias.size > 0}
+						<div>
+							<TxtBtn
+								label="媒体类型"
+								btn={Array.from(medias)}
+								class="mb-2 block"
+								bind:value={media}
+							/>
+						</div>
+					{/if}
 					{#if op.parameters}
 						{#each op.parameters as param, idx}
 							{#if notRef(param) && values.length > idx && noValues.length > idx && invalid.length > idx}
 								{#key param}
 									<Schema
+										{media}
 										{param}
 										bind:value={values[idx]}
 										bind:noValue={noValues[idx]}
@@ -101,8 +125,18 @@
 							{/if}
 						{/each}
 					{/if}
-					{#if op.requestBody}
-						TODO:BODY
+					{#if op.requestBody && values.length && noValues.length && invalid.length}
+						<Schema
+							{media}
+							param={{
+								name: 'Body',
+								in: 'body',
+								...op.requestBody,
+							}}
+							bind:value={values[values.length - 1]}
+							bind:noValue={noValues[values.length - 1]}
+							setInvalid={(v) => (invalid[values.length - 1] = v)}
+						/>
 					{/if}
 				</div>
 			{/if}

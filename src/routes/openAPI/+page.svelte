@@ -19,9 +19,11 @@
 {#snippet navbar()}
 	<OpList data={openAPI} bind:display />
 {/snippet}
-{#if display}
-	<Op data={openAPI} {display} />
-{/if}
+{#key display}
+	{#if display}
+		<Op data={openAPI} {display} />
+	{/if}
+{/key}
 
 <BindValue
 	bind="op"

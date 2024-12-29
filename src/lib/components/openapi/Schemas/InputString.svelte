@@ -2,7 +2,6 @@
 	import type { ParameterObject, SchemaObject } from 'openapi3-ts/oas30';
 	import Input from '$lib/components/Form/Input.svelte';
 	import { ajv } from './common';
-	import { Icon } from '@steeze-ui/svelte-icon';
 	import { XCircle } from '@steeze-ui/heroicons';
 
 	let {
@@ -11,13 +10,21 @@
 		value = $bindable(),
 		noValue = $bindable(false),
 		setInvalid,
+		setNoValue = $bindable(),
 	}: {
-		param: ParameterObject;
+		param: Omit<ParameterObject, 'in'>;
 		schema: SchemaObject;
 		value: string;
 		noValue?: boolean;
 		setInvalid?: (invalid: boolean) => void;
+		setNoValue?: () => void;
 	} = $props();
+
+	setNoValue = () => {
+		noValue = true;
+		if (!param.required) invalid = false;
+		value = '';
+	};
 	$effect(() => {
 		if (value === undefined) value = '';
 	});
@@ -45,9 +52,5 @@
 	options={schema.enum}
 	showAllOptions={enums ? enums.size < 10 : false}
 	suffixIcon={noValue ? undefined : XCircle}
-	onclick={() => {
-		noValue = true;
-		if (!param.required) invalid = false;
-		value = '';
-	}}
+	onclick={setNoValue}
 />

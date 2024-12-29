@@ -4,11 +4,7 @@
 </script>
 
 <script lang="ts">
-	import {
-		type ParameterObject,
-		type SchemaObject,
-		type SchemaObjectType,
-	} from 'openapi3-ts/oas30';
+	import type { ParameterObject, SchemaObject, SchemaObjectType } from 'openapi3-ts/oas30';
 	import Box from './Box.svelte';
 	import { remRef } from '../utils';
 	import {
@@ -27,20 +23,27 @@
 	import { theme } from '$lib/stores/theme';
 	import InputString from './InputString.svelte';
 	import type { JSONSchema7 } from 'json-schema';
+	import TxtBtn from '../TxtBtn.svelte';
+	import { makeFillValues } from './fillValues';
+	import type { RuneTypes } from '../param_rune';
 
 	let {
 		param,
 		value = $bindable(),
 		noValue = $bindable(false),
 		setInvalid,
+		media,
 	}: {
-		param: ParameterObject;
+		param: Omit<ParameterObject, 'in'> & { in: RuneTypes };
 		value?: any;
 		noValue?: boolean;
 		setInvalid?: (invalid: boolean) => void;
+		media?: string;
 	} = $props();
 
-	const schema = $derived(remRef(param.schema));
+	const mediaObj = $derived(media ? param.content?.[media] : undefined);
+
+	const schema = $derived(remRef(mediaObj?.schema ?? param.schema));
 
 	const types: (SchemaObjectType | typeof t_unknown)[] = $derived.by(() => {
 		const type = schema?.type;
@@ -55,42 +58,18 @@
 	// svelte-ignore state_referenced_locally
 	let type = $state(types[0]);
 
-	const defaults = $derived.by(() => {
-		const data: [string, any][] = [];
-		if (schema?.default) data.push([m_default(), schema.default]);
-		if (param.example) data.push([m_example_noname(), param.example]);
-		if (param.examples) {
-			if (Array.isArray(param.examples))
-				data.push(
-					...param.examples.map((v) => [m_example_noname(), v] satisfies [string | undefined, any]),
-				);
-			else data.push(...Object.entries(param.examples));
-		}
-		if (schema) {
-			if (schema.example) data.push([m_example_noname(), schema.example]);
-			if (schema.examples) {
-				if (Array.isArray(schema.examples))
-					data.push(
-						...schema.examples.map(
-							(v) => [m_example_noname(), v] satisfies [string | undefined, any],
-						),
-					);
-				else data.push(...Object.entries(schema.examples));
-			}
-		}
-		return data;
-	});
+	const fillValues = $derived(makeFillValues(param, schema, mediaObj));
 	// svelte-ignore state_referenced_locally
-	if (value === undefined && defaults.length > 0) value = defaults[0][1];
+	if (value === undefined && fillValues.length > 0) value = fillValues[0].value;
 	else noValue = true;
 
 	let fillModalOpen = $state(false);
 	let fillSelectedIndex = $state<number>(0);
 
 	const doFill = () => {
-		if (defaults.length < 1) return;
-		if (defaults.length === 1) {
-			value = defaults[0][1];
+		if (fillValues.length < 1) return;
+		if (fillValues.length === 1) {
+			value = fillValues[0].value;
 		} else {
 			fillModalOpen = true;
 			fillSelectedIndex = 0;
@@ -98,7 +77,17 @@
 	};
 
 	let detailModalOpen = $state(false);
+
+	let setNoValue: () => void = $state(() => {
+		value = undefined;
+		noValue = true;
+		setInvalid?.(!!param.required);
+	});
 </script>
+
+<!-- @component
+一个参数组件的代理, 根据参数类型渲染不同的输入组件及外层Box
+ -->
 
 <Box
 	name={param.name}
@@ -108,48 +97,33 @@
 	deprecated={param.deprecated}
 >
 	{#snippet extra1()}
-		<span class="text-xs">
-			<span>类型:&nbsp;[&nbsp;</span>{#each types as t, i}{#if i}<span
-						class="text-sm text-gray-500 dark:text-gray-400">&nbsp;,&nbsp;</span
-					>{/if}{#if t === type}<span
-						class="cursor-pointer font-mono font-medium text-black dark:text-white">{t}</span
-					>{:else}<button
-						class="font-mono text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-500"
-						onclick={() => (type = t)}
-						role="link">{t}</button
-					>{/if}{/each}<span>&nbsp;]</span>
-		</span>
+		<TxtBtn label="类型" btn={types} bind:value={type} />
 	{/snippet}
 	{#snippet extra2()}
-		{#if defaults.length}
-			<span>
-				<button class="font-mono font-medium text-black dark:text-white" onclick={doFill}>
-					[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_fill()}&nbsp;]
-				</button>
-			</span>
+		{#if fillValues.length}
+			<!-- `类型: [ string ]` -->
+			<TxtBtn
+				btn={fillValues.length === 1 && schema?.default ? fillValues[0].name : m_fill()}
+				onclick={doFill}
+			/>
 		{/if}
-		<button
-			class="font-mono font-medium text-black dark:text-white"
-			onclick={() => (detailModalOpen = true)}
-		>
-			[&nbsp;{defaults.length === 1 ? defaults[0][0] : m_param_detail()}&nbsp;]
-		</button>
+		<!-- `[ 填充 ]` / `[ 默认 ]` -->
+		<TxtBtn btn={m_param_detail()} onclick={() => (detailModalOpen = true)} />
 		{#if !noValue}
-			<button
-				class="font-mono font-medium text-black dark:text-white"
-				onclick={() => {
-					value = undefined;
-					noValue = true;
-					setInvalid?.(!!param.required);
-				}}
-			>
-				[&nbsp;{m_param_unset()}&nbsp;]
-			</button>
+			<!-- `[ 清空 ]` -->
+			<TxtBtn btn={m_param_unset()} onclick={setNoValue} />
 		{/if}
 	{/snippet}
 	{#key type}
 		{#if type === 'string'}
-			<InputString {param} schema={schema as SchemaObject} bind:value bind:noValue {setInvalid} />
+			<InputString
+				{param}
+				schema={schema as SchemaObject}
+				bind:value
+				bind:noValue
+				{setInvalid}
+				bind:setNoValue
+			/>
 		{:else}
 			<InputJson
 				{param}
@@ -169,20 +143,20 @@
 	title="选择样例值"
 	btns={['确定', '取消']}
 	onConfirm={() => {
-		value = defaults[fillSelectedIndex][1];
+		value = fillValues[fillSelectedIndex].value;
 	}}
 >
 	{#snippet body(toggle)}
 		<div class="flex flex-col gap-4 p-4">
 			<div class="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-				{#each defaults as [name], i}
+				{#each fillValues as { name, value: _value }, i}
 					<button
 						class="px-4 py-2 {fillSelectedIndex === i
 							? 'border-b-2 border-blue-500 font-medium text-blue-500'
 							: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}"
 						onclick={() => (fillSelectedIndex = i)}
 						ondblclick={() => {
-							value = defaults[fillSelectedIndex][1];
+							value = _value;
 							toggle(false);
 						}}
 					>
@@ -192,8 +166,21 @@
 			</div>
 
 			<div class="max-h-96 overflow-auto rounded p-4">
+				{#if fillValues[fillSelectedIndex].summary}
+					<div class="mb-1 truncate text-sm font-medium text-gray-600 dark:text-gray-300">
+						{fillValues[fillSelectedIndex].summary}
+					</div>
+				{/if}
+				{#if fillValues[fillSelectedIndex].description}
+					<div class="whitespace-pre-wrap break-all text-sm text-gray-500 dark:text-gray-400">
+						{fillValues[fillSelectedIndex].description}
+					</div>
+				{/if}
 				<CodeMirror
-					value={JSON.stringify(defaults[fillSelectedIndex][1], null, 2)}
+					class={fillValues[fillSelectedIndex].summary || fillValues[fillSelectedIndex].description
+						? 'mt-4'
+						: ''}
+					value={JSON.stringify(fillValues[fillSelectedIndex].value, null, 2)}
 					lang={CodeMirrorJson()}
 					theme={$theme === 'dark' ? CodeMirrorOneDark : undefined}
 					readonly

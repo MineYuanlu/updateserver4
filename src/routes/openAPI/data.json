@@ -99,6 +99,13 @@
 						"required": false,
 						"explode": true,
 						"example": "pending",
+						"examples": {
+							"pending": {
+								"value": "pending",
+								"summary": "Pending status",
+								"description": "The pet is pending"
+							}
+						},
 						"schema": {
 							"type": "string",
 							"default": "available",
