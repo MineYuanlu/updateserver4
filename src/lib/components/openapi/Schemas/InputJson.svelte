@@ -35,7 +35,6 @@
 			value = JSON.parse(innerValue);
 			isInnerUpdate = true;
 		} catch (e) {
-			value = undefined;
 			setInvalid?.(true);
 			return;
 		}

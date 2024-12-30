@@ -1,0 +1,2 @@
+uanlu.li","uuids":["b92abe06-17e9-4a19-84a1-51d4da5eb5d2"],"namespace":"production/collection","need_params":false,"argus_version":"","cos_task":"","env":"prod","ignore_cache":false,"enable_profile":true,"cos_task_label":"无"}' \
+--insecure > resp.json

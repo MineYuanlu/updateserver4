@@ -133,8 +133,12 @@
 	"component_openapi_schemas_schema__default": "默认值",
 	"component_openapi_schemas_schema__example_noname": "无名样例",
 	"component_openapi_schemas_schema__fill": "填充",
+	"component_openapi_schemas_schema__fill_fake": "模拟",
+	"component_openapi_schemas_schema__fill_select": "选择",
 	"component_openapi_schemas_schema__param_detail": "详情",
 	"component_openapi_schemas_schema__param_unset": "清空",
+	"component_openapi_schemas_schema__fill_fake_all": "模拟所有",
+	"component_openapi_schemas_schema__fill_fake_required": "模拟必填",
 
 	"enum_cnts__project_cnt_type_simple_pie": "简单饼图",
 	"enum_cnts__project_cnt_type_drilldown_pie": "下钻饼图",

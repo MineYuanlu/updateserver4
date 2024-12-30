@@ -1,70 +1,32 @@
 <script module lang="ts">
-	function makePath(path: string, params: [string, any][]) {
-		const replaceIdx: [number, number, any][] = [];
-		params.forEach(([name, value]) => {
-			const idx = path.indexOf(`{${name}}`);
-			if (idx === -1) return;
-			if (replaceIdx.find((v) => v[0] === idx)) return;
-			replaceIdx.push([idx, idx + name.length, value]);
-		});
-		replaceIdx.sort((a, b) => a[0] - b[0]);
+	import { javascript as CodeMirrorJavaScript } from '@codemirror/lang-javascript';
+	import { java as CodeMirrorJava } from '@codemirror/lang-java';
+	import { python as CodeMirrorPython } from '@codemirror/lang-python';
+	import { go as CodeMirrorGo } from '@codemirror/lang-go';
+	import type { LanguageSupport } from '@codemirror/language';
 
-		return replaceIdx.reduce(
-			([path, offset], [start, end, value]) => {
-				value = String(value);
-				path = path.slice(0, offset + start) + value + path.slice(offset + end + 2);
-				offset = offset - (end - start + 2) + value.length;
-				return [path, offset] satisfies [string, number];
-			},
-			[path, 0] satisfies [string, number],
-		)[0];
-	}
-	/** 生成请求信息 */
-	function makeReq(
-		href: string,
-		op: OperationObject,
-		values: any[],
-		noValues: boolean[],
-		path: string,
-	) {
-		const url = new URL(href);
-		const params = ((op.parameters as ParameterObject[]) ?? []).map(
-			(p, idx) =>
-				[p.in, p.name, values[idx], noValues[idx]] satisfies [string, string, any, boolean],
-		); //[in,name,value,noValue]
-
-		url.pathname = makePath(
-			path,
-			params
-				.filter(([type, _n, _v]) => type === 'path')
-				.map(([_, name, value, noValue]) => [name, noValue ? '' : value]),
-		);
-		url.search = new URLSearchParams(
-			params
-				.filter(([type, _n, _v, noValue]) => type === 'query' && !noValue)
-				.map(([_, name, value]) => [name, value]),
-		).toString();
-		url.hash = '';
-
-		let headers: [string, string][] = params
-			.filter(([type, _n, _v, noValue]) => type === 'header' && !noValue)
-			.map(([_, name, value]) => [name, value]);
-		const cookie = params
-			.filter(([type, _n, _v, noValue]) => type === 'cookie' && !noValue)
-			.map(([_, name, value]) => `${name}=${value}`)
-			.join('; ');
-		if (cookie) headers.push(['Cookie', cookie]);
-
-		return { url: url.toString(), headers };
-	}
+	const langs: Record<CodeGenType, LanguageSupport | null> = {
+		JavaScript: CodeMirrorJavaScript(),
+		Java: CodeMirrorJava(),
+		Python: CodeMirrorPython(),
+		Go: CodeMirrorGo(),
+		cURL: null,
+	};
 </script>
 
 <script lang="ts">
 	import { page } from '$app/stores';
-	import type { OperationObject, ParameterLocation, ParameterObject } from 'openapi3-ts/oas30';
+	import type { OperationObject, ParameterObject } from 'openapi3-ts/oas30';
 	import Button from '../Form/Button.svelte';
 	import KeyDownUpListener from '../Global/KeyDownUpListener.svelte';
+	import Modal from '../Modal/Modal.svelte';
+	import { codeGenSelectType, codeGenTypes, makeCode, makeReq, type CodeGenType } from './submits';
+	import CodeMirror from 'svelte-codemirror-editor';
+	import { json as CodeMirrorJson } from '@codemirror/lang-json';
+	import { oneDark as CodeMirrorOneDark } from '@codemirror/theme-one-dark';
+	import { theme } from '$lib/stores/theme';
 	let {
+		media,
 		values,
 		noValues,
 		invalid,
@@ -72,7 +34,9 @@
 		method,
 		color,
 		op,
+		doFastFill,
 	}: {
+		media: string | undefined;
 		values: any[];
 		noValues: boolean[];
 		invalid: boolean[];
@@ -80,11 +44,13 @@
 		method: string;
 		color: any;
 		op: OperationObject;
+		doFastFill: () => void;
 	} = $props();
 
-	const { url, headers } = $derived(makeReq($page.url.href, op, values, noValues, path));
+	const reqs = $derived(makeReq(method, $page.url.href, media, op, values, noValues, path));
 
 	let isShiftDown = $state(false);
+	let codeModalOpen = $state(false);
 </script>
 
 <div class="flex flex-col gap-2">
@@ -96,12 +62,12 @@
 
 			<div class="flex flex-col gap-1 text-sm">
 				<div class="flex items-center gap-2">
-					<span class="font-medium {color.t}">{method}:</span>
-					<span class="whitespace-pre-wrap break-all font-mono">{url}</span>
+					<span class="font-medium {color.t}">{reqs.method}:</span>
+					<span class="whitespace-pre-wrap break-all font-mono">{reqs.url}</span>
 				</div>
-				{#if headers.length}
+				{#if reqs.headers.length}
 					<span class="rounded-md border border-gray-200 p-2 font-mono dark:border-gray-800">
-						<pre>{headers.map(([k, v]) => `${k}: ${v}`).join('\n')}</pre>
+						<pre>{reqs.headers.map(([k, v]) => `${k}: ${v}`).join('\n')}</pre>
 					</span>
 				{/if}
 			</div>
@@ -110,12 +76,41 @@
 </div>
 <div class="flex items-center gap-2">
 	{#if op.parameters || op.requestBody}
-		<Button color="secondary">填充必填参数</Button>
-		<Button color="secondary">填充所有参数</Button>
+		<Button color="secondary" onclick={doFastFill}>填充参数</Button>
 	{/if}
-	<Button color="secondary">生成代码</Button>
+	<Button color="secondary" onclick={() => (codeModalOpen = true)}>生成代码</Button>
 	<Button color="white" disabled={!isShiftDown && invalid.some((v) => v)}
 		>&nbsp;发送请求&nbsp;</Button
 	>
 </div>
 <KeyDownUpListener key="Shift" bind:down={isShiftDown} />
+
+<!-- 生成代码 -->
+<Modal bind:open={codeModalOpen} title="生成代码" btns={['确定', '取消']}>
+	{#snippet body()}
+		<div class="flex flex-col gap-4 p-4">
+			<div class="flex gap-2 border-b border-gray-200 dark:border-gray-700">
+				{#each codeGenTypes as type}
+					<button
+						class="px-4 py-2 {$codeGenSelectType === type
+							? 'border-b-2 border-blue-500 font-medium text-blue-500'
+							: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'}"
+						onclick={() => ($codeGenSelectType = type)}
+					>
+						{type}
+					</button>
+				{/each}
+			</div>
+
+			<div class="max-h-96 overflow-auto rounded p-4">
+				<CodeMirror
+					value={makeCode(reqs, $codeGenSelectType)}
+					lang={langs[$codeGenSelectType]}
+					theme={$theme === 'dark' ? CodeMirrorOneDark : undefined}
+					readonly
+					editable={false}
+				/>
+			</div>
+		</div>
+	{/snippet}
+</Modal>

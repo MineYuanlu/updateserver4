@@ -11,7 +11,7 @@
 </script>
 
 <script lang="ts">
-	import type { OpenAPIObject, RequestBodyObject } from 'openapi3-ts/oas30';
+	import type { OpenAPIObject, ParameterObject, RequestBodyObject } from 'openapi3-ts/oas30';
 	import { notRef, type ApiParseCfg } from './utils';
 	import { toLowerHttpMethod, type HttpMethod } from '$lib/api/common';
 	import { methodToColor } from './methods';
@@ -61,13 +61,20 @@
 	const values: any[] = $state([]); // 参数值
 	const noValues: boolean[] = $state([]); // 是否未输入
 	const invalid: boolean[] = $state([]); // 是否无效
+	const doFastFills: (() => void)[] = $state([]); // 快速填充
 	$effect(() => {
 		// 修改数组长度对齐参数数量
 		const len = (op.parameters?.length ?? 0) + (op.requestBody ? 1 : 0);
 		resizeArr(values, len, undefined);
 		resizeArr(noValues, len, false);
 		resizeArr(invalid, len, false);
+		resizeArr(doFastFills, len, () => {});
 	});
+
+	const params = $derived([
+		...(op.parameters ?? []).filter(notRef),
+		...(op.requestBody ? [{ name: 'Body', in: 'body', ...op.requestBody }] : []),
+	] as (Omit<ParameterObject, 'in'> & { in: RuneTypes })[]);
 </script>
 
 <div class="flex flex-col gap-2 rounded-md border p-0 {color.border}">
@@ -110,9 +117,9 @@
 							/>
 						</div>
 					{/if}
-					{#if op.parameters}
-						{#each op.parameters as param, idx}
-							{#if notRef(param) && values.length > idx && noValues.length > idx && invalid.length > idx}
+					{#if params.length && values.length >= params.length && noValues.length >= params.length && invalid.length >= params.length && doFastFills.length >= params.length}
+						{#each params as param, idx}
+							{#if notRef(param)}
 								{#key param}
 									<Schema
 										{media}
@@ -120,29 +127,29 @@
 										bind:value={values[idx]}
 										bind:noValue={noValues[idx]}
 										setInvalid={(v) => (invalid[idx] = v)}
+										bind:doFastFill={doFastFills[idx]}
 									/>
 								{/key}
 							{/if}
 						{/each}
 					{/if}
-					{#if op.requestBody && values.length && noValues.length && invalid.length}
-						<Schema
-							{media}
-							param={{
-								name: 'Body',
-								in: 'body',
-								...op.requestBody,
-							}}
-							bind:value={values[values.length - 1]}
-							bind:noValue={noValues[values.length - 1]}
-							setInvalid={(v) => (invalid[values.length - 1] = v)}
-						/>
-					{/if}
 				</div>
 			{/if}
 			<div class="w-[1px] bg-gray-200 dark:bg-gray-700"></div>
 			<div class="flex w-full flex-col gap-2">
-				<Submit {op} {values} {noValues} {invalid} {path} {method} {color} />
+				<Submit
+					{media}
+					{op}
+					{values}
+					{noValues}
+					{invalid}
+					{path}
+					{method}
+					{color}
+					doFastFill={() => {
+						doFastFills.forEach((v) => v?.());
+					}}
+				/>
 			</div>
 		</div>
 	</div>
