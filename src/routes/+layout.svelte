@@ -3,7 +3,7 @@
 	import { ParaglideJS } from '@inlang/paraglide-sveltekit';
 	import '../app.css';
 	import * as m from '$lib/paraglide/messages.js';
-	import { navbar, settings } from '$lib/stores/common';
+	import { navbar, overBoxs, settings } from '$lib/stores/common';
 	import Header from './Header.svelte';
 	import NotificationList from '$lib/components/Notifications/NotificationList.svelte';
 	import { slide } from 'svelte/transition';
@@ -49,6 +49,11 @@
 				{m.copyright()}
 			</footer>
 		</div>
+		<div id="overBox" class="fixed left-0 top-0 z-50 contents size-0">
+			{#each Object.values($overBoxs) as overBox}
+				{@render overBox()}
+			{/each}
+		</div>
 	</ParaglideJS>
 	<NotificationList />
 </div>
@@ -56,5 +61,8 @@
 <style>
 	:global(html) {
 		scroll-behavior: smooth;
+	}
+	#overBox > :global(*) {
+		position: fixed;
 	}
 </style>

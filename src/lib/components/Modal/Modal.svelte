@@ -111,7 +111,7 @@
 	}
 </script>
 
-<Openable bind:open {controls} {preOpen} {postOpen} {preClose} {postClose}>
+<Openable bind:open {controls} {preOpen} {postOpen} {preClose} {postClose} overBox>
 	<div class="contents" aria-labelledby="modal-title" role="dialog" aria-modal="true">
 		<!--
       Background backdrop, show/hide based on modal state.

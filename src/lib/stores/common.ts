@@ -20,6 +20,13 @@ export const settings = writable<Settings>({});
 /** 添加全局设置菜单 */
 export const setSettings = (v: Setting) => setAValue(settings, v);
 
+export type OverBox = Snippet<[]>;
+export type OverBoxs = Record<string, OverBox>;
+/** 全局覆盖层 */
+export const overBoxs = writable<OverBoxs>({});
+/** 添加全局覆盖层 */
+export const setOverBoxs = (v: OverBox) => setAValue(overBoxs, v);
+
 const setAValue = <T>(all: Writable<Record<string, T>>, value: T) => {
 	onMount(() => {
 		let id: string | undefined = undefined;

@@ -17,6 +17,9 @@
 		preClose?: PreFunc;
 		/** 关闭后回调 */
 		postClose?: PostFunc;
+
+		/** 是否脱离当前页面布局, 脱离后, 打开时会显示在页面最上层 */
+		overBox?: boolean;
 	};
 </script>
 
@@ -24,6 +27,7 @@
 	import type { Snippet } from 'svelte';
 	import { isComponent, isSnippet, type SoC } from '../SoC/soc';
 	import Button from '../Form/Button.svelte';
+	import OverBox from '../Global/OverBox.svelte';
 
 	let {
 		open: outerOpen = $bindable(true),
@@ -36,6 +40,8 @@
 		postOpen,
 		preClose,
 		postClose,
+
+		overBox,
 	}: OpenableProps & {
 		/** 子组件 */
 		children: Snippet;
@@ -79,5 +85,9 @@
 {/if}
 
 {#if open}
-	{@render children()}
+	{#if overBox}
+		<OverBox {children} />
+	{:else}
+		{@render children()}
+	{/if}
 {/if}
