@@ -13,7 +13,9 @@
 	"copyright": "版权所有 © 2024 Update Server 4. 保留所有权利. ",
 	"menu_project": "项目",
 	"menu_admin": "管理",
+	"menu_tag": "标签",
 	"menu_api": "接口",
+	"menu_dev": "开发",
 	"api__request_failed_title": "请求失败",
 	"api__common_invalid_field": "无效字段: {field}",
 	"api__common_invalid_field_with_why": "无效字段: {field}, {why}",
@@ -185,6 +187,8 @@
 	"check_version_cmp_args__s_key_too_long": "特殊字符参数的键长度不能超过{max}个字符",
 	"check_version_cmp_args__s_value_bad_type": "特殊字符参数的值必须为数字",
 	"check_version_cmp_args__s_value_out_of_range": "特殊字符参数的值过大",
+
+	"zod_failed_to_parse_field": "无法解析 '{field}': {errors}",
 
 	"zod_invalid_type_undefined": "必填项",
 	"zod_invalid_type": "预期类型为 {expected}，但收到的是 {received}",

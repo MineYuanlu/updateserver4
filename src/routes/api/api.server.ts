@@ -3,10 +3,17 @@ import type * as Kit from '@sveltejs/kit';
 import Cookie from 'cookie';
 import { apiResp, failure } from './common.server';
 import errorMap from '$lib/zod/error_map';
-import type { OpenAPIV3 } from 'openapi-types';
+import type {
+	OperationObject,
+	ParameterObject,
+	ResponsesObject,
+	HeaderObject,
+	ResponseObject,
+} from 'openapi3-ts/oas30';
 // import { zodToJsonSchema } from 'zod-to-json-schema';
 import { generateSchema } from '@anatine/zod-openapi';
 import type { COOKIE_VALUES } from '$lib/common/cookies';
+import { zod_failed_to_parse_field } from '$lib/paraglide/messages';
 
 /**
  * 参数定义:
@@ -49,14 +56,16 @@ type SuccessFunc<R extends Success, X> =
 type ParamsKey = 'query' | 'path' | 'header' | 'cookie' | 'body';
 
 /** 解析后的请求参数 */
+type ParsedParams<T extends Params> = {
+	[P in keyof T]: T[P] extends readonly [z.ZodType, string]
+		? z.output<T[P][0]>
+		: T[P] extends z.ZodType
+			? z.output<T[P]>
+			: never;
+};
+/** 解析后的请求参数 */
 type ParsedData<T extends Record<string, any>> = {
-	[K in ParamsKey]: T[K] extends Params
-		? {
-				[P in keyof T[K]]: T[K][P] extends readonly [z.ZodType, string]
-					? z.output<T[K][P][0]>
-					: z.output<T[K][P]>;
-			}
-		: never;
+	[K in ParamsKey]: T[K] extends Params ? ParsedParams<T[K]> : never;
 };
 type UnionToIntersection<U> = (U extends any ? (x: U) => any : never) extends (x: infer I) => any
 	? I
@@ -289,39 +298,20 @@ class API<
 		const resp_code = this._data.success?.code!;
 		const resp_status = this._data.success?.status!;
 		const flat_args = this._data.flatArgs ?? false;
-		const set_value: (
-			d: any,
-			p: ParamsKey,
-			g: (n: string) => string | undefined,
-		) => Promise<void> = async (data, pk, getter) => {
-			const params = this._data[pk];
-			if (!params) return;
-			for (const name in params) {
-				const param = params[name];
-				const type = Array.isArray(param) ? param[0] : param;
-				const getter_name = Array.isArray(param) ? param[1] : name;
-				const raw = getter(getter_name);
-				const value = await type.safeParseAsync(raw, { errorMap });
-				if (value.success) data[name] = value.data;
-				else {
-					failure(value.error.format()._errors.join('\n'));
-				}
-			}
-		};
 		if (flat_args)
 			return (async (req: Kit.RequestEvent) => {
 				const data: any = {};
-				await set_value(data, 'query', (n) => req.url.searchParams.get(n) ?? undefined);
-				await set_value(data, 'path', (n) => req.params[n] ?? undefined);
-				await set_value(data, 'header', (n) => req.request.headers.get(n) ?? undefined);
+				await this.set_value(data, 'query', (n) => req.url.searchParams.get(n) ?? undefined);
+				await this.set_value(data, 'path', (n) => req.params[n] ?? undefined);
+				await this.set_value(data, 'header', (n) => req.request.headers.get(n) ?? undefined);
 				if (this._data.cookie) {
 					const raw = req.request.headers.get('cookie');
 					const cookies = Cookie.parse(raw ?? '');
-					await set_value(data, 'cookie', (n) => cookies[n] ?? undefined);
+					await this.set_value(data, 'cookie', (n) => cookies[n] ?? undefined);
 				}
 				if (this._data.body) {
 					const body = await req.request.json();
-					await set_value(data, 'body', (n) => body[n] ?? undefined);
+					await this.set_value(data, 'body', (n) => body[n] ?? undefined);
 				}
 				return await handler(req, data, ((d: any, h?: any) => {
 					return apiResp(d, resp_code, undefined, resp_status, h);
@@ -332,13 +322,13 @@ class API<
 			return (async (req: Kit.RequestEvent) => {
 				const data: any = {};
 
-				await set_value(
+				await this.set_value(
 					(data.query = {}),
 					'query',
 					(n) => req.url.searchParams.get(n) ?? undefined,
 				);
-				await set_value((data.path = {}), 'path', (n) => req.params[n] ?? undefined);
-				await set_value(
+				await this.set_value((data.path = {}), 'path', (n) => req.params[n] ?? undefined);
+				await this.set_value(
 					(data.header = {}),
 					'header',
 					(n) => req.request.headers.get(n) ?? undefined,
@@ -346,11 +336,11 @@ class API<
 				if (this._data.cookie) {
 					const raw = req.request.headers.get('cookie');
 					const cookies = Cookie.parse(raw ?? '');
-					await set_value((data.cookie = {}), 'cookie', (n) => cookies[n] ?? undefined);
+					await this.set_value((data.cookie = {}), 'cookie', (n) => cookies[n] ?? undefined);
 				}
 				if (this._data.body) {
 					const body = await req.request.json();
-					await set_value((data.body = {}), 'body', (n) => body[n] ?? undefined);
+					await this.set_value((data.body = {}), 'body', (n) => body[n] ?? undefined);
 				}
 				return await handler(req, data, ((d: any, h?: any) => {
 					return apiResp(d, resp_code, undefined, resp_status, h);
@@ -358,11 +348,11 @@ class API<
 			}) as any;
 	}
 
-	public openAPI(): OpenAPIV3.OperationObject {
+	public openAPI(): OperationObject {
 		const toParam = (
 			params: Params | undefined,
 			pos: 'query' | 'path' | 'header' | 'cookie',
-		): OpenAPIV3.ParameterObject[] => {
+		): ParameterObject[] => {
 			if (!params) return [];
 			return Object.entries(params).map(([name, param]) => {
 				const type: z.ZodType = Array.isArray(param) ? param[0] : param;
@@ -410,10 +400,10 @@ class API<
 					}
 				: undefined,
 			responses: (() => {
-				const resps: OpenAPIV3.ResponsesObject = {};
+				const resps: ResponsesObject = {};
 				if (this._data.success) {
 					// resp[this._data.success.status] =
-					const resp: OpenAPIV3.ResponseObject = {
+					const resp: ResponseObject = {
 						description: (this._data.success.data as z.ZodObject<any>).description ?? '',
 						content: {
 							'application/json': {
@@ -424,7 +414,7 @@ class API<
 					if (this._data.success.header) {
 						resp.headers = {};
 						for (const name in this._data.success.header) {
-							resp.headers[name] = {} satisfies OpenAPIV3.HeaderObject;
+							resp.headers[name] = {} satisfies HeaderObject;
 						}
 					}
 					resps[this._data.success.status] = resp;
@@ -484,6 +474,48 @@ class API<
 	}
 	public $flatten(): API<{ [K in keyof T]: T[K] }> {
 		throw new Error('type only');
+	}
+
+	/**
+	 * 从请求中获取参数
+	 * @param data 存储参数的对象
+	 * @param pk 参数类型
+	 * @param getter 获取值的函数
+	 * @param onFail 特定解析失败时的回调函数
+	 */
+	private async set_value(
+		data: any,
+		pk: ParamsKey,
+		getter: (n: string) => string | undefined,
+		onFail: (name: string, err: z.ZodError) => void = (field, err) => {
+			failure(
+				zod_failed_to_parse_field({
+					field,
+					errors: err.format()._errors.join('\n'),
+				}),
+			);
+		},
+	): Promise<void> {
+		const params = this._data[pk];
+		if (!params) return;
+		for (const name in params) {
+			const param = params[name];
+			const type: z.ZodType = Array.isArray(param) ? param[0] : param;
+			const getter_name = Array.isArray(param) ? param[1] : name;
+			const raw = getter(getter_name);
+			const value = await type.safeParseAsync(raw, { errorMap });
+			if (value.success) data[name] = value.data;
+			else onFail(name, value.error);
+		}
+	}
+	public async parseQuery(
+		raw: URLSearchParams,
+	): Promise<
+		'query' extends keyof T ? (T['query'] extends Params ? ParsedParams<T['query']> : {}) : {}
+	> {
+		const parsed: any = {};
+		await this.set_value(parsed, 'query', (n) => raw.get(n) ?? undefined);
+		return parsed;
 	}
 }
 

@@ -29,6 +29,7 @@ import { isURL } from '$lib/utils/url';
 import { z } from 'zod';
 import { makeEnum } from './enum';
 import { zUS4ID, type US4ID } from './id';
+import { langPrefix } from '$lib/i18n';
 
 export const projectNameReservedWords = ['create'] as const;
 
@@ -241,7 +242,7 @@ export const UserRole = makeEnum({
 } as const);
 
 /** 获取项目永久(const)链接 */
-export const getClinkByProjectId = (projectId: ProjId) => `/project/${projectId}`;
+export const getClinkByProjectId = (projectId: ProjId) => `${langPrefix()}/project/${projectId}`;
 /** 获取项目短(short)链接 */
 export const getSlinkByProjectName = (projectName: string) =>
 	`/p/${encodeURIComponent(projectName)}`;

@@ -1,4 +1,4 @@
-import { and, desc, eq, exists, gte, inArray, lt, ne, or, sql } from 'drizzle-orm';
+import { and, desc, eq, exists, gte, inArray, lt, ne, or, sql, like } from 'drizzle-orm';
 import { db } from './index';
 import * as _t from './schema';
 import { defaultWebRole } from '$lib/common/user';
@@ -252,30 +252,40 @@ export async function createProject(
 		.execute();
 }
 
+const projectBasic = {
+	id: _t.project.id,
+	name: _t.project.name,
+	oid: _t.project.owner,
+	owner: _t.user.name,
+	version: _t.project.version,
+	desc: _t.project.desc,
+	visibility: _t.project.visibility,
+	visits: _t.timeCnts.value,
+};
+
 /**
  * 列出项目
  * @param limit 条数
  * @param offset 偏移量
+ * @param user 用户ID
+ * @param minRole 最小权限
  */
-export async function listProjects(offset: number, limit: number) {
+export async function listProjects(
+	offset: number,
+	limit: number,
+	user?: _t.User['id'] | null | undefined,
+	minRole: _t.ProjectMember['role'] = UserRole.guest.val,
+) {
 	return await db
-		.select({
-			id: _t.project.id,
-			name: _t.project.name,
-			oid: _t.project.owner,
-			owner: _t.user.name,
-			version: _t.project.version,
-			desc: _t.project.desc,
-			visibility: _t.project.visibility,
-			visits: _t.timeCnts.value,
-		})
+		.select(projectBasic)
 		.from(_t.project)
-		.leftJoin(_t.user, eq(_t.project.owner, _t.user.id))
+		.innerJoin(_t.user, eq(_t.project.owner, _t.user.id))
 		.leftJoin(
 			_t.timeCnts,
 			and(eq(sql`${_t.project.id}||'/v'`, _t.timeCnts.name), eq(_t.timeCnts.unit, -1)),
 		)
 		.orderBy(_t.project.nameKey)
+		.where(_proj_check_perm(user, minRole))
 		.limit(limit)
 		.offset(offset)
 		.execute();
@@ -501,6 +511,34 @@ export async function listProjectUsers(id: _t.Project['id']) {
 }
 
 /**
+ * 更新项目用户权限
+ * @param pid 项目ID
+ * @param uid 用户ID
+ * @param role 权限级别
+ */
+export async function updateProjectUserRole(
+	pid: _t.Project['id'],
+	uid: _t.User['id'],
+	role: _t.ProjectMember['role'] | undefined,
+) {
+	if (role === undefined) {
+		await db
+			.delete(_t.projectMember)
+			.where(and(eq(_t.projectMember.pid, pid), eq(_t.projectMember.uid, uid)))
+			.execute();
+	} else {
+		await db
+			.insert(_t.projectMember)
+			.values({ pid, uid, role })
+			.onConflictDoUpdate({
+				target: [_t.projectMember.pid, _t.projectMember.uid],
+				set: { role },
+			})
+			.execute();
+	}
+}
+
+/**
  * 获取总量计数(时间类计数)
  * @param key 要获取的键
  * @returns 计数
@@ -530,5 +568,87 @@ export async function getSubCounts(key: string) {
 		})
 		.from(_t.timeCnts)
 		.where(and(eq(_t.timeCnts.name, key), ne(_t.timeCnts.unit, -1)))
+		.execute();
+}
+
+/**
+ * 获取热门标签列表
+ * @param limit 返回数量限制
+ */
+export async function getHotTags(limit: number = 20) {
+	return await db
+		.select({
+			name: _t.projectTag.tag,
+			count: sql<number>`count(*)`.as('count'),
+		})
+		.from(_t.projectTag)
+		.groupBy(_t.projectTag.tag)
+		.orderBy(sql`count(*) DESC`)
+		.limit(limit)
+		.execute();
+}
+
+/**
+ * 获取标签列表(分页)
+ * @param offset 偏移量
+ * @param limit 每页数量
+ * @param search 搜索关键词
+ */
+export async function listTags(offset: number, limit: number, search?: string) {
+	let query = db
+		.select({
+			name: _t.projectTag.tag,
+			count: sql<number>`count(DISTINCT ${_t.projectTag.pid})`.as('count'),
+		})
+		.from(_t.projectTag)
+		.groupBy(_t.projectTag.tag);
+
+	if (search) {
+		query = query.where(like(_t.projectTag.tag, `%${search}%`)) as any;
+	}
+
+	return await query
+		.orderBy(sql`count(*) DESC`)
+		.limit(limit)
+		.offset(offset)
+		.execute();
+}
+
+/**
+ * 获取标签下的项目列表
+ * @param tag 标签
+ * @param offset 偏移量
+ * @param limit 每页数量
+ * @param search 搜索关键词
+ * @param user 用户ID
+ * @param minRole 最小权限
+ */
+export async function listTagProjects(
+	tag: string,
+	offset: number,
+	limit: number,
+	search: string | undefined,
+	user: _t.User['id'] | null | undefined,
+	minRole: _t.ProjectMember['role'] = UserRole.guest.val,
+) {
+	return await db
+		.select(projectBasic)
+		.from(_t.projectTag)
+		.innerJoin(_t.project, eq(_t.projectTag.pid, _t.project.id))
+		.innerJoin(_t.user, eq(_t.project.owner, _t.user.id))
+		.leftJoin(
+			_t.timeCnts,
+			and(eq(sql`${_t.project.id}||'/v'`, _t.timeCnts.name), eq(_t.timeCnts.unit, -1)),
+		)
+		.where(
+			and(
+				eq(_t.projectTag.tag, tag),
+				search ? like(_t.project.name, `%${search}%`) : undefined,
+				_proj_check_perm(user, minRole),
+			),
+		)
+		.orderBy(desc(_t.project.createdAt))
+		.limit(limit)
+		.offset(offset)
 		.execute();
 }

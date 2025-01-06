@@ -15,7 +15,7 @@
 	const { class: nav_class, ...nav_attr } = $derived(($navbar ? $navbar[1] : undefined) ?? {});
 </script>
 
-<div class:dark={$theme === 'dark'}>
+<div class:dark={$theme === 'dark' || data?.theme === 'dark'}>
 	<ParaglideJS {i18n}>
 		<div class="flex h-screen flex-col">
 			<!-- Header -->

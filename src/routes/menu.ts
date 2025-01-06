@@ -1,7 +1,14 @@
+import { dev } from '$app/environment';
+import type { UserSession } from '$lib/common/user';
 import type { i18nMsgFunc } from '$lib/i18n';
 import * as m from '$lib/paraglide/messages.js';
 
-export type Menu = { name: i18nMsgFunc; path: string; match?: string | RegExp };
+export type Menu = {
+	name: i18nMsgFunc;
+	path: string;
+	match?: string | RegExp;
+	check?: (data: { user: UserSession | undefined | null }) => boolean;
+};
 
 export const menus: Menu[] = [
 	{
@@ -13,6 +20,12 @@ export const menus: Menu[] = [
 		name: m.menu_admin,
 		path: '/admin',
 		match: '/admin',
+		check: ({ user }) => user?.id !== undefined,
+	},
+	{
+		name: m.menu_tag,
+		path: '/tag',
+		match: '/tag',
 	},
 	{
 		name: m.menu_api,
@@ -20,9 +33,10 @@ export const menus: Menu[] = [
 		match: '/openAPI',
 	},
 	{
-		name: m.name,
+		name: m.menu_dev,
 		path: '/demo/components',
 		match: '/demo/components',
+		check: () => dev,
 	},
 ];
 

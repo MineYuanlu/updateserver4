@@ -9,12 +9,14 @@ import { _GET as project_info_GET } from '$lib/../routes/api/project/info/+serve
 import { _GET as project_info_members_GET } from '$lib/../routes/api/project/info/members/+server';
 import { _GET as project_info_role_GET } from '$lib/../routes/api/project/info/role/+server';
 import { _GET as project_list_GET } from '$lib/../routes/api/project/list/+server';
+import { _GET as tag_info_GET } from '$lib/../routes/api/tag/info/+server';
+import { _GET as tag_list_GET } from '$lib/../routes/api/tag/list/+server';
 import { _POST as user_login_POST } from '$lib/../routes/api/user/login/+server';
-import type { OpenAPIV3 } from 'openapi-types';
+import type { PathsObject, OperationObject } from 'openapi3-ts/oas30';
 
-export const paths: OpenAPIV3.PathsObject = {};
-function addOpenAPI(api: OpenAPIV3.OperationObject, path: string, method: string) {
-    api.operationId = `${path.replace('/', '_')}_${method}`;
+export const paths: PathsObject = {};
+function addOpenAPI(api: OperationObject, path: string, method: string) {
+    api.operationId = `${path.replaceAll('/', '_')}_${method}`;
 	(paths[`/api/${path}`] || (paths[`/api/${path}`] = {}))[method.toLowerCase() as 'get'] = api;
 }
 
@@ -24,6 +26,8 @@ addOpenAPI(project_info_GET.openAPI(), "project/info", "GET")
 addOpenAPI(project_info_members_GET.openAPI(), "project/info/members", "GET")
 addOpenAPI(project_info_role_GET.openAPI(), "project/info/role", "GET")
 addOpenAPI(project_list_GET.openAPI(), "project/list", "GET")
+addOpenAPI(tag_info_GET.openAPI(), "tag/info", "GET")
+addOpenAPI(tag_list_GET.openAPI(), "tag/list", "GET")
 addOpenAPI(user_login_POST.openAPI(), "user/login", "POST")
 
 /* prettier-ignore-end */

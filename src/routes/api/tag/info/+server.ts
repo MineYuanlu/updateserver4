@@ -1,34 +1,24 @@
 import type { RequestHandler } from './$types';
-import { listProjects } from '$lib/server/db/funcs';
-import { z } from 'zod';
 import { createAPI } from '../../api.server';
-import { Visibility, zProjId } from '$lib/common/project';
+import { z } from 'zod';
+import { Visibility, zProjectTag, zProjId } from '$lib/common/project';
+import { listTagProjects } from '$lib/server/db/funcs';
 import { zUserId } from '$lib/common/user';
 import { userJwt } from '$lib/server/user/jwt';
 
-export type ListResp = Awaited<ReturnType<typeof listProjects>>;
+export type ListResp = Awaited<ReturnType<typeof listTagProjects>>;
 
 export const _GET = createAPI()
-	.summary('List projects')
+	.summary('获取标签信息')
+	.description('获取一个标签的详细信息')
 	.cookie({
 		user: userJwt.zod.optional(),
 	})
 	.query({
-		limit: z.coerce
-			.number()
-			.int()
-			.min(1)
-			.max(1000)
-			.optional()
-			.default(100)
-			.describe('limit of projects to return'),
-		offset: z.coerce
-			.number()
-			.int()
-			.min(0)
-			.optional()
-			.default(0)
-			.describe('offset of projects to return'),
+		tag: zProjectTag,
+		offset: z.coerce.number().int().min(0).default(0),
+		limit: z.coerce.number().int().min(1).max(1000).default(20),
+		search: z.string().optional(),
 	})
 	.success<ListResp>(
 		z.array(
@@ -44,9 +34,11 @@ export const _GET = createAPI()
 			}),
 		),
 	)
-	.tag('project')
+	.tag('tag')
 	.flatArgs(true);
 
-export const GET: RequestHandler = _GET.handler(async (_, { user, limit, offset }, success) => {
-	return success(await listProjects(offset, limit, user?.id));
-});
+export const GET: RequestHandler = _GET.handler(
+	async (_, { tag, offset, limit, search, user }, success) => {
+		return success(await listTagProjects(tag, offset, limit, search, user?.id));
+	},
+);

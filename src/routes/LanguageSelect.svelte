@@ -35,7 +35,7 @@
 					{/snippet}
 					{#snippet suffix(hover)}
 						{#if hover && tag !== languageTag()}
-							<Icon src={Enter} />
+							<Icon src={Enter} class="h-4 w-4" />
 						{/if}
 					{/snippet}
 				</CpItem>

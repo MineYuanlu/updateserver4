@@ -1,7 +1,6 @@
 import type { ProjId, Visibility } from '$lib/common/project';
-import type { Project } from '$lib/server/db/schema';
-import type { ListResp } from '../../routes/api/project/list/+server';
 import type { EditData } from '../../routes/api/project/edit/basic/+server';
+import type { ListResp } from '../../routes/api/project/list/+server';
 import { apiReq2 } from './common';
 
 /** 创建项目 */

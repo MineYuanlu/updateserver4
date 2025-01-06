@@ -1,9 +1,10 @@
 import type { RequestHandler } from './$types';
 import { failure } from '../../common.server';
 import { api_project__err_name_taken as err_name_taken } from '$lib/paraglide/messages';
-import { createProject } from '$lib/server/db/funcs';
+import { createProject, updateProjectUserRole } from '$lib/server/db/funcs';
 import { userJwt } from '$lib/server/user/jwt';
 import {
+	UserRole,
 	validateProjectDesc,
 	validateProjectName,
 	Visibility,
@@ -41,6 +42,8 @@ export const POST: RequestHandler = _POST.handler(
 			if (isConflictError(e)) return failure(err_name_taken({ name }));
 			throw e;
 		}
+		await updateProjectUserRole(projId, user.id, UserRole.owner.val);
+
 		return success(projId);
 	},
 );

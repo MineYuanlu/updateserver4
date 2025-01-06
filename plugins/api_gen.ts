@@ -95,11 +95,11 @@ async function apply(apiClients: ApiInfo[]) {
 			'/* eslint-disable */',
 			'',
 			openAPI.map((c) => c[0]).join('\n'),
-			"import type { OpenAPIV3 } from 'openapi-types';",
+			"import type { PathsObject, OperationObject } from 'openapi3-ts/oas30';",
 			'',
-			'export const paths: OpenAPIV3.PathsObject = {};',
-			'function addOpenAPI(api: OpenAPIV3.OperationObject, path: string, method: string) {',
-			"    api.operationId = `${path.replace('/', '_')}_${method}`;",
+			'export const paths: PathsObject = {};',
+			'function addOpenAPI(api: OperationObject, path: string, method: string) {',
+			"    api.operationId = `${path.replaceAll('/', '_')}_${method}`;",
 			"	(paths[`/api/${path}`] || (paths[`/api/${path}`] = {}))[method.toLowerCase() as 'get'] = api;",
 			'}',
 			'',
@@ -128,7 +128,7 @@ export function apiGenPlugin(): Plugin {
 		},
 		async watchChange(id, { event }) {
 			if (!isApiRoute(id)) return;
-			await handler(apiClients, id, event === 'delete');
+			apiClients = await handler(apiClients, id, event === 'delete');
 			await apply(apiClients);
 		},
 	};

@@ -19,9 +19,10 @@
 	import cookie from 'cookie';
 	import { theme } from '$lib/stores/theme';
 	import { browser } from '$app/environment';
+	import { user } from '$lib/stores/user';
 
 	let {
-		user,
+		user: initUser,
 		theme: initTheme,
 		settings,
 	}: {
@@ -38,6 +39,10 @@
 	$effect(() => {
 		$theme = isDarkMode ? 'dark' : 'light';
 		if (browser) document.cookie = `${COOKIES.Theme}=${$theme}; path=/; max-age=31536000`;
+	});
+
+	$effect(() => {
+		$user = initUser;
 	});
 
 	let settingMenuOpen = $state(false);
@@ -57,13 +62,15 @@
 
 	<!-- 中间导航 -->
 	<nav class="hidden space-x-6 md:flex">
-		{#each menus as menu}
-			<a
-				href={menu.path}
-				class="text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
-			>
-				{menu.name()}
-			</a>
+		{#each menus as { path, name, check }}
+			{#if !check || check({ user: $user })}
+				<a
+					href={path}
+					class="text-gray-600 hover:text-blue-500 dark:text-gray-300 dark:hover:text-blue-400"
+				>
+					{name()}
+				</a>
+			{/if}
 		{/each}
 	</nav>
 
@@ -72,11 +79,11 @@
 		<!-- 用户菜单 -->
 		<Menu>
 			{#snippet controls(toggleMenu: ToggleFunc)}
-				<IconBtn icon={Person} content={user?.name} onclick={() => toggleMenu()} />
+				<IconBtn icon={Person} content={$user?.name} onclick={() => toggleMenu()} />
 			{/snippet}
 			<MenuPlain title>{m.header_user_title()}</MenuPlain>
-			{#if user?.id}
-				<MenuItem icon={Person} href="/user/{user.id}">
+			{#if $user?.id}
+				<MenuItem icon={Person} href="/user/{$user.id}">
 					{m.header_user_center()}
 				</MenuItem>
 				<MenuItem
