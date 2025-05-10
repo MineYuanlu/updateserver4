@@ -24,7 +24,7 @@
 		"@steeze-ui/radix-icons": "^1.1.2",
 		"@steeze-ui/simple-icons": "^1.10.1",
 		"@sveltejs/adapter-auto": "^3.0.0",
-		"@sveltejs/kit": "^2.8.5",
+		"@sveltejs/kit": "^2.20.6",
 		"@sveltejs/vite-plugin-svelte": "^4.0.0",
 		"@types/animejs": "^3.1.12",
 		"@types/better-sqlite3": "^7.6.11",
